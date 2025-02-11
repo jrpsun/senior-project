@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div>
     <div className='mr-[200px] ml-[200px]'>
-        <div className='flex flex-col p-0 gap-16 isolate pt-10'>
+        <div className='flex flex-col p-0 gap-16 pt-10'>
             <div className='font-bold text-[36px] leading-7 text-center'>โครงการรับสมัคร</div>
             <div className='flex flex-row items-center justify-between w-full gap-2'>
                 <div className='flex items-center gap-2 flex-none'>

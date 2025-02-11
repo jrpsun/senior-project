@@ -1,11 +1,11 @@
 "use client"
+import AdditionalDocuments from '@components/components/ApplicantInformation/AdditionalDocuments';
+import Award from '@components/components/ApplicantInformation/Award';
+import EducationInformation from '@components/components/ApplicantInformation/EducationInformation';
+import GeneralInformation from '@components/components/ApplicantInformation/GeneralInformation';
+import Summary from '@components/components/ApplicantInformation/Summary';
+import Training from '@components/components/ApplicantInformation/Training';
 import React, { useEffect, useState } from 'react'
-import GeneralInformation from '../../../../components/ApplicantInformation/GeneralInformation';
-import EducationInformation from '../../../../components/ApplicantInformation/EducationInformation';
-import Award from '../../../../components/ApplicantInformation/Award';
-import Training from '../../../../components/ApplicantInformation/Training';
-import AdditionalDocuments from '../../../../components/ApplicantInformation/AdditionalDocuments';
-import Summary from '../../../../components/ApplicantInformation/Summary';
 
 const ApplicationInfo = () => {
     const [selected, setSelected] = useState(0);
@@ -114,7 +114,7 @@ const ApplicationInfo = () => {
                         <div className='flex text-[24px]'>สรุปข้อมูล</div>
                     </button>
                 </div>
-                <div className='flex mt-10 justify-center'>
+                <div className='mt-10'>
                     {contents[selected]}
                 </div>
             </div>
