@@ -14,5 +14,6 @@ export default {
       },
     },
   },
+  mode: "jit",
   plugins: [],
 } satisfies Config;

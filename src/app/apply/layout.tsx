@@ -1,5 +1,5 @@
+import Navbar from '@components/components/Navbar';
 import React from 'react'
-import Navbar from '../../../components/Navbar';
 
 export default function applyLayout({
     children,
@@ -8,7 +8,7 @@ export default function applyLayout({
   }) {
     return (
         <div>
-          <Navbar />
+          <Navbar/>
           <main>{children}</main>
         </div>
     );
