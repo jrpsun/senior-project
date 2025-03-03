@@ -2,5 +2,217 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: "Kanit", sans-serif;
+}
+
+/* Placeholder styling */
+input::placeholder {
+  color: #c4c4c4 !important;
+  opacity: 1;
+}
+
+/* Input field styling */
+input {
+  border: 1px solid #c4c4c4;
+  border-radius: 10px;
+  padding: 8px;
+  transition: border 0.2s ease-in-out;
+}
+
+input:hover {
+  border-color: #a3a3a3;
+}
+
+input:focus {
+  border-color: #565656;
+  outline: none;
+}
+
+/* Input field error styling */
+.input-error {
+  border: 1px solid #ef4444 !important;
+  box-shadow: 0 0 5px rgba(239, 68, 68, 0.5) !important;
+}
+
+/* Radio button styling */
+input[type="radio"] {
+  accent-color: #008a90;
+}
+
+/* Checkbox Styling */
+.custom-checkbox {
+  width: 20px;
+  height: 20px;
+  appearance: none;
+  border: 2px solid #c4c4c4;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.custom-checkbox:checked {
+  background-color: #008a90;
+  border-color: #008a90;
+}
+
+.custom-checkbox:checked::before {
+  content: "✔";
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* ปรับให้ Checkbox Label ยาวเต็มแนว */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* ถ้าเลือกแล้วให้เป็นสีดำ */
+.custom-checkbox:checked + .checkbox-label {
+  background-color: #e6f7f7;
+  color: black;
+  font-weight: 600;
+}
+
+/* Hover Effect */
+.checkbox-label:hover {
+  background-color: #f9f9f9;
+}
+
+
+/* Label styling for radio button */
+label.radio-label {
+  color: #565656;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+}
+
+/* ID input field styling */
+input[type="text"].id-input {
+  color: #565656;
+  background-color: #ffffff;
+  border: 2px solid #c4c4c4;
+  padding: 8px;
+  width: 100%;
+  border-radius: 4px;
+}
+
+/* React-Select styling */
+.react-select__control {
+  border: 1px solid #c4c4c4 !important;
+  border-radius: 10px !important;
+  padding: 2px 10px !important;
+  background-color: #ffffff !important;
+  box-shadow: none !important;
+  min-height: 40px !important;
+  transition: border 0.2s ease-in-out;
+}
+
+.react-select__control:hover {
+  border-color: #a3a3a3 !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #565656 !important;
+}
+
+.react-select__control--is-invalid {
+  border: 1px solid #ef4444 !important; /* เปลี่ยนขอบเป็นสีแดง */
+  border-radius: 10px !important;
+}
+
+.react-select__value-container {
+  padding: 2px 8px !important;
+}
+
+.react-select__placeholder {
+  color: #c4c4c4 !important;
+}
+
+.react-select__menu {
+  border-radius: 10px !important;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 5px !important;
+  font-size: 16px !important;
+  overflow: hidden !important;
+}
+
+.react-select__option {
+  color: #565656 !important;
+  background-color: white !important;
+  padding: 10px 12px !important;
+  font-weight: 200 !important;
+}
+
+.react-select__option--is-selected {
+  color: #008a90 !important;
+  font-weight: 600 !important;
+  background-color: white !important;
+}
+
+.react-select__option--is-focused {
+  background-color: #e6f7f7 !important;
+}
+
+.react-select__indicator {
+  padding: 8px !important;
+}
+
+.react-select__indicator-separator {
+  display: none !important;
+}
+
+.react-select__menu-list::-webkit-scrollbar {
+  width: 10px !important;
+}
+
+.react-select__menu-list::-webkit-scrollbar-track {
+  background: #f1f1f1 !important;
+  border-radius: 10px;
+}
+
+.react-select__menu-list::-webkit-scrollbar-thumb {
+  background: #c4c4c4 !important;
+  border-radius: 10px;
+}
+
+.react-select__menu-list::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3 !important;
+}
+
+/* React-Select dropdown indicator */
+.react-select__control.has-value .react-select__dropdown-indicator {
+  display: none !important;
+}
+
+.react-select__control.has-value .react-select__clear-indicator {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
 
