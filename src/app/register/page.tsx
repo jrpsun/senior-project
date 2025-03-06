@@ -1,13 +1,16 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Select, { SingleValue } from "react-select";
 import Image from "next/image";
 import { useForm } from "../../hooks/useForm";
 import FormField from "../../components/form/FormField";
-import { formatIdCard, validateThaiCharacters, validateEnglishCharacters, validateEmail } from "../../utils/validation";
+import { formatIdCard, validateThaiCharacters, validateEnglishCharacters, validateEmail, preventThaiInput, validatePassword, validateConfirmPassword } from "../../utils/validation";
 import CustomSelect from "../../components/form/CustomSelect";
 import Popup from "../../components/common/popup";
+import { useLanguage } from "@components/hooks/LanguageContext";
+import { SingleValue } from "react-select";
+import { texts } from "../../translation/register";
+
 
 const initialFormData = {
   password: "",
@@ -27,7 +30,8 @@ const initialFormData = {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { formData, errors, setErrors, handleChange, validateForm } = useForm(initialFormData);
+  const { language, setLanguage } = useLanguage(); // ดึง language ก่อน
+  const { formData, errors, setErrors, handleChange, validateForm } = useForm(initialFormData, language);
   const [nationalities, setNationalities] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isSuccessPopupOpen, setIsSuccessPopupOpen] = useState(false);
@@ -39,23 +43,40 @@ export default function RegisterPage() {
     fetch("/data/country-list.json")
       .then((res) => res.json())
       .then((data) => {
+        console.log("Fetched Nationalities:", data);
         setNationalities(
-          data.map((nation: { alpha2: any; name: any }) => ({
-            value: nation.alpha2,
-            label: nation.name,
-          }))
+          data
+            .map((nation: { alpha2: string; name: string; enName: string }) => ({
+              value: nation.alpha2,
+              label: language === "ENG" ? nation.enName : nation.name, // อัปเดตตามภาษา
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label)) // เรียงลำดับ A-Z
         );
       })
       .catch((error) => console.error("Error fetching nationalities:", error));
-  }, []);
+  }, [language]);
+  useEffect(() => {
+    if (formData.nationality === "TH") {
+      // ถ้าเลือกไทย → บังคับเลือก citizen (บัตรประชาชน)
+      handleChange("idType", "citizen");
+      handleChange("idNumber", ""); // เคลียร์ค่า ID Number
+    } else if (formData.nationality !== null) {
+      // ถ้าเลือกสัญชาติอื่น → บังคับเลือก passport
+      handleChange("idType", "passport");
+      handleChange("idNumber", ""); // เคลียร์ค่า ID Number
+    }
+  }, [formData.nationality]);
+
 
   const handleRegisterClick = (e: { preventDefault: () => void }) => {
     e.preventDefault();
     const isValid = validateForm();
 
     if (!formData.acceptTerms) {
-      setErrors((prev) => ({ ...prev, acceptTerms: "กรุณายอมรับนโยบายความเป็นส่วนตัว" }));
-      return;
+      setErrors((prev) => ({
+        ...prev,
+        acceptTerms: texts[language].acceptTermsError ?? "กรุณายอมรับนโยบายความเป็นส่วนตัว",
+      }));
     }
 
     if (isValid) {
@@ -66,6 +87,7 @@ export default function RegisterPage() {
     }
   };
 
+
   const handleConfirmRegistration = () => {
     setIsPopupOpen(false);
 
@@ -73,7 +95,7 @@ export default function RegisterPage() {
     if (isUserExists) {
       setIsErrorPopupOpen(true);
     } else {
-      // ✅ สร้าง URL parameters
+      // สร้าง URL parameters
       const queryParams = new URLSearchParams({
         nationality: formData.nationality || "",
         idType: formData.idType || "",
@@ -90,11 +112,18 @@ export default function RegisterPage() {
     }
   };
 
-  const titleOptions = [
-    { value: "mr", label: "นาย" },
-    { value: "mrs", label: "นาง" },
-    { value: "miss", label: "นางสาว" },
-  ];
+  const titleOptions = {
+    TH: [
+      { value: "mr", label: "นาย" },
+      { value: "mrs", label: "นาง" },
+      { value: "miss", label: "นางสาว" },
+    ],
+    ENG: [
+      { value: "mr", label: "Mr." },
+      { value: "mrs", label: "Mrs." },
+      { value: "miss", label: "Miss" },
+    ],
+  };
 
   const preventThaiInput = (event: { key: string; preventDefault: () => void }) => {
     const thaiPattern = /[\u0E00-\u0E7F]/; // ตรวจสอบตัวอักษรภาษาไทย
@@ -103,31 +132,21 @@ export default function RegisterPage() {
     }
   };
 
-  const handleSelectChange = (field: keyof typeof initialFormData, selectedOption: { value: any } | null) => {
-    const value = selectedOption ? selectedOption.value : null;
-    handleChange(field, value);
-
-    if (field === "nationality") {
-      const isThai = value === "TH";
-      handleChange("idNumber", ""); // เคลียร์ค่าหมายเลข
-      handleChange("idType", isThai ? "citizen" : "passport"); // อัปเดตประเภทเอกสาร
-    }
-  };
 
   return (
     <div className="flex min-h-screen relative bg-[#FFFFFF]">
       {/* Language Switcher */}
       <div className="absolute top-4 right-4">
         <button
-          className={`px-3 py-1 text-sm font-medium ${formData.language === "TH" ? "text-[#008A90] font-bold" : "text-gray-500"}`}
-          onClick={() => handleChange("language", "TH")}
+          className={`px-3 py-1 text-sm font-medium ${language === "TH" ? "text-[#008A90] font-bold" : "text-gray-500"}`}
+          onClick={() => setLanguage("TH")}
         >
           TH
         </button>
         <span className="text-gray-400"> | </span>
         <button
-          className={`px-3 py-1 text-sm font-medium ${formData.language === "EN" ? "text-[#008A90] font-bold" : "text-gray-500"}`}
-          onClick={() => handleChange("language", "EN")}
+          className={`px-3 py-1 text-sm font-medium ${language === "ENG" ? "text-[#008A90] font-bold" : "text-gray-500"}`}
+          onClick={() => setLanguage("ENG")}
         >
           EN
         </button>
@@ -152,41 +171,38 @@ export default function RegisterPage() {
       <div className="w-full md:w-1/2 ml-auto min-h-screen h-auto overflow-y-auto flex flex-col items-center justify-start">
         <div className="bg-white p-10 rounded-lg w-full max-w-[527px]  min-h-[700px]">
           <h2 className="text-2xl font-bold text-center text-gray-900 !block !relative z-10 min-h-[50px]">
-            {isPopupOpen ? "ยืนยันการลงทะเบียน" : "ลงทะเบียนบัญชีผู้ใช้ใหม่"}
+            {isPopupOpen ? texts[language].confirmRegister : texts[language].registerTitle}
           </h2>
           <form className="flex flex-col gap-4">
             {/* Nationality */}
             <div className="relative w-full">
               <CustomSelect
-                label="สัญชาติ"
+                label={texts[language].nationality}
                 options={nationalities}
                 value={formData.nationality}
-                onChange={(selectedOption) => handleSelectChange("nationality", selectedOption)}
-                placeholder="เลือกสัญชาติ"
-                error={errors.nationality} // error ถูกส่งไปแล้ว
-                width="460px"
+                onChange={(selectedOption) => handleChange("nationality", selectedOption?.value || null)}
+                placeholder={texts[language].selectNationality}
               />
             </div>
 
             {/* ID Document */}
             <div className="w-full space-y-2">
-              <label className="block text-[#565656] mb-1">
-                เอกสารยืนยันตัวตน <span className="text-red-500">*</span>
-              </label>
+              <label className="block text-[#565656]">{texts[language].idDocument} <span className="text-red-500">*</span></label>
               <div className="flex flex-wrap items-center gap-x-1">
-                <label className={`flex items-center whitespace-nowrap ${formData.nationality && formData.nationality !== "TH" ? "text-[#C4C4C4]" : "text-[#565656]"}`}>
+                {/* หมายเลขบัตรประชาชน */}
+                <label className={`flex items-center whitespace-nowrap ${formData.nationality !== "TH" ? "text-[#C4C4C4]" : "text-[#565656]"}`}>
                   <input
                     type="radio"
                     name="id_type"
                     value="citizen"
                     checked={formData.idType === "citizen"}
                     onChange={() => handleChange("idType", "citizen")}
-                    disabled={formData.nationality !== "TH"}
+                    disabled={formData.nationality !== "TH"} // Disable เมื่อไม่ใช่สัญชาติไทย
                     className="mr-1"
                   />
-
-                  หมายเลขบัตรประชาชน
+                  {texts[language].idCard}
                 </label>
+
                 <label className={`flex items-center whitespace-nowrap ${formData.nationality === "TH" ? "text-[#C4C4C4]" : "text-[#565656]"}`}>
                   <input
                     type="radio"
@@ -194,19 +210,25 @@ export default function RegisterPage() {
                     value="passport"
                     checked={formData.idType === "passport"}
                     onChange={() => handleChange("idType", "passport")}
-                    disabled={formData.nationality === "TH"}
+                    disabled={formData.nationality === "TH"} // Disable เมื่อเป็นสัญชาติไทย
                     className="mr-1"
                   />
-
-                  หมายเลขพาสปอร์ต (สำหรับชาวต่างชาติ)
+                  {texts[language].passport} {/* เปลี่ยนตามภาษา */}
                 </label>
               </div>
               <FormField
-                label="ระบุหมายเลข"
+                label={texts[language].idCard} // เปลี่ยน label ตามภาษา
                 value={formData.idNumber}
-                onChange={(value) => handleChange("idNumber", formData.idType === "citizen" ? formatIdCard(value.replace(/\D/g, "")) : value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 13).toUpperCase())}
+                onChange={(value) =>
+                  handleChange(
+                    "idNumber",
+                    formData.idType === "citizen"
+                      ? formatIdCard(value.replace(/\D/g, "")) // ใช้ formatIdCard
+                      : value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 13).toUpperCase() // สำหรับพาสปอร์ต (อักษร + ตัวเลข)
+                  )
+                }
                 error={errors.idNumber}
-                placeholder="ระบุหมายเลข"
+                placeholder={texts[language].enterId}
                 required
               />
             </div>
@@ -214,33 +236,34 @@ export default function RegisterPage() {
             {/* Title */}
             <div className="relative w-full">
               <CustomSelect
-                label="คำนำหน้า"
-                options={titleOptions}
+                label={texts[language].title} // เปลี่ยน label ตามภาษา
+                options={titleOptions[language] || []} // ตรวจสอบให้แน่ใจว่า `options` ไม่เป็น undefined
                 value={formData.title}
-                onChange={(selectedOption: SingleValue<{ value: string; label: string }> | null) => handleChange("title", selectedOption ? selectedOption.value : null)}
-                placeholder="เลือกคำนำหน้า"
+                onChange={(selectedOption: SingleValue<{ value: string; label: string }> | null) =>
+                  handleChange("title", selectedOption ? selectedOption.value : null)
+                }
+                placeholder={texts[language].selectTitle} // เปลี่ยน placeholder ตามภาษา
                 width="224px"
                 error={errors.title}
               />
-
             </div>
 
             {/* Thai Name */}
             <div className="relative flex gap-3 w-full">
               <FormField
-                label="ชื่อจริง (ไทย)"
+                label={texts[language].firstNameThaiLabel} // Label เปลี่ยนตามภาษา
+                placeholder={texts[language].firstNameThaiPlaceholder} // Placeholder เปลี่ยนตามภาษา
                 value={formData.firstNameThai}
                 onChange={(value) => handleChange("firstNameThai", validateThaiCharacters(value))}
                 error={errors.firstNameThai}
-                placeholder="ระบุชื่อจริง (ไทย)"
                 required={formData.nationality === "TH"}
               />
               <FormField
-                label="นามสกุล (ไทย)"
+                label={texts[language].lastNameThaiLabel} // Label เปลี่ยนตามภาษา
+                placeholder={texts[language].lastNameThaiPlaceholder} // Placeholder เปลี่ยนตามภาษา
                 value={formData.lastNameThai}
-                onChange={(value) => handleChange("lastNameThai", validateThaiCharacters(value))}
+                onChange={(value) => handleChange("lastNameThai", value)}
                 error={errors.lastNameThai}
-                placeholder="ระบุนามสกุล (ไทย)"
                 required={formData.nationality === "TH"}
               />
             </div>
@@ -248,35 +271,43 @@ export default function RegisterPage() {
             {/* English Name */}
             <div className="relative flex gap-3 w-full">
               <FormField
-                label="ชื่อจริง (อังกฤษ)"
+                label={texts[language].firstNameEngLabel}
                 value={formData.firstNameEnglish}
                 onChange={(value) => handleChange("firstNameEnglish", validateEnglishCharacters(value))}
                 error={errors.firstNameEnglish}
-                placeholder="ระบุชื่อจริง (อังกฤษ)"
+                placeholder={texts[language].firstNameEngPlaceholder}
                 required
               />
               <FormField
-                label="นามสกุล (อังกฤษ)"
+                label={texts[language].lastNameEngLabel}
                 value={formData.lastNameEnglish}
                 onChange={(value) => handleChange("lastNameEnglish", validateEnglishCharacters(value))}
                 error={errors.lastNameEnglish}
-                placeholder="ระบุนามสกุล (อังกฤษ)"
+                placeholder={texts[language].lastnameEngPlaceholder}
                 required
               />
             </div>
 
             {/* Email */}
             <FormField
-              label="อีเมล"
+              label={texts[language].email}
               value={formData.email}
               onChange={(value) => handleChange("email", value)}
               onBlur={() => {
                 if (formData.email && !validateEmail(formData.email)) {
-                  setErrors((prev) => ({ ...prev, email: "รูปแบบอีเมลไม่ถูกต้อง" }));
+                  setErrors((prev) => ({
+                    ...prev,
+                    email: texts[language].invalidEmail || "รูปแบบอีเมลไม่ถูกต้อง",
+                  }));
+                } else {
+                  setErrors((prev) => ({
+                    ...prev,
+                    email: "",
+                  }));
                 }
               }}
               error={errors.email}
-              placeholder="ระบุอีเมล"
+              placeholder={texts[language].emailPlaceholder}
               type="email"
               required
             />
@@ -284,7 +315,7 @@ export default function RegisterPage() {
             {/* Password */}
             <div>
               <label className="block text-[#565656]">
-                รหัสผ่าน <span className="text-red-500">*</span>
+                {texts[language].password} <span className="text-red-500">*</span>
               </label>
               <div className="relative w-full min-w-[460px] max-w-md">
                 <input
@@ -293,21 +324,19 @@ export default function RegisterPage() {
                   onChange={(e) => handleChange("password", e.target.value)}
                   onKeyDown={preventThaiInput}
                   onBlur={() => {
-                    let passwordError = null;
-                    if (formData.password.length < 8) {
-                      passwordError = "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร";
-                    }
+                    const errorsArray = validatePassword(formData.password, true, language);
                     setErrors((prev) => ({
                       ...prev,
-                      password: passwordError || "",
+                      password: errorsArray.length > 0 ? errorsArray[0] : "",
                     }));
                   }}
+
                   className={`w-full p-2 border 
         ${errors.password ? "border-red-500" : "border-[#C4C4C4]"} 
         text-[#565656] rounded-[10px] hover:border-[#A3A3A3] 
         focus:border-[#A3A3A3] focus:ring-0 outline-none transition duration-200 
         mt-1 pr-12 min-h-[44px]`}
-                  placeholder="ระบุรหัสผ่าน"
+                  placeholder={texts[language].passwordPlaceholder}
                 />
 
                 {/* ปุ่ม Hide/Unhide อยู่ตรงกลาง */}
@@ -317,7 +346,7 @@ export default function RegisterPage() {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   <Image
-                    src={showPassword ? "/images/Unhide_Password.svg" : "/images/Hide_Password.svg"}
+                    src={showConfirmPassword ? "/images/Hide_Password.svg" : "/images/Unhide_Password.svg"}
                     alt="แสดง/ซ่อนรหัสผ่าน"
                     width={24}
                     height={30}
@@ -327,7 +356,9 @@ export default function RegisterPage() {
 
               {/* Error Message */}
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                <p className="text-red-500 text-sm mt-1 error-message">
+                  {errors.password}
+                </p>
               )}
 
               {/* Info Message */}
@@ -339,14 +370,14 @@ export default function RegisterPage() {
                   height={20}
                   className="mr-2"
                 />
-                รหัสผ่านจะต้องมีความยาวไม่น้อยกว่า 8 ตัวอักษร
+                {texts[language].passwordInfo} {/* เปลี่ยนข้อความตามภาษา */}
               </p>
             </div>
 
             {/* Confirm Password */}
             <div>
               <label className="block text-[#565656]">
-                ยืนยันรหัสผ่าน <span className="text-red-500">*</span>
+                {texts[language].confirmPassword} <span className="text-red-500">*</span>
               </label>
               <div className="relative w-full min-w-[460px] max-w-md">
                 <input
@@ -355,25 +386,23 @@ export default function RegisterPage() {
                   onChange={(e) => handleChange("confirmPassword", e.target.value)}
                   onKeyDown={preventThaiInput} // ป้องกันภาษาไทย
                   onBlur={() => {
-                    let confirmPasswordError = null;
-
-                    if (formData.confirmPassword.length < 8) {
-                      confirmPasswordError = "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร";
-                    } else if (formData.confirmPassword !== formData.password) {
-                      confirmPasswordError = "รหัสผ่านไม่ตรงกัน";
-                    }
-
+                    const confirmPasswordError = validateConfirmPassword(
+                      formData.password,
+                      formData.confirmPassword,
+                      language
+                    );
                     setErrors((prev) => ({
                       ...prev,
                       confirmPassword: confirmPasswordError || "",
                     }));
                   }}
+
                   className={`w-full p-2 border 
         ${errors.confirmPassword ? "border-red-500" : "border-[#C4C4C4]"} 
         text-[#565656] rounded-[10px] hover:border-[#A3A3A3] 
         focus:border-[#A3A3A3] focus:ring-0 outline-none transition duration-200 
         mt-1 pr-12 min-h-[44px]`}
-                  placeholder="ระบุรหัสผ่านอีกครั้ง"
+                  placeholder={texts[language].confirmPasswordPlaceholder}
                 />
 
                 {/* ปุ่ม Hide/Unhide อยู่กลางเป๊ะ */}
@@ -383,7 +412,7 @@ export default function RegisterPage() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   <Image
-                    src={showConfirmPassword ? "/images/Unhide_Password.svg" : "/images/Hide_Password.svg"}
+                    src={showConfirmPassword ? "/images/Hide_Password.svg" : "/images/Unhide_Password.svg"}
                     alt="แสดง/ซ่อนรหัสผ่าน"
                     width={24}
                     height={24}
@@ -407,26 +436,27 @@ export default function RegisterPage() {
                   height={20}
                   className="mr-2"
                 />
-                รหัสผ่านจะต้องมีความยาวไม่น้อยกว่า 8 ตัวอักษร
+                {texts[language].passwordInfo} {/* เปลี่ยนข้อความตามภาษา */}
               </p>
+
             </div>
 
             {/* Checkbox ยอมรับนโยบายความเป็นส่วนตัว */}
             <div className="mt-3">
-              <div className="flex items-center">
+              <div className="flex items-start">
                 <input
                   type="checkbox"
                   id="acceptTerms"
                   checked={formData.acceptTerms}
                   onChange={(e) => handleChange("acceptTerms", e.target.checked)}
-                  className="w-5 h-5 accent-[#008A90] border-gray-300 rounded focus:ring-[#008A90]"
+                  className="w-5 h-5 accent-[#008A90] border-gray-300 rounded focus:ring-[#008A90] mt-1"
                 />
-                <label htmlFor="acceptTerms" className="ml-2 text-[#565656] text-sm">
-                  ฉันได้อ่านและยอมรับ{" "}
+                <label htmlFor="acceptTerms" className="ml-2 text-[#565656] text-sm leading-6">
+                  {texts[language].acceptTerms_1}{" "}
                   <a href="/privacy-policy" className="text-[#008A90] underline">
-                    นโยบายความเป็นส่วนตัว
+                    {texts[language].privacyPolicy}
                   </a>{" "}
-                  ทั้งหมดแล้ว
+                  {texts[language].acceptTerms_2}
                 </label>
               </div>
               {errors.acceptTerms && (
@@ -442,15 +472,15 @@ export default function RegisterPage() {
                 onClick={handleRegisterClick}
                 className="w-[200px] bg-[#008A90] text-white py-3 px-6 rounded-[10px] font-medium hover:bg-[#00757a] transition mx-auto block"
               >
-                ลงทะเบียน
+                {texts[language].register} {/* เปลี่ยนข้อความตามภาษา */}
               </button>
             </div>
 
             {/* Login Link */}
             <div className="text-center mt-0.5">
-              <span className="text-[#475467]">มีบัญชีแล้ว?</span>
+              <span className="text-[#475467]">{texts[language].alreadyAccount}</span>
               <a href="/login" className="text-[#008A90] font-semibold ml-2 hover:underline">
-                เข้าสู่ระบบ
+                {texts[language].login}
               </a>
             </div>
           </form>

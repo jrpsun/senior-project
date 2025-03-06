@@ -2,20 +2,52 @@
 
 // ติดตั้ง datepicker ด้วย npm install react-datepicker และ npm install date-fns
 // ติดตั้ง axios ด้วย npm install axios
+// ใช้ Use Effect
 import { useEffect, useState } from "react";
+import { useLanguage } from "../../../hooks/LanguageContext";
 import axios from "axios";
 import { Upload } from "lucide-react";
 import "react-datepicker/dist/react-datepicker.css";
-import DatePicker from "react-datepicker";
 import CustomSelect from "../../form/CustomSelect";
 import FormField from "../../form/FormField";
 import FileUpload from "../../form/FileUpload";
+import { generalInfoTexts, genderOptions } from "../../../translation/generalInfo";
+import { validateThaiCharacters, preventThaiInput, validateEnglishCharacters, preventEnglishInput, allowHouseNumber, allowOnlyNumbers, preventNonHouseNumberInput, preventNonNumericInput } from "../../../utils/validation";
+import DateInput from "../../common/date"; 
 
+const fetchData = async (url: string) => {
+  try {
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching data from ${url}:`, error);
+    return [];
+  }
+};
 
 const PersonalInfo: React.FC = () => {
-  const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]);
+  const { language } = useLanguage();
+  const currentTexts = generalInfoTexts[language as keyof typeof generalInfoTexts] || generalInfoTexts["ENG"];
   const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
+  const [nationalities, setNationalities] = useState<{ value: string; label: string }[]>([]);
+  const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]);
   const [districts, setDistricts] = useState<{ value: string; label: string }[]>([]);
+  const [subDistricts, setSubDistricts] = useState<{ value: string; label: string; postalCode: number }[]>([]);
+  const handleChange = (field: string, value: string | number) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const [expiryDate, setExpiryDate] = useState<Date | null>(null);
+  const [birthDate, setBirthDate] = useState<Date | null>(null);
+  const [passportexpiryDate, setpassportExpiryDate] = useState<Date | null>(null);
+  const [selectedSubDistrict, setSelectedSubDistrict] = useState<string | null>(null);
+  const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
+  const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
+  const [postalCode, setPostalCode] = useState<string>("");
+
   const [formData, setFormData] = useState({
     postalCode: "",
     profileImage: "",
@@ -28,431 +60,461 @@ const PersonalInfo: React.FC = () => {
     lastNameEng: "",
     nickname: "",
     nicknameEng: "",
-    nationality: "",
+    nationality: "TH",//ดึงมาจาก API ภายหลัง
     idCardNumber: "",
     idCardExpiry: "",
     birthDate: "",
     age: "",
     gender: "",
     district: "",
+    houseNumber: "",
+    moo: "",
+    village: "",
+    alley: "",
+    street: "",
+    subDistrict: "",
+    distrct: "",
+    province: "",
+    city: "",
+    country: "TH",
+    addressLine1: "",
+    addressLine2: "",
   });
-  const genderOptions = [
-    { value: "male", label: "ชาย" },
-    { value: "female", label: "หญิง" },
-  ];
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+
+  // โหลดข้อมูลจังหวัด อำเภอ ตำบล พร้อมกัน
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [provincesData, districtsData, subDistrictsData, countriesData] = await Promise.all([
+          fetchData("https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province.json"),
+          fetchData("https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_amphure.json"),
+          fetchData("https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_tambon.json"),
+          fetch("/data/country-list.json").then((res) => res.json()), // ข้อมูล ประเทศ และ สัญชาติ
+        ]);
+
+        // ตั้งค่าข้อมูลจังหวัด
+        setProvinces(
+          provincesData.map((p: { id: number; name_th: string; name_en: string }) => ({
+            value: p.id.toString(),
+            label: language === "TH" ? p.name_th : p.name_en,
+          }))
+        );
+
+        // ตั้งค่าข้อมูลอำเภอ
+        setDistricts(
+          districtsData.map((d: { id: number; province_id: number; name_th: string; name_en: string }) => ({
+            value: d.id.toString(),
+            label: language === "TH" ? d.name_th : d.name_en,
+            province_id: d.province_id.toString(),
+          }))
+        );
+        // ตั้งค่าข้อมูลตำบล
+        setSubDistricts(
+          subDistrictsData.map((s: { id: number; amphure_id: number; name_th: string; name_en: string; zip_code: number }) => ({
+            value: s.id.toString(),
+            label: language === "TH" ? s.name_th : s.name_en,
+            amphure_id: s.amphure_id.toString(),
+            postalCode: s.zip_code,
+          }))
+        );
+        // เรียงลำดับประเทศและสัญชาติตามภาษาที่เลือก
+        // เรียงข้อมูลประเทศ และ สัญชาติ
+        const formattedCountries = countriesData
+          .map((c: { alpha2: string; name: string; enName: string }) => ({
+            value: c.alpha2,
+            labelTH: c.name,
+            labelEN: c.enName,
+          }))
+          .sort((a, b) => {
+            const langKey = language === "TH" ? "labelTH" : "labelEN";
+            return a[langKey].localeCompare(b[langKey], language === "TH" ? "th" : "en");
+          });
+
+        setCountries(
+          formattedCountries.map((c) => ({
+            value: c.value,
+            label: language === "TH" ? c.labelTH : c.labelEN,
+          }))
+        );
+
+        setNationalities(
+          formattedCountries.map((c) => ({
+            value: c.value,
+            label: language === "TH" ? c.labelTH : c.labelEN,
+          }))
+        );
+      } catch (error) {
+        console.error("Error loading data:", error);
+      }
+    };
+
+    loadData();
+  }, [language]); // 
+
+
+  // ฟังก์ชันเปลี่ยนค่า จังหวัด-อำเภอ-ตำบล
+  const handleProvinceChange = (selectedOption: { value: string } | null) => {
+    setSelectedProvince(selectedOption ? selectedOption.value : null);
+    setSelectedDistrict(null);
+    setSelectedSubDistrict(null);
+    setPostalCode("");
   };
 
-  const [expiryDate, setExpiryDate] = useState<Date | null>(null);
-  const [selectedGender, setSelectedGender] = useState<string | null>(null);
-  const [selectedDistricts, setSelectedDistricts] = useState<string | null>(null);
-  const [amphures, setAmphures] = useState<{ value: string; label: string }[]>([]);
-  const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
-  const [selectedAmphure, setSelectedAmphure] = useState<string | null>(null);
-  const [postalCode, setPostalCode] = useState<string>("");
-  const [subDistrict, setsubDistrict] = useState<string>(""); 
+  const handleDistrictChange = (selectedOption: { value: string } | null) => {
+    setSelectedDistrict(selectedOption ? selectedOption.value : null);
+    setSelectedSubDistrict(null);
+    setPostalCode("");
+  };
 
-  // ดึงข้อมูลประเทศจาก API
-  useEffect(() => {
-    const fetchCountries = async () => {
-      try {
-        const response = await axios.get("/data/country-list.json");
-        const countryOptions = response.data.map((nation: { alpha2: string; name: string }) => ({
-          value: nation.alpha2,
-          label: nation.name,
-        }));
-        setCountries(countryOptions);
-      } catch (error) {
-        console.error("Error fetching countries:", error);
-      }
-    };
+  const handleSubDistrictChange = (selectedOption: { value: string } | null) => {
+    setSelectedSubDistrict(selectedOption ? selectedOption.value : null);
+    const subDistrict = subDistricts.find((s) => s.value === selectedOption?.value);
+    setPostalCode(subDistrict ? subDistrict.postalCode.toString() : "");
+  };
 
-    fetchCountries();
-  }, []);
-  useEffect(() => {
-    // โหลดข้อมูลจังหวัดจาก API
-    const fetchProvinces = async () => {
-      try {
-        const response = await axios.get("https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province.json");
-        setProvinces(response.data.map((p: any) => ({ value: p.id, label: p.name_th })));
-      } catch (error) {
-        console.error("Error fetching provinces:", error);
-      }
-    };
-    fetchProvinces();
-  }, []);
-
-  // ดึงข้อมูลจังหวัดจาก API
-  useEffect(() => {
-    const fetchProvinces = async () => {
-      try {
-        const response = await axios.get("https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province.json");
-
-        const provinceOptions = response.data.map((province: { id: string; name_th: string }) => ({
-          value: province.id,
-          label: province.name_th,
-        }));
-
-        setProvinces(provinceOptions);
-      } catch (error) {
-        console.error("Error fetching provinces:", error);
-      }
-    };
-
-    fetchProvinces();
-  }, []);
-
-  // ดึงข้อมูลอำเภอตามจังหวัดที่เลือก
-  useEffect(() => {
-    if (!selectedProvince) return; // ถ้ายังไม่เลือกจังหวัด ไม่ต้องโหลดอำเภอ
-
-    const fetchAmphures = async () => {
-      try {
-        const response = await axios.get("https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_amphure.json");
-
-        const filteredAmphures = response.data
-          .filter((amphure: { province_id: string }) => amphure.province_id === selectedProvince)
-          .map((amphure: { id: string; name_th: string }) => ({
-            value: amphure.id,
-            label: amphure.name_th,
-          }));
-
-        setAmphures(filteredAmphures);
-        setSelectedAmphure(null); // รีเซ็ตค่าที่เลือกของอำเภอ
-      } catch (error) {
-        console.error("Error fetching amphures:", error);
-      }
-    };
-
-    fetchAmphures();
-  }, [selectedProvince]);
-
+  // กรองอำเภอ และ ตำบล ตามจังหวัดที่เลือก
+  const filteredDistricts = districts.filter((d) => selectedProvince && d.province_id === selectedProvince);
+  const filteredSubDistricts = subDistricts.filter((s) => selectedDistrict && s.amphure_id === selectedDistrict);
 
   return (
-    <div className="flex justify-center py-10 bg-[white] min-h-screen">
-      <div className="bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-6">
-        <div className="p-8 bg-white rounded-lg w-full max-w-5xl mx-auto">
-          <h2 className="text-2xl text-[#008A90] font-semibold mb-6">ข้อมูลส่วนตัว</h2>
+    <div className="flex justify-center py-5 bg-[white]">
+    <div className="bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-3">
+      <div className="p-6 bg-white rounded-lg w-full max-w-5xl mx-auto">
+          <h2 className="text-2xl text-[#008A90] font-semibold mb-6">{currentTexts.titlePersonalInfo}</h2>
           {/* อัปโหลดรูปภาพ */}
           <div className="mb-4">
-            <label className="block text-[#565656]  mb-2">รูปภาพ <span className="text-red-500">*</span></label>
+            <label className="block text-[#565656] mb-2">{currentTexts.uploadImage} <span className="text-red-500">*</span></label>
             <div className="flex flex-wrap md:flex-nowrap items-start gap-4 md:gap-6">
               {/* กรอบอัปโหลดรูป */}
               <div className="w-28 h-36 md:w-40 md:h-48 lg:w-48 lg:h-56 border-2 border-dashed border-[#008A90] p-4 flex flex-col items-center justify-center cursor-pointer"
                 onClick={() => document.getElementById('profileImageUpload')?.click()}>
                 <Upload className="text-[#008A90] w-6 h-6" />
-                <span className="text-[#008A90] mt-2 text-sm">อัพโหลดภาพ</span>
+                <span className="text-[#008A90] mt-2 text-sm">{currentTexts.uploadImage}</span>
                 <input type="file" id="profileImageUpload" className="hidden" onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setFormData({ ...formData, profileImage: e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : "" })} />
               </div>
               <div className="text-[#565656] text-sm leading-6">
-                <p>รูปแบบไฟล์: JPG, JPEG</p>
-                <p>ขนาดไฟล์: ไม่เกิน 150KB</p>
-                <p>ขนาดรูปที่แนะนำ: 230×312 พิกเซล</p>
-                <p>รูปถ่ายไม่เกิน 6 เดือน หน้าตรง ชัดเจน ครึ่งตัวในชุดสุภาพ</p>
+                {currentTexts.imageRequirements.map((req, index) => (
+                  <p key={index}>{req}</p>
+                ))}
               </div>
             </div>
           </div>
           {/* คำนำหน้า*/}
           <div className="mb-4">
-            <label className="block text-[#565656]  mb-1">คำนำหน้า <span className="text-red-500">*</span></label>
-            <p className="text-[#565656]   indent-5">นาย</p>
+            <label className="block text-[#565656] mb-1">{currentTexts.title} <span className="text-red-500">*</span></label>
+            <p className="text-[#565656]   indent-5">{currentTexts.titleText}</p>
           </div>
 
           {/* ชื่อภาษาไทย*/}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div>
-              <label className="block text-[#565656]  mb-1">
-                ชื่อจริง (ภาษาไทย) <span className="text-red-500">*</span>
-              </label>
+              <label className="block text-[#565656] mb-1">{currentTexts.firstName} <span className="text-red-500">*</span></label>
               <p className="text-[#565656]  indent-5">จิรภัทร</p>
             </div>
+            <FormField
+              label={currentTexts.middleName}
+              value={formData.middleName}
+              onChange={(value) => handleChange("middleName", validateThaiCharacters(value))}
+              placeholder={currentTexts.enterMiddleName}
+              onKeyDown={(e) => preventThaiInput(e)}
+            />
             <div>
-              <label className="block text-[#565656]  mb-1">ชื่อกลาง (ภาษาไทย)</label>
-              <input
-                type="text"
-                name="middleName"
-                placeholder="ระบุชื่อกลาง (ภาษาไทย)"
-                className="border p-1.5 rounded-[10px] w-full text-[#565656] border-[#C4C4C4]"
-              />
-            </div>
-            <div>
-              <label className="block text-[#565656]  mb-1">
-                นามสกุล (ภาษาไทย) <span className="text-red-500">*</span>
-              </label>
+              <label className="block text-[#565656] mb-1">{currentTexts.lastName} <span className="text-red-500">*</span></label>
               <p className="text-[#565656]  indent-5">สุวรรณลมัย</p>
             </div>
-            <div>
-              <label className="block text-[#565656]  mb-1">ชื่อเล่น (ภาษาไทย)</label>
-              <input
-                type="text"
-                name="nickname"
-                placeholder="ระบุชื่อเล่น (ภาษาไทย)"
-                className="border p-1.5 rounded-[10px] w-full text-[#565656] border-[#C4C4C4]"
-              />
-            </div>
+            <FormField
+              label={currentTexts.nickname}
+              value={formData.nickname}
+              onChange={(value) => handleChange("nickname", validateThaiCharacters(value))}
+              placeholder={currentTexts.enterNickname}
+              onKeyDown={(e) => preventThaiInput(e)}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div>
-              <label className="block text-[#565656]  mb-1">
-                ชื่อจริง (ภาษาอังกฤษ) <span className="text-red-500">*</span>
-              </label>
+              <label className="block text-[#565656] mb-1">{currentTexts.firstNameEng} <span className="text-red-500">*</span></label>
               <p className="text-[#565656]  indent-5">Jirapat</p>
             </div>
+            <FormField
+              label={currentTexts.middleNameEng}
+              value={formData.middleNameEng}
+              onChange={(value) => handleChange("middleNameEng", validateEnglishCharacters(value))}
+              placeholder={currentTexts.enterMiddleNameEng}
+              onKeyDown={(e) => preventEnglishInput(e)} // ป้องกันภาษาไทย
+            />
             <div>
-              <label className="block text-[#565656]  mb-1">ชื่อกลาง (ภาษาอังกฤษ)</label>
-              <input
-                type="text"
-                name="middleName"
-                placeholder="ระบุชื่อกลาง (ภาษาอังกฤษ)"
-                className="border p-1.5 rounded-[10px] w-full text-[#565656] border-[#C4C4C4]"
-              />
-            </div>
-            <div>
-              <label className="block text-[#565656]  mb-1">
-                นามสกุล (ภาษาอังกฤษ) <span className="text-red-500">*</span>
-              </label>
+              <label className="block text-[#565656] mb-1">{currentTexts.lastNameEng} <span className="text-red-500">*</span></label>
               <p className="text-[#565656]  indent-5">Suwanlamai</p>
             </div>
-            <div>
-              <label className="block text-[#565656]  mb-1">ชื่อเล่น (ภาษาอังกฤษ)</label>
-              <input
-                type="text"
-                name="nickname"
-                placeholder="ระบุชื่อเล่น (ภาษาอังกฤษ)"
-                className="border p-1.5 rounded-[10px] w-full text-[#565656] border-[#C4C4C4]"
-              />
-            </div>
+            <FormField
+              label={currentTexts.nicknameEng}
+              value={formData.nicknameEng}
+              onChange={(value) => handleChange("nicknameEng", validateEnglishCharacters(value))}
+              placeholder={currentTexts.enterNicknameEng}
+              onKeyDown={(e) => preventEnglishInput(e)} // ป้องกันภาษาไทย
+            />
           </div>
 
-          {/* สัญชาติ*/}
-          <div className="mb-4">
-            <label className="block text-[#565656]  mb-1">สัญชาติ <span className="text-red-500">*</span></label>
-            <p className="text-[#565656]   indent-5">ไทย</p>
-          </div>
-          {/* อัปโหลดบัตรประชาชน */}
-          <FileUpload
-            label="สำเนาบัตรประชาชน"
-            onChange={(file) => console.log(file)}
-            fileType="PDF"
-            maxSize="5 MB"
-            accept=".pdf"
-            infoMessage={
-              <>
-                <p>
-                  กรุณาอัปโหลดสำเนาบัตรประชาชน พร้อมรับรองสำเนาถูกต้อง (ไฟล์ประเภท PDF ขนาดไม่เกิน 5 MB)
-                </p>
-              </>
-            }
+          {/* สัญชาติ */}
+          <CustomSelect
+            label={currentTexts.nationality}
+            options={countries} // ใช้ตัวเลือกเดียวกับประเทศ
+            value={formData.nationality}
+            onChange={(selectedOption) => handleChange("nationality", selectedOption ? selectedOption.value : "TH")}
+            placeholder={currentTexts.selectNationality}
+            width="250px"
           />
+          <div className="mb-4"></div>
+          {/* อัปโหลดเอกสาร */}
+          {/* กรณีสัญชาติไทย แสดงบัตรประชาชน */}
+          {/* แสดงเอกสารที่ต้องอัปโหลดตามสัญชาติ */}
+          {formData.nationality === "TH" ? (
+            <>
+              <FileUpload
+                label={currentTexts?.uploadIdCard || "สำเนาบัตรประชาชน"}
+                onChange={(file) => console.log(file)}
+                fileType="pdf"
+                maxSize="5 MB"
+                accept=".pdf"
+                infoMessage={
+                  <p>
+                    {currentTexts?.uploadIdCardInfo ||
+                      "กรุณาอัปโหลดสำเนาบัตรประชาชน พร้อมรับรองสำเนาถูกต้อง (ไฟล์ประเภท pdf ขนาดไม่เกิน 5 MB)"}
+                  </p>
+                }
+              />
 
-          {/* หมายเลขบัตรประชาชน และ วันหมดอายุ */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-            {/* หมายเลขบัตรประชาชน */}
-            <div>
-              <label className="block text-[#565656] mb-1">
-                หมายเลขบัตรประชาชน <span className="text-red-500">*</span>
-              </label>
-              <p className="text-[#565656] font-medium indent-2">1 9057 42603 312</p>
-            </div>
-            {/* วันหมดอายุของบัตรประชาชน */}
-            <div className="w-full max-w-xs md:max-w-sm">
-              <label className="block text-[#565656] mb-1">
-                วันหมดอายุของบัตรประชาชน <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <DatePicker
-                  selected={expiryDate}
-                  onChange={(date) => setExpiryDate(date)}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="เลือกวันหมดอายุของบัตรประชาชน"
-                  className="p-1.5 rounded-[10px] w-full text-[#565656] border-[#C4C4C4] pr-12 placeholder-[#C4C4C4]"
-                  wrapperClassName="w-full"
-                />
-                {/* ไอคอนปฏิทิน */}
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4.15625 0.65625C4.15625 0.292578 3.86367 0 3.5 0C3.13633 0 2.84375 0.292578 2.84375 0.65625V1.75H1.75C0.784766 1.75 0 2.53477 0 3.5V3.9375V5.25V12.25C0 13.2152 0.784766 14 1.75 14H10.5C11.4652 14 12.25 13.2152 12.25 12.25V5.25V3.9375V3.5C12.25 2.53477 11.4652 1.75 10.5 1.75H9.40625V0.65625C9.40625 0.292578 9.11367 0 8.75 0C8.38633 0 8.09375 0.292578 8.09375 0.65625V1.75H4.15625V0.65625ZM1.3125 5.25H10.9375V12.25C10.9375 12.4906 10.7406 12.6875 10.5 12.6875H1.75C1.50937 12.6875 1.3125 12.4906 1.3125 12.25V5.25Z" fill="#6B7280" />
-                  </svg>
-                </span>
+              {/* หมายเลขบัตรประชาชน และ วันหมดอายุ */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                {/* หมายเลขบัตรประชาชน */}
+                <div>
+                  <label className="block text-[#565656] mb-1">
+                    {currentTexts?.idCardNumber || "หมายเลขบัตรประชาชน"} <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-[#565656] font-medium indent-2">1 9057 42603 312</p>
+                </div>
+
+                {/* วันหมดอายุของบัตรประชาชน */}
+                <div className="w-full max-w-xs md:max-w-sm">
+                  <label className="block text-[#565656] mb-1">
+                    {currentTexts?.idCardExpiry || "วันหมดอายุของบัตรประชาชน"} <span className="text-red-500">*</span>
+                  </label>
+                  <DateInput
+                    selected={expiryDate}
+                    onChange={setExpiryDate}
+                    placeholderText={currentTexts?.SelectidCardExpiry || "เลือกวันหมดอายุของบัตรประชาชน"}
+                    mode="expiry"
+                  />
+
+                </div>
+
+                {/* วัน/เดือน/ปีเกิด */}
+                <div className="w-full max-w-xs md:max-w-sm">
+                  <label className="block text-[#565656] mb-1">
+                    {currentTexts?.birthDate || "วัน/เดือน/ปีเกิด"} <span className="text-red-500">*</span>
+                  </label>
+                  <DateInput
+                    selected={birthDate}
+                    onChange={setBirthDate}
+                    placeholderText={currentTexts?.SelectBirthDate || "เลือกวันเกิด"}
+                    mode="birthdate"
+                  />
+                </div>
               </div>
-            </div>
+            </>
+          ) : (
+            <>
+              <FileUpload
+                label={currentTexts?.uploadPassport || "สำเนาหนังสือเดินทาง"}
+                onChange={(file) => console.log(file)}
+                fileType="pdf"
+                maxSize="5 MB"
+                accept=".pdf"
+                infoMessage={
+                  <p>
+                    {currentTexts?.uploadPassportInfo ||
+                      "กรุณาอัปโหลดสำเนาหนังสือเดินทาง พร้อมรับรองสำเนาถูกต้อง (ไฟล์ประเภท pdf ขนาดไม่เกิน 5 MB)"}
+                  </p>
+                }
+              />
 
-            {/* วัน/เดือน/ปีเกิด */}
-            <div className="w-full max-w-xs md:max-w-sm">
-              <label className="block text-[#565656] mb-1">
-                วัน/เดือน/ปีเกิด (พ.ศ.) <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <DatePicker
-                  selected={expiryDate}
-                  onChange={(date) => setExpiryDate(date)}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="เลือกวันเกิด"
-                  className="p-1.5 rounded-[10px] w-full text-[#565656] border-[#C4C4C4] pr-12 placeholder-[#C4C4C4]"
-                  wrapperClassName="w-full"
-                />
-                {/* ไอคอนปฏิทิน */}
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4.15625 0.65625C4.15625 0.292578 3.86367 0 3.5 0C3.13633 0 2.84375 0.292578 2.84375 0.65625V1.75H1.75C0.784766 1.75 0 2.53477 0 3.5V3.9375V5.25V12.25C0 13.2152 0.784766 14 1.75 14H10.5C11.4652 14 12.25 13.2152 12.25 12.25V5.25V3.9375V3.5C12.25 2.53477 11.4652 1.75 10.5 1.75H9.40625V0.65625C9.40625 0.292578 9.11367 0 8.75 0C8.38633 0 8.09375 0.292578 8.09375 0.65625V1.75H4.15625V0.65625ZM1.3125 5.25H10.9375V12.25C10.9375 12.4906 10.7406 12.6875 10.5 12.6875H1.75C1.50937 12.6875 1.3125 12.4906 1.3125 12.25V5.25Z" fill="#6B7280" />
-                  </svg>
-                </span>
+              {/* หมายเลขพาสปอร์ต */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                {/* หมายเลขหนังสือเดินทาง */}
+                <div>
+                  <label className="block text-[#565656] mb-1">
+                    {currentTexts?.passportNumber || "หมายเลขหนังสือเดินทาง"} <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-[#565656] font-medium indent-2">A12345678</p>
+                </div>
+
+                {/* วันหมดอายุของหนังสือเดินทาง */}
+                <div className="w-full max-w-xs md:max-w-sm">
+                  <label className="block text-[#565656] mb-1">
+                    {currentTexts?.passportExpiry || "วันหมดอายุของหนังสือเดินทาง"} <span className="text-red-500">*</span>
+                  </label>
+                  <DateInput
+                    selected={passportexpiryDate}
+                    onChange={setpassportExpiryDate}
+                    placeholderText={currentTexts?.SelectPassportExpiry || "เลือกวันหมดอายุของหนังสือเดินทาง"}
+                  />
+                </div>
+
+                {/* วัน/เดือน/ปีเกิด */}
+                <div className="w-full max-w-xs md:max-w-sm">
+                  <label className="block text-[#565656] mb-1">
+                    {currentTexts?.birthDate || "วัน/เดือน/ปีเกิด"} <span className="text-red-500">*</span>
+                  </label>
+                  <DateInput
+                    selected={birthDate}
+                    onChange={setBirthDate}
+                    placeholderText={currentTexts?.SelectBirthDate || "เลือกวันเกิด"}
+                  />
+                </div>
               </div>
-            </div>
-          </div>
-
+            </>
+          )}
           {/* อายุ และ เพศ */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             {/* อายุ */}
             <div>
-              <label className="block text-[#565656] mb-1">อายุ</label>
+              <label className="block text-[#565656] mb-1">
+                {currentTexts?.age || "อายุ"}
+              </label>
               <p className="text-[#565656] font-medium">-</p>
             </div>
-
             {/* เพศ */}
             <div className="mb-4 w-full max-w-xs md:max-w-md lg:max-w-lg">
               <CustomSelect
-                label="เพศ"
-                options={genderOptions}
-                value={selectedGender}
-                onChange={(selectedOption) => setSelectedGender(selectedOption ? selectedOption.value : null)}
-                placeholder="เลือกเพศ"
+                label={currentTexts?.gender || "เพศ"}
+                options={genderOptions[language as keyof typeof genderOptions] || genderOptions["ENG"]}
+                value={formData.gender}
+                onChange={(selectedOption) =>
+                  handleChange("gender", selectedOption ? selectedOption.value : "")
+                }
+                placeholder={currentTexts?.selectGender || "เลือกเพศ"}
                 width="100%"
               />
             </div>
           </div>
-          <h2 className="text-2xl text-[#008A90] font-semibold mb-6">ที่อยู่ตามทะเบียนบ้าน</h2>
-          <FileUpload
-            label="สำเนาทะเบียนบ้าน"
-            onChange={(file) => console.log(file)}
-            fileType="PDF"
-            maxSize="5 MB"
-            accept=".pdf"
-            infoMessage={
-              <>
+
+          <h2 className="text-2xl text-[#008A90] font-semibold mb-6">{currentTexts.titleAddress}</h2>
+          {formData.country === "TH" && (
+            <FileUpload
+              label={currentTexts?.uploadHouseReg || "สำเนาทะเบียนบ้าน"}
+              onChange={(file) => console.log(file)}
+              fileType="pdf"
+              maxSize="5 MB"
+              accept=".pdf"
+              infoMessage={
                 <p>
-                  กรุณาอัปโหลดสำเนาทะเบียนบ้าน พร้อมรับรองสำเนาถูกต้อง (ไฟล์ประเภท PDF ขนาดไม่เกิน 5 MB)
+                  {currentTexts?.uploadHouseRegInfo ||
+                    "กรุณาอัปโหลดสำเนาทะเบียนบ้าน พร้อมรับรองสำเนาถูกต้อง (ไฟล์ประเภท pdf ขนาดไม่เกิน 5 MB)"}
                 </p>
-              </>
-            }
-          />
+              }
+            />
+          )}
           <div>
-            {/* ประเทศ */}
-            <div className="mb-4 w-full max-w-xs md:max-w-md lg:max-w-lg">
-              <CustomSelect
-                label="ประเทศ"
-                options={countries}
-                value={formData.nationality}
-                onChange={(selectedOption) => setFormData({ ...formData, nationality: selectedOption ? selectedOption.value : "" })}
-                placeholder="เลือกประเทศ"
-                width="300px"
-                height="1.5"
-              />
-            </div>
+            {/* เลือกประเทศ */}
+            <CustomSelect
+              label={currentTexts.country}
+              options={countries}
+              value={formData.country}
+              onChange={(selectedOption) => handleChange("country", selectedOption ? selectedOption.value : "")}
+              placeholder={currentTexts.selectCountry}
+              width="300px"
+            />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-            {/* เลขที่*/}
-            <div>
-              <label className="block text-[#565656]  mb-1">เลขที่</label>
-              <input
-                type="text"
-                name="houseNumber"
-                placeholder="ระบุเลขที่"
-                className="border p-1.5 rounded-[10px] w-full text-[#565656] border-[#C4C4C4]"
-              />
-            </div>
-            {/* หมู่*/}
-            <div>
-              <label className="block text-[#565656]  mb-1">หมู่</label>
-              <input
-                type="text"
-                name="moo"
-                placeholder="ระบุหมู่"
-                className="border p-1.5 rounded-[10px] w-full text-[#565656] border-[#C4C4C4]"
-              />
-            </div>
-            {/* หมู่บ้าน/อาคาร */}
-            <div>
-              <label className="block text-[#565656]  mb-1">หมู่บ้าน/อาคาร</label>
-              <input
-                type="text"
-                name="moo"
-                placeholder="ระบุหมู่บ้าน/อาคาร"
-                className="border p-1.5 rounded-[10px] w-full text-[#565656] border-[#C4C4C4]"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-            {/* ตรอก/ซอย*/}
-            <div>
-              <label className="block text-[#565656]  mb-1">ตรอก/ซอย</label>
-              <input
-                type="text"
-                name="alley"
-                placeholder="ระบุตรอก/ซอย"
-                className="border p-1.5 rounded-[10px] w-full text-[#565656] border-[#C4C4C4]"
-              />
-            </div>
-            {/* หมู่*/}
-            <div>
-              <label className="block text-[#565656]  mb-1">หมู่</label>
-              <input
-                type="text"
-                name="moo"
-                placeholder="ระบุหมู่"
-                className="border p-1.5 rounded-[10px] w-full text-[#565656] border-[#C4C4C4]"
-              />
-            </div>
-            <div className="w-full">
-              <FormField
-                label="ตำบล/แขวง"
-                value={subDistrict}
-                onChange={setsubDistrict}
-                placeholder="ระบุตำบล/แขวง"
-              />
-            </div>
-          </div>
-          {/* จังหวัด - อำเภอ/เขต - รหัสไปรษณีย์ */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-            {/* จังหวัด */}
-            <div className="w-full">
-              <CustomSelect
-                label="จังหวัด"
-                options={provinces}
-                value={selectedProvince}
-                onChange={(selectedOption) => setSelectedProvince(selectedOption ? selectedOption.value : null)}
-                placeholder="เลือกจังหวัด"
-                width="100%"
-              />
-            </div>
 
-            {/* อำเภอ/เขต */}
-            <div className="w-full">
-              <CustomSelect
-                label="อำเภอ/เขต"
-                options={amphures}
-                value={selectedAmphure}
-                onChange={(selectedOption) => setSelectedAmphure(selectedOption ? selectedOption.value : null)}
-                placeholder="เลือกอำเภอ"
-                width="100%"
-                isDisabled={!selectedProvince} // ปิดการใช้งานหากยังไม่เลือกจังหวัด
-              />
-            </div>
 
-            {/* รหัสไปรษณีย์ */}
-            <div className="w-full">
-              <FormField
-                label="รหัสไปรษณีย์"
-                value={postalCode}
-                onChange={setPostalCode}
-                placeholder="ระบุรหัสไปรษณีย์"
-              />
-            </div>
-          </div>
+          {/* แสดงเฉพาะกรณีเลือก "ประเทศไทย (TH)" */}
+          {formData.country === "TH" ? (
+            <>
+              {/* ฟอร์มที่อยู่แบบไทย */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                <FormField
+                  label={currentTexts.houseNumber}
+                  value={formData.houseNumber}
+                  onChange={(value) => handleChange("houseNumber", allowHouseNumber(value))}
+                  placeholder={currentTexts.houseNumberPlaceholder}
+                  onKeyDown={preventNonHouseNumberInput}
+                />
+                <FormField
+                  label={currentTexts.moo}
+                  value={formData.moo}
+                  onChange={(value) => handleChange("moo", allowOnlyNumbers(value))}
+                  placeholder={currentTexts.mooPlceholder}
+                  onKeyDown={preventNonNumericInput}
+                />
+                <FormField label={currentTexts.village} value={formData.village} onChange={(value) => handleChange("village", value)} placeholder={currentTexts.villagePlaceholder} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                <FormField label={currentTexts.alley} value={formData.alley} onChange={(value) => handleChange("alley", value)} placeholder={currentTexts.alleyPlaceholder} />
+                <FormField label={currentTexts.street} value={formData.street} onChange={(value) => handleChange("street", value)} placeholder={currentTexts.streetPlaceholder} />
+              </div>
+
+              {/* จังหวัด - อำเภอ - ตำบล - รหัสไปรษณีย์ */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                {/* จังหวัด */}
+                <CustomSelect
+                  label={currentTexts.province}
+                  options={provinces}
+                  value={selectedProvince}
+                  onChange={handleProvinceChange}
+                  placeholder={currentTexts.selectProvince}
+                />
+
+                {/* อำเภอ */}
+                <CustomSelect
+                  label={currentTexts.district}
+                  options={filteredDistricts}
+                  value={selectedDistrict}
+                  onChange={handleDistrictChange}
+                  placeholder={currentTexts.selectDistrict}
+                  isDisabled={!selectedProvince}
+                />
+
+                {/* ตำบล */}
+                <CustomSelect
+                  label={currentTexts.subDistrict}
+                  options={filteredSubDistricts}
+                  value={selectedSubDistrict}
+                  onChange={handleSubDistrictChange}
+                  placeholder={currentTexts.subDistrictPlaceholder}
+                  isDisabled={!selectedDistrict}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                <FormField
+                  label={currentTexts.postalCode}
+                  value={postalCode}
+                  onChange={(value) => setPostalCode(allowOnlyNumbers(value))}
+                  placeholder={currentTexts.postalCodePlaceholder}
+                  onKeyDown={preventNonNumericInput}
+                />
+
+              </div>
+
+            </>
+          ) : (
+            <>
+              {/* ฟอร์มที่อยู่แบบต่างประเทศ */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <FormField label={language === "TH" ? "ที่อยู่บรรทัดที่ 1" : "Address Line 1"} value={formData.addressLine1} onChange={(value) => handleChange("addressLine1", value)} placeholder={language === "TH" ? "ระบุที่อยู่บรรทัดที่ 1" : "Enter Address Line 1"} />
+                <FormField label={language === "TH" ? "ที่อยู่บรรทัดที่ 2" : "Address Line 2"} value={formData.addressLine2} onChange={(value) => handleChange("addressLine2", value)} placeholder={language === "TH" ? "ระบุที่อยู่บรรทัดที่ 2" : "Enter Address Line 2"} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <FormField label={language === "TH" ? "รัฐ/จังหวัด/ภูมิภาค" : "State/Province/Region"} value={formData.province} onChange={(value) => handleChange("province", value)} placeholder={language === "TH" ? "เลือกจังหวัด" : "Select State/Province/Region"} />
+                <FormField label={language === "TH" ? "เมือง" : "City"} value={formData.city} onChange={(value) => handleChange("city", value)} placeholder={language === "TH" ? "ระบุเมือง" : "Enter City"} />
+                <FormField label={language === "TH" ? "รหัสไปรษณีย์" : "Postal Code"} value={formData.postalCode} onChange={(value) => handleChange("postalCode", value)} placeholder={language === "TH" ? "ระบุรหัสไปรษณีย์" : "Enter Postal Code"} />
+              </div>
+            </>
+          )}
+
         </div>
       </div>
     </div>
@@ -460,3 +522,4 @@ const PersonalInfo: React.FC = () => {
 };
 
 export default PersonalInfo;
+

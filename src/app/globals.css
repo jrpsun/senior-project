@@ -113,16 +113,6 @@ label.radio-label {
   margin-right: 16px;
 }
 
-/* ID input field styling */
-input[type="text"].id-input {
-  color: #565656;
-  background-color: #ffffff;
-  border: 2px solid #c4c4c4;
-  padding: 8px;
-  width: 100%;
-  border-radius: 4px;
-}
-
 /* React-Select styling */
 .react-select__control {
   border: 1px solid #c4c4c4 !important;
@@ -216,3 +206,92 @@ input[type="text"].id-input {
   justify-content: center;
 }
 
+/* ✅ ปรับแต่งอินพุตของ DatePicker */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker__input-container input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #333;
+  background-color: white;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.react-datepicker__input-container input:focus {
+  border-color: #008A90;
+  outline: none;
+}
+
+/* ✅ ปรับแต่งปฏิทิน */
+.react-datepicker {
+  font-family: "Inter", sans-serif;
+  border-radius: 10px !important;
+  border: none !important;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+
+/* ✅ เอาพื้นหลังของหัวปฏิทินออก */
+.react-datepicker__header {
+  background-color: transparent !important;
+  border-bottom: none !important;
+}
+
+/* ✅ ชื่อเดือนและวัน */
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: black !important;
+  font-weight: bold !important;
+}
+
+/* ✅ วันที่ในปฏิทิน */
+.react-datepicker__day {
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+}
+
+/* ✅ วันที่เลือก */
+.react-datepicker__day--selected {
+  background-color: #008A90 !important;
+  color: white !important;
+  border-radius: 8px;
+}
+
+/* ✅ วันที่โฮเวอร์ */
+.react-datepicker__day:hover {
+  background-color: #e3f2f2 !important;
+  border-radius: 8px;
+}
+
+/* ✅ วันที่นอกเดือนปัจจุบัน */
+.react-datepicker__day--outside-month {
+  color: #bbb !important;
+}
+
+/* ✅ ปรับแต่งปุ่มเลื่อนเดือนให้เป็นสีดำ */
+.react-datepicker__navigation {
+  background-color: transparent !important;
+  border: none !important;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black !important;
+}
+
+.react-datepicker__navigation:hover {
+  background-color: #f0f0f0 !important;
+  border-radius: 50%;
+}
+
+.react-datepicker__navigation-icon {
+  filter: invert(0%);
+}

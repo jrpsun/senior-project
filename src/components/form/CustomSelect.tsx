@@ -1,6 +1,7 @@
 import Select, { components, StylesConfig } from "react-select";
 import Image from "next/image";
 import { useState } from "react";
+import { useLanguage } from "../../hooks/LanguageContext"; 
 
 interface Option {
   value: string;
@@ -14,23 +15,28 @@ interface CustomSelectProps {
   onChange: (selectedOption: Option | null) => void;
   error?: string;
   placeholder?: string;
-  width?: string; // ทำให้ width กำหนดเองได้
-  height?: string; // ทำให้ height กำหนดเองได้
+  width?: string;
+  height?: string;
   isDisabled?: boolean;
 }
-// ใช้ prop width & height เพื่อกำหนดขนาดได้อิสระ
+
 const getCustomStyles = (width?: string, height?: string): StylesConfig<Option, false> => ({
   control: (provided, state) => ({
     ...provided,
     minHeight: height || "auto",
     height: height || "auto",
-    width: width || "100%", // ถ้าไม่มี width ให้ใช้ 100% ของ parent
+    width: width || "100%",
     fontSize: "16px",
     padding: "0px 8px",
-    backgroundColor: state.isDisabled ? "#B3B3B3" : "#ffffff", // สีเทาอ่อนเมื่อ disabled
-    borderColor: state.isDisabled ? "#d1d5db" : "#cbd5e1", // ขอบสีเทาเมื่อ disabled
+    backgroundColor: state.isDisabled ? "F5F5F5":"ffffff" ,
+    borderColor: state.isDisabled ? "#A0A0A0" : "#cbd5e1", 
     cursor: state.isDisabled ? "not-allowed" : "pointer",
-    opacity: state.isDisabled ? 0.6 : 1,
+    opacity: 1, 
+    color: state.isDisabled ? "#6D6D6D" : "#565656", 
+  }),
+  placeholder: (provided, state) => ({
+    ...provided,
+    color: state.isDisabled ? "#6D6D6D" : "#A0A0A0", 
   }),
   valueContainer: (provided) => ({
     ...provided,
@@ -63,12 +69,15 @@ export default function CustomSelect({
   onChange,
   error,
   placeholder,
-  width, 
+  width,
   height,
-  isDisabled = false, 
+  isDisabled = false,
 }: CustomSelectProps) {
   const [menuIsOpen, setMenuIsOpen] = useState(false);
+  const { language } = useLanguage(); 
   const instanceId = `select-${label.replace(/\s+/g, "-").toLowerCase()}`;
+
+  const noOptionsText = language === "TH" ? "ไม่พบผลลัพธ์ที่ตรงกับคำค้นหา" : "No matching results found";
 
   return (
     <div className="relative w-full" style={{ maxWidth: width || "100%" }}>
@@ -79,13 +88,14 @@ export default function CustomSelect({
         instanceId={instanceId}
         inputId={instanceId}
         options={options}
-        value={options.find((option) => option.value === value)}
+        value={options.find((option) => option.value === value) || null}
+
         onChange={onChange}
         placeholder={placeholder}
         isSearchable
-        styles={getCustomStyles(width, height)} // ใช้ styles ที่รับค่า width & height
+        styles={getCustomStyles(width, height)}
         classNamePrefix="react-select"
-        noOptionsMessage={() => "ไม่พบผลลัพธ์ที่ตรงกับคำค้นหา"}
+        noOptionsMessage={() => noOptionsText}
         menuPlacement="auto"
         menuShouldScrollIntoView={false}
         isClearable
@@ -119,3 +129,4 @@ export default function CustomSelect({
     </div>
   );
 }
+

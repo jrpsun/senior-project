@@ -1,15 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FormField from "../../form/FormField";
 import CustomSelect from "../../form/CustomSelect";
+import { useLanguage } from "../../../hooks/LanguageContext";
+import { generalInfoTexts, relationshipOptions } from "../../../translation/generalInfo";
+import { validateThaiCharacters, validateEnglishCharacters, validateEmail, formatPhoneNumber, preventNonNumericInput,allowEnglishAndSpecialCharactersOnly } from "../../../utils/validation";
 
 const EmergencyContact: React.FC = () => {
+  const { language } = useLanguage(); // ใช้ language ตรงๆ
+  const currentTexts = generalInfoTexts[language] || generalInfoTexts["ENG"];
+
+  const errorMessages: Record<string, { invalidEmail: string }> = {
+    ENG: { invalidEmail: "Invalid email address" },
+    TH: { invalidEmail: "รูปแบบอีเมลไม่ถูกต้อง" },
+  };
+
   const [formData, setFormData] = useState({
     title: "",
     firstName: "",
-    middleName: "",
     lastName: "",
+    middleName: "",
     firstNameEng: "",
     middleNameEng: "",
     lastNameEng: "",
@@ -18,111 +29,112 @@ const EmergencyContact: React.FC = () => {
     email: "",
   });
 
-  const relationshipOptions = [
-    { value: "parent", label: "บิดา / มารดา" },
-    { value: "sibling", label: "พี่น้อง" },
-    { value: "relative", label: "ญาติ" },
-    { value: "friend", label: "เพื่อน" },
-    { value: "other", label: "อื่น ๆ" },
-  ];
+  const [emailError, setEmailError] = useState<string>("");
+
+  // เปลี่ยน error message เมื่อเปลี่ยนภาษา (เฉพาะถ้ามี error อยู่)
+  useEffect(() => {
+    if (emailError && formData.email !== "") {
+      setEmailError(errorMessages[language]?.invalidEmail || "Invalid email");
+    }
+  }, [language, formData.email]);
+  
+
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleEmailBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const emailValid = validateEmail(e.target.value);
+    if (!emailValid && e.target.value !== "") {
+      setEmailError(errorMessages[language]?.invalidEmail || "Invalid email");
+    } else {
+      setEmailError(""); // ถ้าอีเมลถูกต้องให้ล้าง error
+    }
+  };
+
   return (
-    <div className="flex justify-center py-10 bg-[white] ">
-    <div className="bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-6">
-    <div className="p-8 bg-white rounded-lg w-full max-w-5xl mx-auto">
+    <div className="flex justify-center py-5 bg-[white]">
+      <div className="bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-3">
+        <div className="p-6 bg-white rounded-lg w-full max-w-5xl mx-auto">
           <h2 className="text-2xl text-[#008A90] font-semibold mb-6">
-            บุคคลที่สามารถติดต่อได้ในกรณีฉุกเฉิน
+            {currentTexts.titleEmergency}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* คำนำหน้า */}
-            <CustomSelect
-              label="คำนำหน้า"
-              options={[
-                { value: "mr", label: "นาย" },
-                { value: "mrs", label: "นาง" },
-                { value: "ms", label: "นางสาว" },
-              ]}
-              value={formData.title}
-              onChange={(selectedOption) =>
-                handleChange("title", selectedOption ? selectedOption.value : "")
-              }
-              placeholder="เลือกคำนำหน้า"
-              width="100%"
-            />
-
-            {/* ชื่อจริง (ภาษาไทย) */}
             <FormField
-              label="ชื่อจริง (ภาษาไทย)"
+              label={currentTexts.firstName}
               value={formData.firstName}
-              onChange={(value) => handleChange("firstName", value)}
-              placeholder="ระบุชื่อจริง"
+              onChange={(value) => handleChange("firstName", validateThaiCharacters(value))}
+              placeholder={currentTexts.enterFirstName}
+             
+            />
+            <FormField
+              label={currentTexts.middleName}
+              value={formData.middleName}
+              onChange={(value) => handleChange("middleName", validateThaiCharacters(value))}
+              placeholder={currentTexts.enterMiddleName}
+            />
+            <FormField
+              label={currentTexts.lastName}
+              value={formData.lastName}
+              onChange={(value) => handleChange("lastName", validateThaiCharacters(value))}
+              placeholder={currentTexts.enterLastName}
+              
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <FormField
+              label={currentTexts.firstNameEng}
+              value={formData.firstNameEng}
+              onChange={(value) => handleChange("firstNameEng", validateEnglishCharacters(value))}
+              placeholder={currentTexts.enterFirstNameEng}
               required
             />
-
-            {/* นามสกุล (ภาษาไทย) */}
             <FormField
-              label="นามสกุล (ภาษาไทย)"
-              value={formData.lastName}
-              onChange={(value) => handleChange("lastName", value)}
-              placeholder="ระบุนามสกุล"
+              label={currentTexts.middleNameEng}
+              value={formData.middleNameEng}
+              onChange={(value) => handleChange("middleNameEng", validateEnglishCharacters(value))}
+              placeholder={currentTexts.enterMiddleNameEng}
+            />
+            <FormField
+              label={currentTexts.lastNameEng}
+              value={formData.lastNameEng}
+              onChange={(value) => handleChange("lastNameEng", validateEnglishCharacters(value))}
+              placeholder={currentTexts.enterLastNameEng}
               required
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            {/* ชื่อจริง (ภาษาอังกฤษ) */}
-            <FormField
-              label="ชื่อจริง (ภาษาอังกฤษ)"
-              value={formData.firstNameEng}
-              onChange={(value) => handleChange("firstNameEng", value)}
-              placeholder="ระบุชื่อจริง"
-              required
-            />
-
-            {/* นามสกุล (ภาษาอังกฤษ) */}
-            <FormField
-              label="นามสกุล (ภาษาอังกฤษ)"
-              value={formData.lastNameEng}
-              onChange={(value) => handleChange("lastNameEng", value)}
-              placeholder="ระบุนามสกุล"
-              required
-            />
-
-            {/* ความสัมพันธ์ */}
             <CustomSelect
-              label="ความสัมพันธ์"
-              options={relationshipOptions}
+              label={currentTexts.relationship}
+              options={relationshipOptions[language] || relationshipOptions["ENG"]}
               value={formData.relationship}
               onChange={(selectedOption) =>
                 handleChange("relationship", selectedOption ? selectedOption.value : "")
               }
-              placeholder="เลือกความสัมพันธ์"
+              placeholder={currentTexts.selectRelationship}
               width="100%"
             />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            {/* หมายเลขโทรศัพท์ */}
             <FormField
-              label="หมายเลขมือถือ"
+              label={currentTexts.phone}
               value={formData.phoneNumber}
-              onChange={(value) => handleChange("phoneNumber", value)}
-              placeholder="ระบุหมายเลขมือถือ"
+              onChange={(value) => handleChange("phoneNumber", formatPhoneNumber(value))}
+              placeholder={currentTexts.phonePlaceholder}
+              onKeyDown={preventNonNumericInput}
               required
               type="tel"
             />
-
-            {/* อีเมล */}
             <FormField
-              label="อีเมล"
+              key={language} // Force re-render เมื่อเปลี่ยนภาษา
+              label={currentTexts.email}
               value={formData.email}
-              onChange={(value) => handleChange("email", value)}
-              placeholder="ระบุอีเมล"
+              onChange={(value) => handleChange("email", allowEnglishAndSpecialCharactersOnly(value))}
+              placeholder={currentTexts.enterEmail}
+              onBlur={handleEmailBlur}
+              error={emailError}
             />
           </div>
         </div>

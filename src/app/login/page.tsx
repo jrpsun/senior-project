@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@components/hooks/LanguageContext";
+import { loginTexts } from "../../translation/login";
 
 export default function LoginPage() {
   const [citizenId, setCitizenId] = useState("");
@@ -9,14 +11,14 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [language, setLanguage] = useState("TH");
+  const { language, setLanguage } = useLanguage();
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!citizenId || !password) {
-      setError("กรุณากรอกหมายเลขบัตรประชาชนและรหัสผ่าน");
+      setError(loginTexts[language].errorMessage);
       return;
     }
 
@@ -24,7 +26,7 @@ export default function LoginPage() {
       setError(null);
       router.push("/dashboard");
     } else {
-      setError("เลขบัตรประชาชนหรือรหัสผ่านไม่ถูกต้อง");
+      setError(loginTexts[language].invalidCredentials);
     }
   };
 
@@ -33,17 +35,15 @@ export default function LoginPage() {
       {/* 🔹 ปุ่มเปลี่ยนภาษา */}
       <div className="absolute top-4 right-4">
         <button
-          className={`px-3 py-1 text-sm font-medium ${language === "TH" ? "text-[#008A90] font-bold" : "text-gray-500"
-            }`}
+          className={`px-3 py-1 text-sm font-medium ${language === "TH" ? "text-[#008A90] font-bold" : "text-gray-500"}`}
           onClick={() => setLanguage("TH")}
         >
           TH
         </button>
         <span className="text-gray-400"> | </span>
         <button
-          className={`px-3 py-1 text-sm font-medium ${language === "EN" ? "text-[#008A90] font-bold" : "text-gray-500"
-            }`}
-          onClick={() => setLanguage("EN")}
+          className={`px-3 py-1 text-sm font-medium ${language === "ENG" ? "text-[#008A90] font-bold" : "text-gray-500"}`}
+          onClick={() => setLanguage("ENG")}
         >
           EN
         </button>
@@ -71,7 +71,7 @@ export default function LoginPage() {
       <div className="w-full md:w-1/2 flex items-center justify-center bg-white mt-[-20px]">
         <div className="bg-white p-8 rounded-lg w-full max-w-md">
           <h2 className="text-2xl font-semibold text-center mb-6 text-gray-900">
-            เข้าสู่ระบบ
+            {loginTexts[language].loginTitle}
           </h2>
 
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
@@ -79,52 +79,43 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-4">
             {/* หมายเลขบัตรประชาชน */}
             <div>
-              <label className="block text-gray-700">
-                เลขบัตรประชาชน / Passport
-              </label>
+              <label className="block text-gray-700">{loginTexts[language].citizenId}</label>
               <input
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 value={citizenId}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 13); // รับเฉพาะตัวเลขและจำกัด 13 หลัก
+                  const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 13);
                   setCitizenId(value);
                 }}
                 maxLength={13}
                 className="w-full p-2 border border-gray-300 rounded-[10px] mt-1 text-gray-900 placeholder-[#C4C4C4]"
-                placeholder="ระบุเลขบัตรประชาชน / Passport"
+                placeholder={loginTexts[language].enterCitizenId}
               />
-
             </div>
 
             {/* รหัสผ่าน */}
             <div>
-              <label className="block text-gray-700">รหัสผ่าน</label>
+              <label className="block text-gray-700">{loginTexts[language].password}</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[ก-๙]/g, ""); // ลบตัวอักษรภาษาไทยออก
+                    const value = e.target.value.replace(/[ก-๙]/g, "");
                     setPassword(value);
                   }}
                   className="w-full p-2 border border-gray-300 rounded-[10px] mt-1 pr-10 text-gray-900 placeholder-[#C4C4C4]"
-                  placeholder="ระบุรหัสผ่าน"
+                  placeholder={loginTexts[language].enterPassword}
                 />
-
-                {/* ปุ่มแสดง/ซ่อนรหัสผ่าน */}
                 <button
                   type="button"
                   className="absolute inset-y-0 right-3 flex items-center text-gray-500"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  <img
-                    src={
-                      showPassword
-                        ? "/images/Unhide_Password.svg"
-                        : "/images/Hide_Password.svg"
-                    }
+                  <img  
+                    src={showPassword ? "/images/Hide_Password.svg" : "/images/Unhide_Password.svg"}
                     alt="แสดง/ซ่อนรหัสผ่าน"
                     width={24}
                     height={24}
@@ -142,26 +133,23 @@ export default function LoginPage() {
                   onChange={() => setRememberMe(!rememberMe)}
                   className="mr-2 accent-[#008A90]"
                 />
-                จำรหัสผ่าน
+                {loginTexts[language].rememberMe}
               </label>
               <a href="/forgot-password" className="text-[#008A90]">
-                ลืมรหัสผ่าน
+                {loginTexts[language].forgotPassword}
               </a>
             </div>
 
-            <button
-              type="submit"
-              className="w-[250px] bg-[#008A90] text-white py-3 px-6 rounded text-sm font-medium hover:bg-[#00757a] transition mx-auto block"
-            >
-              เข้าสู่ระบบ
+            <button type="submit" className="w-[250px] bg-[#008A90] text-white py-3 px-6 rounded text-sm font-medium hover:bg-[#00757a] transition mx-auto block">
+              {loginTexts[language].loginButton}
             </button>
           </form>
 
           {/* ปุ่มลงทะเบียน */}
           <div className="flex justify-center items-center text-sm text-gray-600 mt-6">
-            <span className="font-bold">ยังไม่ได้ลงทะเบียน?</span>
+            <span className="font-bold">{loginTexts[language].notRegistered}</span>
             <a href="/register" className="text-[#008A90] ml-1 font-bold">
-              ลงทะเบียน
+              {loginTexts[language].register}
             </a>
           </div>
         </div>

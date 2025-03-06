@@ -2,8 +2,15 @@
 
 import { useState } from "react";
 import FormField from "../../form/FormField";
+import { useLanguage } from "../../../hooks/LanguageContext"; // ใช้ context เพื่อดึงค่าภาษา
+import { generalInfoTexts } from "../../../translation/generalInfo";
+import { formatPhoneNumber, preventNonNumericInput } from "../../../utils/validation";
 
 const ContactInfo: React.FC = () => {
+  const { language } = useLanguage();
+  const currentLanguage = language || "ENG"; // ป้องกัน undefined
+  const currentTexts = generalInfoTexts[currentLanguage] || generalInfoTexts["ENG"]; // ใช้ ENG เป็น default
+
   const [formData, setFormData] = useState({
     phoneNumber: "",
     email: "test.raboobsamak@gmail.com",
@@ -17,28 +24,32 @@ const ContactInfo: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center py-10 bg-[white] ">
-      <div className="bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-6">
-      <div className="p-8 bg-white rounded-lg w-full max-w-5xl mx-auto">
-          <h2 className="text-2xl text-[#008A90] font-semibold mb-6">ข้อมูลติดต่อ</h2>
+    <div className="flex justify-center py-5 bg-[white]">
+      <div className="bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-3">
+        <div className="p-6 bg-white rounded-lg w-full max-w-5xl mx-auto">
+          {/* หัวข้อเปลี่ยนตามภาษา */}
+          <h2 className="text-2xl text-[#008A90] font-semibold mb-6">
+            {currentTexts.titleContact}
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* หมายเลขโทรศัพท์ */}
             <FormField
-              label="หมายเลขมือถือ"
+              label={currentTexts.phone}
               value={formData.phoneNumber}
-              onChange={(value) => handleChange("phoneNumber", value)}
-              placeholder="ระบุหมายเลขมือถือ"
+              onChange={(value) => handleChange("phoneNumber", formatPhoneNumber(value))}
+              placeholder={currentTexts.phonePlaceholder}
+              onKeyDown={preventNonNumericInput}
               required
               type="tel"
             />
 
-            {/* อีเมล (อ่านอย่างเดียว) */}
+            {/*  อีเมล (อ่านอย่างเดียว) */}
             <div className="flex flex-col">
               <label className="block text-[#565656] mb-1">
-                อีเมล <span className="text-red-500">*</span>
+                {currentTexts.email} <span className="text-red-500">*</span>
               </label>
-              <p className="text-[#565656] font-medium bg-gray-100 border border-gray-300 rounded-[10px] px-3 py-2">
+              <p className="text-[#565656] font-medium bg-[#F5F5F5] border border-gray-300 rounded-[10px] px-3 py-2">
                 {formData.email}
               </p>
             </div>
@@ -47,26 +58,24 @@ const ContactInfo: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
             {/* Line ID */}
             <FormField
-              label="Line (ถ้ามี)"
+              label={currentTexts.line || "Line"}
               value={formData.line}
-              onChange={(value) => handleChange("line", value)}
-              placeholder="Line"
+              onChange={(value) => handleChange("line", (value))}
+              placeholder={currentTexts.line}
             />
 
-            {/* Facebook */}
             <FormField
-              label="Facebook (ถ้ามี)"
+              label="Facebook"
               value={formData.facebook}
-              onChange={(value) => handleChange("facebook", value)}
-              placeholder="Facebook"
+              onChange={(value) => handleChange("facebook", (value))}
+              placeholder={currentTexts.facebook}
             />
-
             {/* Instagram */}
             <FormField
-              label="Instagram (ถ้ามี)"
+              label="Instagram"
               value={formData.instagram}
-              onChange={(value) => handleChange("instagram", value)}
-              placeholder="Instagram"
+              onChange={(value) => handleChange("instagram", (value))}
+              placeholder={currentTexts.instagram}
             />
           </div>
         </div>
