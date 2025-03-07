@@ -1,4 +1,4 @@
-"use client"; // ✅ ต้องระบุ use client ที่ไฟล์นี้
+"use client"; // ต้องระบุ use client ที่ไฟล์นี้
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -6,7 +6,7 @@ import Link from "next/link";
 export default function SummaryPage() {
   const searchParams = useSearchParams();
 
-  // ✅ ดึงค่าจาก URL
+  // ดึงค่าจาก URL
   const formData = {
     nationality: searchParams.get("nationality"),
     idType: searchParams.get("idType"),

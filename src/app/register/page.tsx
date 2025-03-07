@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useForm } from "../../hooks/useForm";
 import FormField from "../../components/form/FormField";
-import { formatIdCard, validateThaiCharacters, validateEnglishCharacters, validateEmail, preventThaiInput, validatePassword, validateConfirmPassword } from "../../utils/validation";
+import { formatIdCard, validateThaiCharacters, validateEnglishCharacters, validateEmail, validatePassword, validateConfirmPassword } from "../../utils/validation";
 import CustomSelect from "../../components/form/CustomSelect";
 import Popup from "../../components/common/popup";
 import { useLanguage } from "@components/hooks/LanguageContext";

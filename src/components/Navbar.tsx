@@ -10,13 +10,13 @@ import { useLanguage } from "../hooks/LanguageContext";
 const getMenuIcon = (label: string) => {
   switch (label) {
     case "แก้ไขข้อมูล":
-    case "Edit Profile":
+    case "Edit Information":
       return <Image src="/images/Navbar/EditInfo.svg" alt="EditInfo Icon" width={25} height={25} />;
     case "ติดตามสถานะการสมัคร":
-    case "Track Application":
+    case "Applicant Status":
       return <Image src="/images/Navbar/FollowStatus.svg" alt="FollowStatus Icon" width={25} height={25} />;
     case "ชำระค่าสมัคร":
-    case "Make Payment":
+    case "Payment":
       return <Image src="/images/Navbar/Payment.svg" alt="Payment Icon" width={25} height={25} />;
     case "เปลี่ยนรหัสผ่าน":
     case "Change Password":
@@ -38,9 +38,9 @@ const menuItems = {
     { href: "/logout", label: "ออกจากระบบ" },
   ],
   EN: [
-    { href: "/edit-profile", label: "Edit Profile" },
-    { href: "/follow-status", label: "Track Application" },
-    { href: "/payment", label: "Make Payment" },
+    { href: "/edit-profile", label: "Edit Information" },
+    { href: "/follow-status", label: "Applicant Status" },
+    { href: "/payment", label: "Payment" },
     { href: "/change-password", label: "Change Password" },
     { href: "/logout", label: "Logout" },
   ],
