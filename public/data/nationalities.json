@@ -1,0 +1,778 @@
+[
+    {
+        "English": "Afghan",
+        "Thai": "อัฟกานิสถาน"
+    },
+    {
+        "English": "Albanian",
+        "Thai": "แอลเบเนีย"
+    },
+    {
+        "English": "Algerian",
+        "Thai": "แอลจีเรีย"
+    },
+    {
+        "English": "American",
+        "Thai": "อเมริกัน"
+    },
+    {
+        "English": "Andorran",
+        "Thai": "อันดอร์รา"
+    },
+    {
+        "English": "Angolan",
+        "Thai": "แองโกลา"
+    },
+    {
+        "English": "Antiguans",
+        "Thai": "แอนติกาและบาร์บูดา"
+    },
+    {
+        "English": "Argentinean",
+        "Thai": "อาร์เจนตินา"
+    },
+    {
+        "English": "Armenian",
+        "Thai": "อาร์เมเนีย"
+    },
+    {
+        "English": "Australian",
+        "Thai": "ออสเตรเลีย"
+    },
+    {
+        "English": "Austrian",
+        "Thai": "ออสเตรีย"
+    },
+    {
+        "English": "Azerbaijani",
+        "Thai": "อาเซอร์ไบจาน"
+    },
+    {
+        "English": "Bahamian",
+        "Thai": "บาฮามาส"
+    },
+    {
+        "English": "Bahraini",
+        "Thai": "บาห์เรน"
+    },
+    {
+        "English": "Bangladeshi",
+        "Thai": "บังกลาเทศ"
+    },
+    {
+        "English": "Barbadian",
+        "Thai": "บาร์เบโดส"
+    },
+    {
+        "English": "Barbudans",
+        "Thai": "บาร์บูดา"
+    },
+    {
+        "English": "Batswana",
+        "Thai": "บอตสวานา"
+    },
+    {
+        "English": "Belarusian",
+        "Thai": "เบลารุส"
+    },
+    {
+        "English": "Belgian",
+        "Thai": "เบลเยียม"
+    },
+    {
+        "English": "Belizean",
+        "Thai": "เบลีซ"
+    },
+    {
+        "English": "Beninese",
+        "Thai": "เบนิน"
+    },
+    {
+        "English": "Bhutanese",
+        "Thai": "ภูฏาน"
+    },
+    {
+        "English": "Bolivian",
+        "Thai": "โบลิเวีย"
+    },
+    {
+        "English": "Bosnian",
+        "Thai": "บอสเนียและเฮอร์เซโกวีนา"
+    },
+    {
+        "English": "Brazilian",
+        "Thai": "บราซิล"
+    },
+    {
+        "English": "British",
+        "Thai": "อังกฤษ"
+    },
+    {
+        "English": "Bruneian",
+        "Thai": "บรูไน"
+    },
+    {
+        "English": "Bulgarian",
+        "Thai": "บัลแกเรีย"
+    },
+    {
+        "English": "Burkinabe",
+        "Thai": "บูร์กินาฟาโซ"
+    },
+    {
+        "English": "Burmese",
+        "Thai": "พม่า"
+    },
+    {
+        "English": "Burundian",
+        "Thai": "บุรุนดี"
+    },
+    {
+        "English": "Cambodian",
+        "Thai": "กัมพูชา"
+    },
+    {
+        "English": "Cameroonian",
+        "Thai": "แคเมอรูน"
+    },
+    {
+        "English": "Canadian",
+        "Thai": "แคนาดา"
+    },
+    {
+        "English": "Cape Verdean",
+        "Thai": "เคปเวิร์ด"
+    },
+    {
+        "English": "Central African",
+        "Thai": "สาธารณรัฐแอฟริกากลาง"
+    },
+    {
+        "English": "Chadian",
+        "Thai": "ชาด"
+    },
+    {
+        "English": "Chilean",
+        "Thai": "ชิลี"
+    },
+    {
+        "English": "Chinese",
+        "Thai": "จีน"
+    },
+    {
+        "English": "Colombian",
+        "Thai": "โคลอมเบีย"
+    },
+    {
+        "English": "Comoran",
+        "Thai": "คอโมโรส"
+    },
+    {
+        "English": "Congolese",
+        "Thai": "คองโก"
+    },
+    {
+        "English": "Costa Rican",
+        "Thai": "คอสตาริกา"
+    },
+    {
+        "English": "Croatian",
+        "Thai": "โครเอเชีย"
+    },
+    {
+        "English": "Cuban",
+        "Thai": "คิวบา"
+    },
+    {
+        "English": "Cypriot",
+        "Thai": "ไซปรัส"
+    },
+    {
+        "English": "Czech",
+        "Thai": "เช็ก"
+    },
+    {
+        "English": "Danish",
+        "Thai": "เดนมาร์ก"
+    },
+    {
+        "English": "Djibouti",
+        "Thai": "จิบูตี"
+    },
+    {
+        "English": "Dominican",
+        "Thai": "โดมินิกัน"
+    },
+    {
+        "English": "Dutch",
+        "Thai": "เนเธอร์แลนด์"
+    },
+    {
+        "English": "East Timorese",
+        "Thai": "ติมอร์-เลสเต"
+    },
+    {
+        "English": "Ecuadorean",
+        "Thai": "เอกวาดอร์"
+    },
+    {
+        "English": "Egyptian",
+        "Thai": "อียิปต์"
+    },
+    {
+        "English": "Emirian",
+        "Thai": "สหรัฐอาหรับเอมิเรตส์"
+    },
+    {
+        "English": "Equatorial Guinean",
+        "Thai": "อิเควทอเรียลกินี"
+    },
+    {
+        "English": "Eritrean",
+        "Thai": "เอริเทรีย"
+    },
+    {
+        "English": "Estonian",
+        "Thai": "เอสโตเนีย"
+    },
+    {
+        "English": "Ethiopian",
+        "Thai": "เอธิโอเปีย"
+    },
+    {
+        "English": "Fijian",
+        "Thai": "ฟิจิ"
+    },
+    {
+        "English": "Filipino",
+        "Thai": "ฟิลิปปินส์"
+    },
+    {
+        "English": "Finnish",
+        "Thai": "ฟินแลนด์"
+    },
+    {
+        "English": "French",
+        "Thai": "ฝรั่งเศส"
+    },
+    {
+        "English": "Gabonese",
+        "Thai": "กาบอง"
+    },
+    {
+        "English": "Gambian",
+        "Thai": "แกมเบีย"
+    },
+    {
+        "English": "Georgian",
+        "Thai": "จอร์เจีย"
+    },
+    {
+        "English": "German",
+        "Thai": "เยอรมนี"
+    },
+    {
+        "English": "Ghanaian",
+        "Thai": "กานา"
+    },
+    {
+        "English": "Greek",
+        "Thai": "กรีซ"
+    },
+    {
+        "English": "Grenadian",
+        "Thai": "เกรเนดา"
+    },
+    {
+        "English": "Guatemalan",
+        "Thai": "กัวเตมาลา"
+    },
+    {
+        "English": "Guinea-Bissauan",
+        "Thai": "กินี-บิสเซา"
+    },
+    {
+        "English": "Guinean",
+        "Thai": "กินี"
+    },
+    {
+        "English": "Guyanese",
+        "Thai": "กายอานา"
+    },
+    {
+        "English": "Haitian",
+        "Thai": "เฮติ"
+    },
+    {
+        "English": "Herzegovinian",
+        "Thai": "เฮอร์เซโกวีนา"
+    },
+    {
+        "English": "Honduran",
+        "Thai": "ฮอนดูรัส"
+    },
+    {
+        "English": "Hungarian",
+        "Thai": "ฮังการี"
+    },
+    {
+        "English": "I-Kiribati",
+        "Thai": "คิริบาส"
+    },
+    {
+        "English": "Icelander",
+        "Thai": "ไอซ์แลนด์"
+    },
+    {
+        "English": "Indian",
+        "Thai": "อินเดีย"
+    },
+    {
+        "English": "Indonesian",
+        "Thai": "อินโดนีเซีย"
+    },
+    {
+        "English": "Iranian",
+        "Thai": "อิหร่าน"
+    },
+    {
+        "English": "Iraqi",
+        "Thai": "อิรัก"
+    },
+    {
+        "English": "Irish",
+        "Thai": "ไอร์แลนด์"
+    },
+    {
+        "English": "Israeli",
+        "Thai": "อิสราเอล"
+    },
+    {
+        "English": "Italian",
+        "Thai": "อิตาลี"
+    },
+    {
+        "English": "Ivorian",
+        "Thai": "ไอวอรีโคสต์"
+    },
+    {
+        "English": "Jamaican",
+        "Thai": "จาเมกา"
+    },
+    {
+        "English": "Japanese",
+        "Thai": "ญี่ปุ่น"
+    },
+    {
+        "English": "Jordanian",
+        "Thai": "จอร์แดน"
+    },
+    {
+        "English": "Kazakhstani",
+        "Thai": "คาซัคสถาน"
+    },
+    {
+        "English": "Kenyan",
+        "Thai": "เคนยา"
+    },
+    {
+        "English": "Kittian and Nevisian",
+        "Thai": "เซนต์คิตส์และเนวิส"
+    },
+    {
+        "English": "Kuwaiti",
+        "Thai": "คูเวต"
+    },
+    {
+        "English": "Kyrgyz",
+        "Thai": "คีร์กีซสถาน"
+    },
+    {
+        "English": "Laotian",
+        "Thai": "ลาว"
+    },
+    {
+        "English": "Latvian",
+        "Thai": "ลัตเวีย"
+    },
+    {
+        "English": "Lebanese",
+        "Thai": "เลบานอน"
+    },
+    {
+        "English": "Liberian",
+        "Thai": "ไลบีเรีย"
+    },
+    {
+        "English": "Libyan",
+        "Thai": "ลิเบีย"
+    },
+    {
+        "English": "Liechtensteiner",
+        "Thai": "ลิกเตนสไตน์"
+    },
+    {
+        "English": "Lithuanian",
+        "Thai": "ลิทัวเนีย"
+    },
+    {
+        "English": "Luxembourger",
+        "Thai": "ลักเซมเบิร์ก"
+    },
+    {
+        "English": "Macedonian",
+        "Thai": "มาซิโดเนีย"
+    },
+    {
+        "English": "Malagasy",
+        "Thai": "มาดากัสการ์"
+    },
+    {
+        "English": "Malawian",
+        "Thai": "มาลาวี"
+    },
+    {
+        "English": "Malaysian",
+        "Thai": "มาเลเซีย"
+    },
+    {
+        "English": "Maldivan",
+        "Thai": "มัลดีฟส์"
+    },
+    {
+        "English": "Malian",
+        "Thai": "มาลี"
+    },
+    {
+        "English": "Maltese",
+        "Thai": "มอลตา"
+    },
+    {
+        "English": "Marshallese",
+        "Thai": "หมู่เกาะมาร์แชลล์"
+    },
+    {
+        "English": "Mauritanian",
+        "Thai": "มอริเตเนีย"
+    },
+    {
+        "English": "Mauritian",
+        "Thai": "มอริเชียส"
+    },
+    {
+        "English": "Mexican",
+        "Thai": "เม็กซิโก"
+    },
+    {
+        "English": "Micronesian",
+        "Thai": "ไมโครนีเซีย"
+    },
+    {
+        "English": "Moldovan",
+        "Thai": "มอลโดวา"
+    },
+    {
+        "English": "Monacan",
+        "Thai": "โมนาโก"
+    },
+    {
+        "English": "Mongolian",
+        "Thai": "มองโกเลีย"
+    },
+    {
+        "English": "Moroccan",
+        "Thai": "โมร็อกโก"
+    },
+    {
+        "English": "Mosotho",
+        "Thai": "เลโซโท"
+    },
+    {
+        "English": "Motswana",
+        "Thai": "บอตสวานา"
+    },
+    {
+        "English": "Mozambican",
+        "Thai": "โมซัมบิก"
+    },
+    {
+        "English": "Namibian",
+        "Thai": "นามิเบีย"
+    },
+    {
+        "English": "Nauruan",
+        "Thai": "นาอูรู"
+    },
+    {
+        "English": "Nepalese",
+        "Thai": "เนปาล"
+    },
+    {
+        "English": "New Zealander",
+        "Thai": "นิวซีแลนด์"
+    },
+    {
+        "English": "Nicaraguan",
+        "Thai": "นิการากัว"
+    },
+    {
+        "English": "Nigerian",
+        "Thai": "ไนจีเรีย"
+    },
+    {
+        "English": "Nigerien",
+        "Thai": "ไนเจอร์"
+    },
+    {
+        "English": "North Korean",
+        "Thai": "เกาหลีเหนือ"
+    },
+    {
+        "English": "Northern Irish",
+        "Thai": "ไอร์แลนด์เหนือ"
+    },
+    {
+        "English": "Norwegian",
+        "Thai": "นอร์เวย์"
+    },
+    {
+        "English": "Omani",
+        "Thai": "โอมาน"
+    },
+    {
+        "English": "Pakistani",
+        "Thai": "ปากีสถาน"
+    },
+    {
+        "English": "Palauan",
+        "Thai": "ปาเลา"
+    },
+    {
+        "English": "Panamanian",
+        "Thai": "ปานามา"
+    },
+    {
+        "English": "Papua New Guinean",
+        "Thai": "ปาปัวนิวกินี"
+    },
+    {
+        "English": "Paraguayan",
+        "Thai": "ปารากวัย"
+    },
+    {
+        "English": "Peruvian",
+        "Thai": "เปรู"
+    },
+    {
+        "English": "Polish",
+        "Thai": "โปแลนด์"
+    },
+    {
+        "English": "Portuguese",
+        "Thai": "โปรตุเกส"
+    },
+    {
+        "English": "Qatari",
+        "Thai": "กาตาร์"
+    },
+    {
+        "English": "Romanian",
+        "Thai": "โรมาเนีย"
+    },
+    {
+        "English": "Russian",
+        "Thai": "รัสเซีย"
+    },
+    {
+        "English": "Rwandan",
+        "Thai": "รวันดา"
+    },
+    {
+        "English": "Saint Lucian",
+        "Thai": "เซนต์ลูเซีย"
+    },
+    {
+        "English": "Salvadoran",
+        "Thai": "เอลซัลวาดอร์"
+    },
+    {
+        "English": "Samoan",
+        "Thai": "ซามัว"
+    },
+    {
+        "English": "San Marinese",
+        "Thai": "ซานมารีโน"
+    },
+    {
+        "English": "Sao Tomean",
+        "Thai": "เซาตูเมและปรินซิเป"
+    },
+    {
+        "English": "Saudi",
+        "Thai": "ซาอุดีอาระเบีย"
+    },
+    {
+        "English": "Scottish",
+        "Thai": "สกอตแลนด์"
+    },
+    {
+        "English": "Senegalese",
+        "Thai": "เซเนกัล"
+    },
+    {
+        "English": "Serbian",
+        "Thai": "เซอร์เบีย"
+    },
+    {
+        "English": "Seychellois",
+        "Thai": "เซเชลส์"
+    },
+    {
+        "English": "Sierra Leonean",
+        "Thai": "เซียร์ราลีโอน"
+    },
+    {
+        "English": "Singaporean",
+        "Thai": "สิงคโปร์"
+    },
+    {
+        "English": "Slovakian",
+        "Thai": "สโลวาเกีย"
+    },
+    {
+        "English": "Slovenian",
+        "Thai": "สโลวีเนีย"
+    },
+    {
+        "English": "Solomon Islander",
+        "Thai": "หมู่เกาะโซโลมอน"
+    },
+    {
+        "English": "Somali",
+        "Thai": "โซมาเลีย"
+    },
+    {
+        "English": "South African",
+        "Thai": "แอฟริกาใต้"
+    },
+    {
+        "English": "South Korean",
+        "Thai": "เกาหลีใต้"
+    },
+    {
+        "English": "Spanish",
+        "Thai": "สเปน"
+    },
+    {
+        "English": "Sri Lankan",
+        "Thai": "ศรีลังกา"
+    },
+    {
+        "English": "Sudanese",
+        "Thai": "ซูดาน"
+    },
+    {
+        "English": "Surinamer",
+        "Thai": "ซูรินาเม"
+    },
+    {
+        "English": "Swazi",
+        "Thai": "สวาซิแลนด์"
+    },
+    {
+        "English": "Swedish",
+        "Thai": "สวีเดน"
+    },
+    {
+        "English": "Swiss",
+        "Thai": "สวิตเซอร์แลนด์"
+    },
+    {
+        "English": "Syrian",
+        "Thai": "ซีเรีย"
+    },
+    {
+        "English": "South Sudanese",
+        "Thai": "ซูดานใต้"
+    },
+    {
+        "English": "Taiwanese",
+        "Thai": "ไต้หวัน"
+    },
+    {
+        "English": "Tajik",
+        "Thai": "ทาจิกิสถาน"
+    },
+    {
+        "English": "Tanzanian",
+        "Thai": "แทนซาเนีย"
+    },
+    {
+        "English": "Thai",
+        "Thai": "ไทย"
+    },
+    {
+        "English": "Togolese",
+        "Thai": "โตโก"
+    },
+    {
+        "English": "Tongan",
+        "Thai": "ตองกา"
+    },
+    {
+        "English": "Trinidadian or Tobagonian",
+        "Thai": "ตรินิแดดและโตเบโก"
+    },
+    {
+        "English": "Tunisian",
+        "Thai": "ตูนิเซีย"
+    },
+    {
+        "English": "Turkish",
+        "Thai": "ตุรกี"
+    },
+    {
+        "English": "Tuvaluan",
+        "Thai": "ตูวาลู"
+    },
+    {
+        "English": "Ugandan",
+        "Thai": "ยูกันดา"
+    },
+    {
+        "English": "Ukrainian",
+        "Thai": "ยูเครน"
+    },
+    {
+        "English": "Uruguayan",
+        "Thai": "อุรุกวัย"
+    },
+    {
+        "English": "Uzbekistani",
+        "Thai": "อุซเบกิสถาน"
+    },
+    {
+        "English": "Venezuelan",
+        "Thai": "เวเนซุเอลา"
+    },
+    {
+        "English": "Vietnamese",
+        "Thai": "เวียดนาม"
+    },
+    {
+        "English": "Welsh",
+        "Thai": "เวลส์"
+    },
+    {
+        "English": "Yemenite",
+        "Thai": "เยเมน"
+    },
+    {
+        "English": "Zambian",
+        "Thai": "แซมเบีย"
+    },
+    {
+        "English": "Zimbabwean",
+        "Thai": "ซิมบับเว"
+    }
+]

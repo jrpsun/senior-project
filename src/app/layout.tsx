@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Kanit } from "next/font/google";
 import "./globals.css";
+import { LanguageProvider } from "../hooks/LanguageContext"; // นำเข้า LanguageProvider
 
 const kanit = Kanit({
   variable: "--font-kanit",
@@ -20,10 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${kanit.variable} antialiased`}
-      >
-        {children}
+      <body className={`${kanit.variable} antialiased`}>
+        <LanguageProvider> {/* ครอบ LanguageProvider รอบ children */}
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );
