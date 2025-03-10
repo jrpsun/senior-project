@@ -40,21 +40,28 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    fetch("/data/country-list.json")
+    fetch("/data/nationalities.json")
       .then((res) => res.json())
       .then((data) => {
         console.log("Fetched Nationalities:", data);
+
+        // เรียงตาม A-Z (English) ก่อน แล้วค่อย ก-ฮ (Thai)
+        const sortedNationalities = data.sort((a, b) => {
+          const langKey = language === "ENG" ? "English" : "Thai";
+          return a[langKey].localeCompare(b[langKey], "th");
+        });
+
+        // แปลงข้อมูลสำหรับ Dropdown
         setNationalities(
-          data
-            .map((nation: { alpha2: string; name: string; enName: string }) => ({
-              value: nation.alpha2,
-              label: language === "ENG" ? nation.enName : nation.name, // อัปเดตตามภาษา
-            }))
-            .sort((a, b) => a.label.localeCompare(b.label)) // เรียงลำดับ A-Z
+          sortedNationalities.map((nation) => ({
+            value: nation.English, // ใช้ค่า English เป็นค่า value
+            label: language === "ENG" ? nation.English : nation.Thai, // แสดงผลตามภาษาที่เลือก
+          }))
         );
       })
       .catch((error) => console.error("Error fetching nationalities:", error));
   }, [language]);
+
   useEffect(() => {
     if (formData.nationality === "TH") {
       // ถ้าเลือกไทย → บังคับเลือก citizen (บัตรประชาชน)
@@ -155,7 +162,7 @@ export default function RegisterPage() {
       {/* Left Area: Background Image */}
       <div className="hidden md:block w-1/2 fixed h-screen">
         <Image
-          src="/logo_ict.png"
+          src={language === "ENG" ? "/logo_ict_en.png" : "/logo_ict_th.png"}
           alt="มหาวิทยาลัยมหิดล โลโก้"
           width={200}
           height={80}

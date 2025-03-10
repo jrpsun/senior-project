@@ -58,8 +58,12 @@ const Navbar = () => {
     <div className="bg-white text-black">
       <div className="flex justify-between items-center p-5">
         {/* โลโก้ */}
-        <Image src="/logo_ict.png" alt="Mahidol ICT Logo" width={200} height={30} />
-
+        <Image
+          src={language === "EN" ? "/logo_ict_en.png" : "/logo_ict_th.png"}
+          alt="Mahidol ICT Logo"
+          width={200}
+          height={30}
+        />
         {/* แสดงเมนู Profile & Dropdown เฉพาะเมื่อไม่ใช่หน้า Privacy Policy */}
         {!isPrivacyPolicyPage && (
           <div className="flex items-center relative ml-auto">

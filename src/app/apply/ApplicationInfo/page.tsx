@@ -33,7 +33,7 @@ const ApplicationInfo = () => {
         </div>
         <div className="w-full grid  grid-cols-2 md:grid-cols-3 lg:grid-cols-6 mt-4">
           <button
-            className={`flex flex-row border border-[#C4C4C4] p-2 justify-center gap-2 items-center ${selected === 0 ? "text-[#008A91] font-bold leading-[28px]  h-[100px] underline" : "text-[#565656]"}`}
+            className={`flex flex-row border border-[#C4C4C4] p-2 justify-center gap-2 items-center ${selected === 0 ? "text-[#008A91] font-bold leading-[28px]  min-h-[100px] underline" : "text-[#565656]"}`}
             onClick={() => setSelected(0)}
           >
             <svg
@@ -61,7 +61,7 @@ const ApplicationInfo = () => {
         </div>
           </button>
           <button
-            className={`flex flex-row border border-[#C4C4C4] p-2 justify-center gap-2 items-center ${selected === 1 ? "text-[#008A91] font-bold leading-[28px] h-[100px] underline" : "text-[#565656]"}`}
+            className={`flex flex-row border border-[#C4C4C4] p-2 justify-center gap-2 items-center ${selected === 1 ? "text-[#008A91] font-bold leading-[28px] min-h-[100px] underline" : "text-[#565656]"}`}
             onClick={() => setSelected(1)}
           >
             <svg
@@ -91,7 +91,7 @@ const ApplicationInfo = () => {
         </div>
           </button>
           <button
-            className={`flex flex-row border border-[#C4C4C4] p-2 justify-center gap-2 items-center ${selected === 2 ? "text-[#008A91] font-bold leading-[28px]  h-[100px] underline" : "text-[#565656]"}`}
+            className={`flex flex-row border border-[#C4C4C4] p-2 justify-center gap-2 items-center ${selected === 2 ? "text-[#008A91] font-bold leading-[28px]  min-h-[100px] underline" : "text-[#565656]"}`}
             onClick={() => setSelected(2)}
           >
             <svg
@@ -108,7 +108,7 @@ const ApplicationInfo = () => {
         </div>
           </button>
           <button
-            className={`flex flex-row border border-[#C4C4C4] p-2 justify-center gap-2 items-center ${selected === 3 ? "text-[#008A91] font-bold leading-[28px]  h-[100px] underline" : "text-[#565656]"}`}
+            className={`flex flex-row border border-[#C4C4C4] p-2 justify-center gap-2 items-center ${selected === 3 ? "text-[#008A91] font-bold leading-[28px]  min-h-[100px] underline" : "text-[#565656]"}`}
             onClick={() => setSelected(3)}
           >
             <svg
@@ -140,7 +140,7 @@ const ApplicationInfo = () => {
         </div>
           </button>
           <button
-            className={`flex flex-row border border-[#C4C4C4] p-2 justify-center gap-2 items-center ${selected === 4 ? "text-[#008A91] font-bold leading-[28px]  h-[100px] underline" : "text-[#565656]"}`}
+            className={`flex flex-row border border-[#C4C4C4] p-2 justify-center gap-2 items-center ${selected === 4 ? "text-[#008A91] font-bold leading-[28px]  min-h-[100px] underline" : "text-[#565656]"}`}
             onClick={() => setSelected(4)}
           >
             <svg
@@ -170,7 +170,7 @@ const ApplicationInfo = () => {
         </div>
           </button>
           <button
-            className={`flex flex-row border border-[#C4C4C4] p-2 justify-center gap-2 items-center ${selected === 5 ? "text-[#008A91] font-bold leading-[28px]  h-[100px] underline" : "text-[#565656]"}`}
+            className={`flex flex-row border border-[#C4C4C4] p-2 justify-center gap-2 items-center ${selected === 5 ? "text-[#008A91] font-bold leading-[28px]  min-h-[100px] underline" : "text-[#565656]"}`}
             onClick={() => setSelected(5)}
           >
             <svg

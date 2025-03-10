@@ -53,9 +53,9 @@ export default function LoginPage() {
       <div className="hidden md:block w-1/2 relative">
         {/* โลโก้มหาวิทยาลัยที่มุมบนซ้าย */}
         <img
-          src="logo_ict.png"
+          src={language === "ENG" ? "/logo_ict_en.png" : "/logo_ict_th.png"}
           alt="มหาวิทยาลัยมหิดล โลโก้"
-          width="180"
+          width="200"
           height="60"
           className="absolute top-6 left-6 z-50"
         />
@@ -66,6 +66,7 @@ export default function LoginPage() {
           style={{ backgroundImage: "url('/images/background.png')" }}
         />
       </div>
+
 
       {/* Login Form */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-white mt-[-20px]">
@@ -114,7 +115,7 @@ export default function LoginPage() {
                   className="absolute inset-y-0 right-3 flex items-center text-gray-500"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  <img  
+                  <img
                     src={showPassword ? "/images/Hide_Password.svg" : "/images/Unhide_Password.svg"}
                     alt="แสดง/ซ่อนรหัสผ่าน"
                     width={24}

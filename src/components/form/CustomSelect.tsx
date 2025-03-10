@@ -34,6 +34,14 @@ const getCustomStyles = (width?: string, height?: string): StylesConfig<Option, 
     opacity: 1, 
     color: state.isDisabled ? "#6D6D6D" : "#565656", 
   }),
+  menu: (provided) => ({
+    ...provided,
+    width: "100%",  
+  }),
+  menuList: (provided) => ({
+    ...provided,
+    width: "100%",
+  }),
   placeholder: (provided, state) => ({
     ...provided,
     color: state.isDisabled ? "#6D6D6D" : "#A0A0A0", 

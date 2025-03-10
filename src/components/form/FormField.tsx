@@ -32,7 +32,7 @@ const FormField: React.FC<FormFieldProps> = ({
   onChange={e => onChange(e.target.value)}
   onBlur={onBlur}
   className={`w-full px-3 py-2 border rounded-[10px] text-[#565656] ${
-    error ? "border-red-500" : "border-gray-300"
+    error ? "border-red-500" : "border-[#C4C4C4]"
   }`}
   placeholder={placeholder}
 />

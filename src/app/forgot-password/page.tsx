@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import forgotPasswordTexts from "../../translation/forgotPassword"; 
+import forgotPasswordTexts from "../../translation/forgotPassword";
 
 export default function ForgetPasswordPage() {
   const [email, setEmail] = useState("");
@@ -55,9 +55,19 @@ export default function ForgetPasswordPage() {
 
       {/* Left Section - Background & Logo */}
       <div className="hidden md:block w-1/2 relative">
-        <Image src="/logo_ict.png" alt="มหาวิทยาลัยมหิดล โลโก้" width={180} height={60} className="absolute top-6 left-6 z-50" />
-        <div className="absolute inset-0 bg-cover bg-center brightness-100" style={{ backgroundImage: "url('/images/background.png')" }} />
+        <Image
+          src={language === "ENG" ? "/logo_ict_en.png" : "/logo_ict_th.png"}
+          alt="มหาวิทยาลัยมหิดล โลโก้"
+          width={200}
+          height={60}
+          className="absolute top-6 left-6 z-50"
+        />
+        <div
+          className="absolute inset-0 bg-cover bg-center brightness-100"
+          style={{ backgroundImage: "url('/images/background.png')" }}
+        />
       </div>
+
 
       {/* Right Section - Form */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-white">

@@ -11,7 +11,7 @@ interface DateInputProps {
   mode: "birthdate" | "expiry"; // ใช้ mode แยกเงื่อนไข วันเกิด / หมดอายุ
 }
 
-const DateInput: React.FC<DateInputProps> = ({ selected, onChange, placeholderText, mode }) => {
+const DateInput: React.FC<DateInputProps> = ({ selected, onChange, placeholderText, mode, }) => {
   const today = new Date();
   const [viewDate, setViewDate] = useState<Date>(selected || today); // ให้ dropdown แสดงค่าปัจจุบันเริ่มต้น
 
@@ -26,7 +26,7 @@ const DateInput: React.FC<DateInputProps> = ({ selected, onChange, placeholderTe
         locale={enUS} // ใช้ภาษาอังกฤษ (ปี ค.ศ.)
         dateFormat="dd/MM/yyyy"
         placeholderText={placeholderText}
-        className="p-2 w-full border rounded-lg text-[#565656] bg-white"
+        className="p-3 w-full h-[40px] border rounded-lg text-[#565656] bg-white"
         wrapperClassName="w-full"
         startDate={viewDate} // ให้ DatePicker เปิดขึ้นมาแสดงเดือนและปีของ viewDate
 

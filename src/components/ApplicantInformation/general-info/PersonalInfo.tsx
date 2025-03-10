@@ -13,17 +13,28 @@ import FormField from "../../form/FormField";
 import FileUpload from "../../form/FileUpload";
 import { generalInfoTexts, genderOptions } from "../../../translation/generalInfo";
 import { validateThaiCharacters, preventThaiInput, validateEnglishCharacters, preventEnglishInput, allowHouseNumber, allowOnlyNumbers, preventNonHouseNumberInput, preventNonNumericInput } from "../../../utils/validation";
-import DateInput from "../../common/date"; 
+import DateInput from "../../common/date";
 
-const fetchData = async (url: string) => {
+
+const fetchData = async (url: string, isLocal: boolean = false) => {
   try {
-    const response = await axios.get(url);
-    return response.data;
+    const response = isLocal ? await fetch(url) : await axios.get(url);
+    return isLocal ? await response.json() : response.data;
   } catch (error) {
     console.error(`Error fetching data from ${url}:`, error);
     return [];
   }
 };
+
+const sortByLanguage = (data: any[], lang: string, type: "country" | "nationality") => {
+  return data
+    .map((item) => ({
+      value: type === "country" ? item.alpha2 : item.English, // ใช้ "alpha2" สำหรับประเทศ และ "English" สำหรับสัญชาติ
+      label: lang === "TH" ? (type === "country" ? item.name : item.Thai) : (type === "country" ? item.enName : item.English),
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, lang === "TH" ? "th" : "en"));
+};
+
 
 const PersonalInfo: React.FC = () => {
   const { language } = useLanguage();
@@ -60,7 +71,7 @@ const PersonalInfo: React.FC = () => {
     lastNameEng: "",
     nickname: "",
     nicknameEng: "",
-    nationality: "TH",//ดึงมาจาก API ภายหลัง
+    nationality: "Thai",//ดึงมาจาก API ภายหลัง
     idCardNumber: "",
     idCardExpiry: "",
     birthDate: "",
@@ -81,18 +92,17 @@ const PersonalInfo: React.FC = () => {
     addressLine2: "",
   });
 
-  // โหลดข้อมูลจังหวัด อำเภอ ตำบล พร้อมกัน
+  // โหลดข้อมูลจังหวัด อำเภอ ตำบล และประเทศ/สัญชาติ
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [provincesData, districtsData, subDistrictsData, countriesData] = await Promise.all([
+        // โหลดจังหวัด อำเภอ ตำบล
+        const [provincesData, districtsData, subDistrictsData] = await Promise.all([
           fetchData("https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province.json"),
           fetchData("https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_amphure.json"),
           fetchData("https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_tambon.json"),
-          fetch("/data/country-list.json").then((res) => res.json()), // ข้อมูล ประเทศ และ สัญชาติ
         ]);
 
-        // ตั้งค่าข้อมูลจังหวัด
         setProvinces(
           provincesData.map((p: { id: number; name_th: string; name_en: string }) => ({
             value: p.id.toString(),
@@ -100,7 +110,6 @@ const PersonalInfo: React.FC = () => {
           }))
         );
 
-        // ตั้งค่าข้อมูลอำเภอ
         setDistricts(
           districtsData.map((d: { id: number; province_id: number; name_th: string; name_en: string }) => ({
             value: d.id.toString(),
@@ -108,7 +117,7 @@ const PersonalInfo: React.FC = () => {
             province_id: d.province_id.toString(),
           }))
         );
-        // ตั้งค่าข้อมูลตำบล
+
         setSubDistricts(
           subDistrictsData.map((s: { id: number; amphure_id: number; name_th: string; name_en: string; zip_code: number }) => ({
             value: s.id.toString(),
@@ -117,39 +126,23 @@ const PersonalInfo: React.FC = () => {
             postalCode: s.zip_code,
           }))
         );
-        // เรียงลำดับประเทศและสัญชาติตามภาษาที่เลือก
-        // เรียงข้อมูลประเทศ และ สัญชาติ
-        const formattedCountries = countriesData
-          .map((c: { alpha2: string; name: string; enName: string }) => ({
-            value: c.alpha2,
-            labelTH: c.name,
-            labelEN: c.enName,
-          }))
-          .sort((a, b) => {
-            const langKey = language === "TH" ? "labelTH" : "labelEN";
-            return a[langKey].localeCompare(b[langKey], language === "TH" ? "th" : "en");
-          });
 
-        setCountries(
-          formattedCountries.map((c) => ({
-            value: c.value,
-            label: language === "TH" ? c.labelTH : c.labelEN,
-          }))
-        );
+        // โหลดข้อมูลประเทศและสัญชาติ
+        const [countriesData, nationalitiesData] = await Promise.all([
+          fetchData("/data/country-list.json", true),
+          fetchData("/data/nationalities.json", true),
+        ]);
 
-        setNationalities(
-          formattedCountries.map((c) => ({
-            value: c.value,
-            label: language === "TH" ? c.labelTH : c.labelEN,
-          }))
-        );
+        setCountries(sortByLanguage(countriesData, language, "country"));
+        setNationalities(sortByLanguage(nationalitiesData, language, "nationality"));
+
       } catch (error) {
         console.error("Error loading data:", error);
       }
     };
 
     loadData();
-  }, [language]); // 
+  }, [language]);
 
 
   // ฟังก์ชันเปลี่ยนค่า จังหวัด-อำเภอ-ตำบล
@@ -178,21 +171,35 @@ const PersonalInfo: React.FC = () => {
 
   return (
     <div className="flex justify-center py-5 bg-[white]">
-    <div className="bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-3">
-      <div className="p-6 bg-white rounded-lg w-full max-w-5xl mx-auto">
+      <div className="bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-3">
+        <div className="p-6 bg-white rounded-lg w-full max-w-5xl mx-auto">
           <h2 className="text-2xl text-[#008A90] font-semibold mb-6">{currentTexts.titlePersonalInfo}</h2>
           {/* อัปโหลดรูปภาพ */}
           <div className="mb-4">
             <label className="block text-[#565656] mb-2">{currentTexts.uploadImage} <span className="text-red-500">*</span></label>
             <div className="flex flex-wrap md:flex-nowrap items-start gap-4 md:gap-6">
               {/* กรอบอัปโหลดรูป */}
-              <div className="w-28 h-36 md:w-40 md:h-48 lg:w-48 lg:h-56 border-2 border-dashed border-[#008A90] p-4 flex flex-col items-center justify-center cursor-pointer"
-                onClick={() => document.getElementById('profileImageUpload')?.click()}>
+              <div
+                className="w-28 h-36 md:w-40 md:h-48 lg:w-48 lg:h-56 border-2 border-dashed border-[#008A90] p-4 flex flex-col items-center justify-center cursor-pointer text-center"
+                onClick={() => document.getElementById('profileImageUpload')?.click()}
+              >
                 <Upload className="text-[#008A90] w-6 h-6" />
-                <span className="text-[#008A90] mt-2 text-sm">{currentTexts.uploadImage}</span>
-                <input type="file" id="profileImageUpload" className="hidden" onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setFormData({ ...formData, profileImage: e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : "" })} />
+                <span className="text-[#008A90] mt-2 text-sm md:text-base lg:text-lg break-words leading-tight">
+                  {currentTexts.uploadImage}
+                </span>
+                <input
+                  type="file"
+                  id="profileImageUpload"
+                  className="hidden"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setFormData({
+                      ...formData,
+                      profileImage: e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : ""
+                    })
+                  }
+                />
               </div>
+
               <div className="text-[#565656] text-sm leading-6">
                 {currentTexts.imageRequirements.map((req, index) => (
                   <p key={index}>{req}</p>
@@ -256,21 +263,23 @@ const PersonalInfo: React.FC = () => {
               onKeyDown={(e) => preventEnglishInput(e)} // ป้องกันภาษาไทย
             />
           </div>
-
           {/* สัญชาติ */}
-          <CustomSelect
-            label={currentTexts.nationality}
-            options={countries} // ใช้ตัวเลือกเดียวกับประเทศ
-            value={formData.nationality}
-            onChange={(selectedOption) => handleChange("nationality", selectedOption ? selectedOption.value : "TH")}
-            placeholder={currentTexts.selectNationality}
-            width="250px"
-          />
+          <div className="w-full max-w-[315px] md:max-w-[250px]">
+            <CustomSelect
+              label={currentTexts.nationality}
+              options={nationalities}
+              value={formData.nationality}
+              onChange={(selectedOption) => handleChange("nationality", selectedOption ? selectedOption.value : "TH")}
+              placeholder={currentTexts.selectNationality}
+            />
+          </div>
+
+
           <div className="mb-4"></div>
           {/* อัปโหลดเอกสาร */}
           {/* กรณีสัญชาติไทย แสดงบัตรประชาชน */}
           {/* แสดงเอกสารที่ต้องอัปโหลดตามสัญชาติ */}
-          {formData.nationality === "TH" ? (
+          {formData.nationality === "Thai" ? (
             <>
               <FileUpload
                 label={currentTexts?.uploadIdCard || "สำเนาบัตรประชาชน"}
@@ -371,6 +380,7 @@ const PersonalInfo: React.FC = () => {
                     selected={birthDate}
                     onChange={setBirthDate}
                     placeholderText={currentTexts?.SelectBirthDate || "เลือกวันเกิด"}
+                    mode="birthdate"
                   />
                 </div>
               </div>
@@ -416,18 +426,17 @@ const PersonalInfo: React.FC = () => {
               }
             />
           )}
-          <div>
-            {/* เลือกประเทศ */}
+          {/* เลือกประเทศ */}
+          <div className="w-full sm:w-auto max-w-[350px]">
             <CustomSelect
               label={currentTexts.country}
               options={countries}
               value={formData.country}
               onChange={(selectedOption) => handleChange("country", selectedOption ? selectedOption.value : "")}
               placeholder={currentTexts.selectCountry}
-              width="300px"
+              width="315px"
             />
           </div>
-
 
           {/* แสดงเฉพาะกรณีเลือก "ประเทศไทย (TH)" */}
           {formData.country === "TH" ? (
