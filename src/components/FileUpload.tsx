@@ -28,7 +28,7 @@ export default function FileUpload() {
     <div className="flex flex-col items-center w-full">
       <div
         {...getRootProps()}
-        className="border-2 border-dashed border-teal-500 w-full max-w-4xl p-6 text-center cursor-pointer rounded-lg"
+        className="border-2 border-dashed border-teal-500 w-full max-w-none p-6 text-center cursor-pointer rounded-lg"
       >
         <input {...getInputProps()} />
         <Upload className="w-8 h-8 text-teal-500 mx-auto mb-2" />
