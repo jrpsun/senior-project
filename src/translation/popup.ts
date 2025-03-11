@@ -9,7 +9,7 @@ const popupTexts = {
         error: {
             title: "ไม่สามารถลงทะเบียนได้",
             message: "ข้อมูลของคุณมีอยู่ในระบบแล้ว กรุณาลองเข้าสู่ระบบเพื่อตรวจสอบ\nหากพบปัญหาในการเข้าสู่ระบบ กรุณาติดต่อเจ้าหน้าที่เพื่อขอความช่วยเหลือ",
-            image: "/images/error-icon.png",
+            image: "/images/error-icon.svg",
             buttonText: "ตกลง",
         },
         confirmation: {
@@ -18,6 +18,18 @@ const popupTexts = {
             image: "/images/warning-icon.svg",
             buttonText: "ตกลง",
         },
+        successInfo: {
+            title: "บันทึกข้อมูลเรียบร้อย",
+            message: "ระบบได้บันทึกการเปลี่ยนแปลงของคุณสำเร็จ",
+            buttonText: "ปิด",
+            image: "/images/success-icon.svg",
+          },
+          errorPasswordInfo: {
+            title: "รหัสผ่านปัจจุบันไม่ถูกต้อง",
+            message:  "กรุณากรอกรหัสผ่านใหม่อีกครั้ง",
+            buttonText: "ปิด",
+            image: "/images/error-icon.svg",
+          },
     },
     ENG: {
         success: {
@@ -38,6 +50,18 @@ const popupTexts = {
             image: "/images/warning-icon.svg",
             buttonText: "Confirm",
         },
+        successInfo: {
+            title: "Data Saved Successfully",
+            message: "Your changes have been saved successfully.",
+            buttonText: "Close",
+            image: "/images/success-icon.svg",
+          },
+        errorPasswordInfo: {
+            title: "Current password is incorrect",
+            message: "Please re-enter your new password.",
+            buttonText: "Close",
+            image: "/images/error-icon.svg",
+          },  
     },
 };
 
