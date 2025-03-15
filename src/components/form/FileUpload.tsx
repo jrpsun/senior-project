@@ -1,4 +1,6 @@
-import React from "react";
+'use client';
+import React, { useState, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
 import { Upload } from "lucide-react";
 import { useLanguage } from "../../hooks/LanguageContext";
 
@@ -10,6 +12,7 @@ interface FileUploadProps {
   recommendedSize?: string;
   accept?: string;
   infoMessage?: React.ReactNode;
+  required?: boolean;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
@@ -20,10 +23,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
   recommendedSize = "",
   accept = ".pdf",
   infoMessage,
+  required = true, 
 }) => {
   const { language } = useLanguage();
+  const [file, setFile] = useState<File | null>(null);
+  const [error, setError] = useState("");
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
 
-  // คำแปลภาษาไทยและอังกฤษ
   const translations = {
     TH: {
       selectFile: "เลือกไฟล์อัปโหลด หรือ ลากวาง",
@@ -39,10 +45,29 @@ const FileUpload: React.FC<FileUploadProps> = ({
     },
   };
 
+  const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
+    if (rejectedFiles.length > 0) {
+      setError("Only PDF files under 5MB are allowed.");
+      return;
+    }
+
+    const selectedFile = acceptedFiles[0];
+    setFile(selectedFile);
+    onChange(selectedFile);
+    setFileUrl(URL.createObjectURL(selectedFile));
+    setError("");
+  }, [onChange]);
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: { "application/pdf": [".pdf"] },
+    maxSize: 5 * 1024 * 1024,
+  });
+
   return (
     <div className="mb-6">
-      <label className="block text-[#565656] font-medium mb-1">
-        {label} <span className="text-red-500">*</span>
+    <label className="block text-[#565656] font-medium mb-1">
+      {label} {required && <span className="text-red-500">*</span>}
       </label>
 
       {infoMessage && (
@@ -64,38 +89,30 @@ const FileUpload: React.FC<FileUploadProps> = ({
         </div>
       )}
 
-
-      <div
-        className="border-2 border-dashed border-[#008A90] p-6 flex flex-col items-center justify-center w-full h-32 cursor-pointer"
-        onClick={() =>
-          document.getElementById(label.replace(/\s+/g, "-").toLowerCase())?.click()
-        }
-      >
+      <div {...getRootProps()} className="border-2 border-dashed border-[#008A90] p-6 flex flex-col items-center justify-center w-full h-32 cursor-pointer">
+        <input {...getInputProps()} />
         <Upload className="text-[#008A90] w-6 h-6" />
-
         <span className="text-[#008A90] mt-2 font-medium">
           {translations[language]?.selectFile || translations["ENG"].selectFile}
         </span>
-
-        <input
-          type="file"
-          id={label.replace(/\s+/g, "-").toLowerCase()}
-          className="hidden"
-          accept={accept}
-          onChange={(e) => onChange(e.target.files ? e.target.files[0] : null)}
-        />
-
         <p className="text-[#B3B3B3] text-sm mt-1">
           {translations[language]?.fileType || translations["ENG"].fileType} {fileType},
           {translations[language]?.maxSize || translations["ENG"].maxSize} {maxSize}
         </p>
-
         {recommendedSize && (
           <p className="text-[#B3B3B3] text-sm mt-1">
             {translations[language].recommendedSize} {recommendedSize}
           </p>
         )}
       </div>
+
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {file && (
+  <p className="text-[#008A90] mt-2 border-[#008A90] inline-block flex justify-center">
+    Selected: <a href={fileUrl || "#"} target="_blank" rel="noopener noreferrer" className="underline ml-1">{file.name}</a>
+  </p>
+)}
+
     </div>
   );
 };

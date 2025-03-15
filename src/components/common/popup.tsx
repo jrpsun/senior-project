@@ -4,7 +4,7 @@ import { useLanguage } from "../../hooks/LanguageContext";
 import Image from "next/image";
 
 interface PopupProps {
-  type: "success" | "error" | "confirmation" | "successInfo" | "errorPasswordInfo";
+  type: "success" | "error" | "confirmation" | "successInfo" | "errorPasswordInfo" | "deleteConfirmation";
   isOpen: boolean;
   onClose: () => void;
   onConfirm?: () => void;
@@ -12,7 +12,7 @@ interface PopupProps {
 
 export default function Popup({ type, isOpen, onClose, onConfirm }: PopupProps) {
   const { language } = useLanguage();
-  const currentLanguage = (language.toUpperCase() as "TH" | "ENG") || "ENG";
+  const currentLanguage = (language.toUpperCase() === "EN" ? "ENG" : language.toUpperCase()) || "ENG";
 
   // ใช้ useMemo เพื่อป้องกันการคำนวณซ้ำ
   const popupData = useMemo(() => {
@@ -35,7 +35,22 @@ export default function Popup({ type, isOpen, onClose, onConfirm }: PopupProps) 
 
         {/* ปุ่มกด */}
         <div className="flex justify-center mt-4 gap-4">
-          {type === "confirmation" ? (
+          {type === "deleteConfirmation" ? (
+            <>
+              <button
+                onClick={onClose}
+                className="w-[110px] h-[56px] border border-gray-400 rounded-lg text-gray-600 bg-white"
+              >
+                 {currentLanguage === "TH" ? "ไม่ใช่" : "Cancel"}
+              </button>
+              <button
+                onClick={onConfirm}
+                className="w-[110px] h-[56px] bg-[#008A90] text-white rounded-lg"
+              >
+               {currentLanguage === "TH" ? "ใช่" : "Yes"}
+              </button>
+            </>
+          ) : type === "confirmation" ? (
             <>
               <button
                 onClick={onClose}

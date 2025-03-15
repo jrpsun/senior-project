@@ -71,7 +71,7 @@ const PasswordInput = ({
 
 export default function ChangePassword() {
     const router = useRouter();
-    const { language = "ENG" } = useLanguage(); // ตั้งค่าเริ่มต้นเป็น ENG
+    const { language, setLanguage } = useLanguage();
     const [isPopupOpen, setPopupOpen] = useState(false);
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
@@ -90,7 +90,6 @@ export default function ChangePassword() {
             }, 1500);
         });
     };
-
 
     const texts = {
         TH: {
@@ -139,8 +138,6 @@ export default function ChangePassword() {
         setIsCheckingPassword(false);
     };
 
-
-
     return (
         <div className="bg-white min-h-screen">
             <Navbar />
@@ -185,6 +182,7 @@ export default function ChangePassword() {
                                 password: errorsArray.length > 0 ? errorsArray[0] : "",
                             }));
                         }}
+                        
                         error={errors.password}
                         showPassword={showNewPassword}
                         setShowPassword={setShowNewPassword}
@@ -211,6 +209,7 @@ export default function ChangePassword() {
                         showPassword={showConfirmPassword}
                         setShowPassword={setShowConfirmPassword}
                         placeholder={language === "TH" ? "ระบุรหัสผ่านอีกครั้ง" : "Enter New Password again"}
+                        infoMessage={currentTexts.passwordInfo}
                     />
 
                     <div className="flex justify-center gap-4 mt-6">
@@ -226,11 +225,8 @@ export default function ChangePassword() {
             <Popup
     type="errorPasswordInfo"
     isOpen={isErrorPopupOpen}
-    message={errors.currentPassword}
     onClose={() => setErrorPopupOpen(false)}
 />
-
-
         </div>
     );
 }

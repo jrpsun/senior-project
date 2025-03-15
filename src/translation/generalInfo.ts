@@ -98,7 +98,6 @@ export const generalInfoTexts = {
 
         NextButton:"ถัดไป",
 
-
     },
     ENG: {
         titleGeneralInfo: "General Information",

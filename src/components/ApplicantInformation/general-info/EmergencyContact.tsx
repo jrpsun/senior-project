@@ -5,10 +5,10 @@ import FormField from "../../form/FormField";
 import CustomSelect from "../../form/CustomSelect";
 import { useLanguage } from "../../../hooks/LanguageContext";
 import { generalInfoTexts, relationshipOptions } from "../../../translation/generalInfo";
-import { validateThaiCharacters, validateEnglishCharacters, validateEmail, formatPhoneNumber, preventNonNumericInput,allowEnglishAndSpecialCharactersOnly } from "../../../utils/validation";
+import { validateThaiCharacters, validateEnglishCharacters, validateEmail, formatPhoneNumber, preventNonNumericInput, allowEnglishAndSpecialCharactersOnly } from "../../../utils/validation";
 
 const EmergencyContact: React.FC = () => {
-  const { language } = useLanguage(); // ใช้ language ตรงๆ
+  const { language } = useLanguage();
   const currentTexts = generalInfoTexts[language] || generalInfoTexts["ENG"];
 
   const errorMessages: Record<string, { invalidEmail: string }> = {
@@ -31,14 +31,11 @@ const EmergencyContact: React.FC = () => {
 
   const [emailError, setEmailError] = useState<string>("");
 
-  // เปลี่ยน error message เมื่อเปลี่ยนภาษา (เฉพาะถ้ามี error อยู่)
   useEffect(() => {
     if (emailError && formData.email !== "") {
       setEmailError(errorMessages[language]?.invalidEmail || "Invalid email");
     }
   }, [language, formData.email]);
-  
-
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -49,7 +46,7 @@ const EmergencyContact: React.FC = () => {
     if (!emailValid && e.target.value !== "") {
       setEmailError(errorMessages[language]?.invalidEmail || "Invalid email");
     } else {
-      setEmailError(""); // ถ้าอีเมลถูกต้องให้ล้าง error
+      setEmailError("");
     }
   };
 
@@ -61,13 +58,13 @@ const EmergencyContact: React.FC = () => {
             {currentTexts.titleEmergency}
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/*กริดสำหรับชื่อไทย */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <FormField
               label={currentTexts.firstName}
               value={formData.firstName}
               onChange={(value) => handleChange("firstName", validateThaiCharacters(value))}
               placeholder={currentTexts.enterFirstName}
-             
             />
             <FormField
               label={currentTexts.middleName}
@@ -80,11 +77,11 @@ const EmergencyContact: React.FC = () => {
               value={formData.lastName}
               onChange={(value) => handleChange("lastName", validateThaiCharacters(value))}
               placeholder={currentTexts.enterLastName}
-              
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          {/* กริดสำหรับชื่อภาษาอังกฤษ */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             <FormField
               label={currentTexts.firstNameEng}
               value={formData.firstNameEng}
@@ -107,7 +104,8 @@ const EmergencyContact: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          {/* กริดสำหรับ Relationship / Phone / Email */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             <CustomSelect
               label={currentTexts.relationship}
               options={relationshipOptions[language] || relationshipOptions["ENG"]}

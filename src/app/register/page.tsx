@@ -63,7 +63,7 @@ export default function RegisterPage() {
   }, [language]);
 
   useEffect(() => {
-    if (formData.nationality === "TH") {
+    if (formData.nationality === "Thai") {
       // ถ้าเลือกไทย → บังคับเลือก citizen (บัตรประชาชน)
       handleChange("idType", "citizen");
       handleChange("idNumber", ""); // เคลียร์ค่า ID Number
@@ -197,34 +197,38 @@ export default function RegisterPage() {
               <label className="block text-[#565656]">{texts[language].idDocument} <span className="text-red-500">*</span></label>
               <div className="flex flex-wrap items-center gap-x-1">
                 {/* หมายเลขบัตรประชาชน */}
-                <label className={`flex items-center whitespace-nowrap ${formData.nationality !== "TH" ? "text-[#C4C4C4]" : "text-[#565656]"}`}>
+                <label className={`flex items-center whitespace-nowrap ${formData.nationality !== "Thai" ? "text-[#C4C4C4]" : "text-[#565656]"}`}>
                   <input
                     type="radio"
                     name="id_type"
                     value="citizen"
-                    checked={formData.idType === "citizen"}
+                    checked={formData.nationality === "Thai" || formData.idType === "citizen"}
                     onChange={() => handleChange("idType", "citizen")}
-                    disabled={formData.nationality !== "TH"} // Disable เมื่อไม่ใช่สัญชาติไทย
+                    disabled={formData.nationality !== "Thai"}
                     className="mr-1"
                   />
+
                   {texts[language].idCard}
                 </label>
 
-                <label className={`flex items-center whitespace-nowrap ${formData.nationality === "TH" ? "text-[#C4C4C4]" : "text-[#565656]"}`}>
+                <label className={`flex items-center whitespace-nowrap ${formData.nationality === "Thai" ? "text-[#C4C4C4]" : "text-[#565656]"}`}>
                   <input
                     type="radio"
                     name="id_type"
                     value="passport"
-                    checked={formData.idType === "passport"}
+                    checked={formData.nationality !== "Thai" || formData.idType === "passport"}
                     onChange={() => handleChange("idType", "passport")}
-                    disabled={formData.nationality === "TH"} // Disable เมื่อเป็นสัญชาติไทย
+                    disabled={formData.nationality === "Thai"}
                     className="mr-1"
                   />
+
                   {texts[language].passport} {/* เปลี่ยนตามภาษา */}
                 </label>
               </div>
+
               <FormField
-                label={texts[language].idCard} // เปลี่ยน label ตามภาษา
+                /*เพิ่มกรณีชาวต่างชาติ เป็นหมายเลขพาสปอร์ต */
+                label={formData.idType === "citizen" ? texts[language].idCard : texts[language].passport}
                 value={formData.idNumber}
                 onChange={(value) =>
                   handleChange(
@@ -255,25 +259,28 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Thai Name */}
-            <div className="relative flex gap-3 w-full">
-              <FormField
-                label={texts[language].firstNameThaiLabel} // Label เปลี่ยนตามภาษา
-                placeholder={texts[language].firstNameThaiPlaceholder} // Placeholder เปลี่ยนตามภาษา
-                value={formData.firstNameThai}
-                onChange={(value) => handleChange("firstNameThai", validateThaiCharacters(value))}
-                error={errors.firstNameThai}
-                required={formData.nationality === "TH"}
-              />
-              <FormField
-                label={texts[language].lastNameThaiLabel} // Label เปลี่ยนตามภาษา
-                placeholder={texts[language].lastNameThaiPlaceholder} // Placeholder เปลี่ยนตามภาษา
-                value={formData.lastNameThai}
-                onChange={(value) => handleChange("lastNameThai", value)}
-                error={errors.lastNameThai}
-                required={formData.nationality === "TH"}
-              />
-            </div>
+            {/* Thai Name: แสดงเฉพาะกรณีที่สัญชาติเป็นไทย */}
+            {formData.nationality === "Thai" && (
+              <div className="relative flex gap-3 w-full">
+                <FormField
+                  label={texts[language].firstNameThaiLabel} // Label เปลี่ยนตามภาษา
+                  placeholder={texts[language].firstNameThaiPlaceholder} // Placeholder เปลี่ยนตามภาษา
+                  value={formData.firstNameThai}
+                  onChange={(value) => handleChange("firstNameThai", validateThaiCharacters(value))}
+                  error={errors.firstNameThai}
+                  required
+                />
+                <FormField
+                  label={texts[language].lastNameThaiLabel} // Label เปลี่ยนตามภาษา
+                  placeholder={texts[language].lastNameThaiPlaceholder} // Placeholder เปลี่ยนตามภาษา
+                  value={formData.lastNameThai}
+                  onChange={(value) => handleChange("lastNameThai", value)}
+                  error={errors.lastNameThai}
+                  required
+                />
+              </div>
+            )}
+
 
             {/* English Name */}
             <div className="relative flex gap-3 w-full">
@@ -471,9 +478,8 @@ export default function RegisterPage() {
               )}
             </div>
 
-
             {/* Register Button */}
-            <div className="mt-0.5">
+            <div className={`mt-${formData.nationality !== "Thai" ? "10" : "0.5"}`}>
               <button
                 disabled={isPopupOpen}
                 onClick={handleRegisterClick}
@@ -482,6 +488,7 @@ export default function RegisterPage() {
                 {texts[language].register} {/* เปลี่ยนข้อความตามภาษา */}
               </button>
             </div>
+
 
             {/* Login Link */}
             <div className="text-center mt-0.5">

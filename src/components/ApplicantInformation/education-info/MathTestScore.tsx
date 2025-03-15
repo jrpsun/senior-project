@@ -68,20 +68,22 @@ const MathTestScore = () => {
                         maxSize="5 MB"
                         accept=".pdf"
                         infoMessage={<p>{currentTexts.infouploadMathTestScore}</p>}
+                        required={false}
                     />
                     <div className="mb-4 grid grid-cols-1 sm:grid-cols-[400px_auto] gap-x-2 gap-y-1 items-center">
-                        <div className="w-[400px]">
+                        <div className="sm:w-[400px]">
                             <CustomSelect
                                 label={currentTexts.mathTestType}
                                 options={MathTestTypeOptions}
                                 value={formData.testType}
                                 onChange={(selectedOption) => handleChange("testType", selectedOption?.value || "")}
                                 placeholder={currentTexts.selectmathTestType}
+                                required={false}
                             />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-[400px_400px] gap-x-[50px] gap-y-1 mb-1">
+                    <div className="grid grid-cols-1 lg:grid-cols-[400px_400px] lg:gap-x-[50px] gap-y-1 mb-1">
                         <div className="w-full max-w-[400px] mb-4">
                             {["IGCSE_Math"].includes(formData.testType) ? (
                                 <CustomSelect
@@ -90,6 +92,7 @@ const MathTestScore = () => {
                                     value={formData.score}
                                     onChange={(selectedOption) => handleChange("score", selectedOption?.value || "")}
                                     placeholder={currentTexts.selectScore}
+                                    required={false}
                                 />
                             ) : (
                                 <FormField
@@ -98,13 +101,14 @@ const MathTestScore = () => {
                                     onChange={(value) => handleChange("score", value)}
                                     type="text"
                                     placeholder={currentTexts.scorePlaceholder}
-                                    required
+                                    required={false}
                                     onKeyDown={(event) => preventInvalidTestScoreInput(event, formData.score, formData.testType)}
+                                    
                                 />
                             )}
                         </div>
-                        <div className="w-[400px]">
-                            <label className="block text-[#565656]">{currentTexts.testDate} <span className="text-red-500">*</span></label>
+                        <div className="w-full sm:w-[400px] max-w-[400px]">
+                            <label className="block text-[#565656]">{currentTexts.testDate}</label>
                             <DateInput
                                 selected={formData.testDate}
                                 onChange={(date) => handleChange("testDate", date)}

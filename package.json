@@ -12,6 +12,7 @@
     "@types/axios": "^0.14.4",
     "@types/react-datepicker": "^7.0.0",
     "axios": "^1.8.1",
+    "clsx": "^2.1.1",
     "lucide-react": "^0.476.0",
     "next": "15.1.4",
     "next-auth": "^4.24.11",

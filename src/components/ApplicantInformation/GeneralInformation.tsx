@@ -5,7 +5,7 @@ import EmergencyContact from "./general-info/EmergencyContact";
 import NewsSubscription from "./general-info/NewSubscription";
 import { useLanguage } from "../../hooks/LanguageContext";
 import { generalInfoTexts } from "../../translation/generalInfo";
-import Button from "../common/button";
+import {NextButton} from "../common/button";
 
 
 const GeneralInformation = () => {
@@ -20,10 +20,8 @@ const GeneralInformation = () => {
       <NewsSubscription />
 
       {/* ปุ่มถัดไป */}
-      <div className="flex justify-center mt-20">
-        <Button variant="next" icon="/images/next_arrow.svg">
-          {currentTexts.NextButton}
-        </Button>
+      <div className="flex justify-center mt-6 mb-6 gap-x-4">
+      <NextButton>{currentTexts.NextButton}</NextButton>
       </div>
     </div>
   );

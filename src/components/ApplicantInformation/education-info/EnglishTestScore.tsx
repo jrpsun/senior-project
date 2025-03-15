@@ -82,16 +82,15 @@ const EnglishTestScore = () => {
     }));
   };
 
-  const renderScoreField = (key, label, placeholder, info) => (
+  const renderScoreField = (key, label, placeholder = "", info) => (
     <div key={key} className="flex flex-col w-full sm:w-[400px]">
       <FormField
         label={label}
         value={formData[key] ?? ""}
         onChange={(value) => handleChange(key, value)}
         type="text"
-        placeholder={placeholder}
-        required
         className="w-full h-full min-h-[50px]"
+        placeholder={placeholder || "กรอกคะแนน"} 
         onKeyDown={(event) => preventInvalidTestScoreInput(event, formData[key], formData.testType)}
       />
       {/* แสดง Error Message เฉพาะเมื่อมันเป็นข้อความ (ไม่ใช่ตัวเลข) */}
@@ -99,6 +98,7 @@ const EnglishTestScore = () => {
       <p className="text-sm text-[#B3B3B3] mt-1">{info}</p>
     </div>
   );
+  
 
   return (
     <div className="flex justify-center py-5 bg-white">
@@ -115,20 +115,22 @@ const EnglishTestScore = () => {
             maxSize="5 MB"
             accept=".pdf"
             infoMessage={<p>{currentTexts.infouploadEngTestScore}</p>}
+            required={false}
           />
           <div className="mb-4 grid grid-cols-1 sm:grid-cols-[400px_auto] gap-x-2 gap-y-1 items-center">
-            <div className="w-[400px]">
+            <div className="w-sm:w-[400px]">
               <CustomSelect
                 label={currentTexts.englishTestType}
                 options={EnglishTestTypeOptions}
                 value={formData.testType}
                 onChange={(selectedOption) => handleChange("testType", selectedOption?.value || "")}
                 placeholder={currentTexts.englishTestTypePlaceholder}
+                required={false}
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-[400px_400px] gap-x-[50px] gap-y-1 mb-1">
+          <div className="grid grid-cols-1 lg:grid-cols-[400px_400px] lg:gap-x-[50px] gap-y-1 mb-1">
             <div className="w-full max-w-[400px] mb-4">
               <div className="w-full max-w-[400px] mb-4">
                 {["IGCSE_ESL", "IGCSE_FL"].includes(formData.testType) ? (
@@ -138,6 +140,7 @@ const EnglishTestScore = () => {
                     value={formData.score}
                     onChange={(selectedOption) => handleChange("score", selectedOption?.value || "")}
                     placeholder={currentTexts.selectScore}
+                    required={false}
                   />
                 ) : (
                   <FormField
@@ -146,19 +149,19 @@ const EnglishTestScore = () => {
                     onChange={(value) => handleChange("score", value)}
                     type="text"
                     placeholder={currentTexts.scorePlaceholder}
-                    required
+                    required={false}
                   />
                 )}
               </div>
 
             </div>
-            <div className="w-[400px]">
-              <label className="block text-[#565656]">{currentTexts.testDate} <span className="text-red-500">*</span></label>
+            <div className="w-full sm:w-[400px] max-w-[400px]">
+              <label className="block text-[#565656]">{currentTexts.testDate} </label>
               <DateInput
                 selected={formData.testDate}
                 onChange={(date) => handleChange("testDate", date)}
                 placeholderText={currentTexts.selecttestDate}
-                required
+                required={false}
               />
               <div className="flex items-start text-sm text-[#B3B3B3] mt-2">
                 <svg
@@ -180,7 +183,7 @@ const EnglishTestScore = () => {
           </div>
           {/* แสดงฟิลด์คะแนนเฉพาะเมื่อเลือก IELTS หรือ TOEFL iBT */}
           {["IELTS", "TOEFL_IBT"].includes(formData.testType) && (
-            <div className="grid grid-cols-1 sm:grid-cols-[400px_400px] gap-x-[50px] gap-y-1 mb-1">
+          <div className="grid grid-cols-1 lg:grid-cols-[400px_400px] lg:gap-x-[50px] gap-y-1 mb-1">
               {[
                 { key: "listeningScore", label: currentTexts.listeningScore, placeholder: currentTexts.listeningScorePlaceholder },
                 { key: "readingScore", label: currentTexts.readingScore, placeholder: currentTexts.readingScorePlaceholder },
@@ -199,7 +202,7 @@ const EnglishTestScore = () => {
 
           {/* แสดงฟิลด์คะแนนเฉพาะเมื่อเลือก Duolingo */}
           {formData.testType === "Duolingo" && (
-            <div className="grid grid-cols-1 sm:grid-cols-[400px_400px] gap-x-[50px] gap-y-1 mb-1">
+                      <div className="grid grid-cols-1 lg:grid-cols-[400px_400px] lg:gap-x-[50px] gap-y-1 mb-1">
               {[
                 { key: "literacyScore", label: currentTexts.literacyScore, placeholder: currentTexts.literacyScorePlaceholder, info: currentTexts.infoDuolingoScore },
                 { key: "comprehensionScore", label: currentTexts.comprehensionScore, placeholder: currentTexts.comprehensionScorePlaceholder, info: currentTexts.infoDuolingoScore },
@@ -211,7 +214,7 @@ const EnglishTestScore = () => {
 
           {/* แสดงฟิลด์คะแนนเฉพาะเมื่อเลือก TOEFL ITP & TOEFL PBT */}
           {["TOEFL_ITP", "TOEFL_PBT"].includes(formData.testType) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-6 gap-y-4 mt-6 w-full">
               {[
                 { key: "listeningComprehensionScore", textKey: "listeningComprehensionScore", placeholderKey: "listeningComprehensionScorePlaceholder", infoKey: "infoTOEFLScore" },
                 { key: "structureWrittenScore", textKey: "structureWrittenScore", placeholderKey: "structureWrittenScorePlacehodler", infoKey: "infoTOEFLScore" },

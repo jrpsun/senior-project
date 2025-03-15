@@ -63,15 +63,32 @@ const passwordTexts = {
   ENG: { empty: "Please enter a password", short: "Password must be at least 8 characters long", mismatch: "Passwords do not match" },
 };
 
-export const validatePassword = (value: string, isTouched: boolean, lang = "ENG") => {
+export const validatePassword = (value: string, isTouched: boolean, lang: string = "ENG") => {
   const errors: string[] = [];
-  if (!value && isTouched) errors.push(passwordTexts[lang].empty);
-  if (value.length < 8) errors.push(passwordTexts[lang].short);
+  
+  // ตรวจสอบว่า lang มีค่า TH หรือ ENG เท่านั้น ถ้าไม่ใช่ให้ใช้ ENG
+  const selectedLang = lang in passwordTexts ? lang as "TH" | "ENG" : "ENG";
+  const texts = passwordTexts[selectedLang];
+
+  if (!value.trim() && isTouched) {
+    errors.push(texts.empty);
+  } else if (value.length < 8) {
+    errors.push(texts.short);
+  }
+
   return errors;
 };
 
-export const validateConfirmPassword = (password = "", confirmPassword = "", lang = "ENG") => 
-  confirmPassword.trim() ? (confirmPassword.length < 8 ? passwordTexts[lang].short : password !== confirmPassword ? passwordTexts[lang].mismatch : null) : passwordTexts[lang].empty;
+export const validateConfirmPassword = (password = "", confirmPassword = "", lang: string = "ENG") => {
+  const selectedLang = lang in passwordTexts ? lang as "TH" | "ENG" : "ENG";
+  const texts = passwordTexts[selectedLang];
+
+  if (!confirmPassword.trim()) return texts.empty;
+  if (confirmPassword.length < 8) return texts.short;
+  if (password !== confirmPassword) return texts.mismatch;
+  
+  return null;
+};
 
 
 export const allowOnlyNumbers = (value: string) => value.replace(patterns.numeric, "");

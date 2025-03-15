@@ -1,7 +1,7 @@
 import Select, { components, StylesConfig } from "react-select";
 import Image from "next/image";
 import { useState } from "react";
-import { useLanguage } from "../../hooks/LanguageContext"; 
+import { useLanguage } from "../../hooks/LanguageContext";
 
 interface Option {
   value: string;
@@ -18,6 +18,7 @@ interface CustomSelectProps {
   width?: string;
   height?: string;
   isDisabled?: boolean;
+  required?: boolean;
 }
 
 const getCustomStyles = (width?: string, height?: string): StylesConfig<Option, false> => ({
@@ -28,15 +29,15 @@ const getCustomStyles = (width?: string, height?: string): StylesConfig<Option, 
     width: width || "100%",
     fontSize: "16px",
     padding: "0px 8px",
-    backgroundColor: state.isDisabled ? "F5F5F5":"ffffff" ,
-    borderColor: state.isDisabled ? "#A0A0A0" : "#cbd5e1", 
+    backgroundColor: state.isDisabled ? "F5F5F5" : "ffffff",
+    borderColor: state.isDisabled ? "#A0A0A0" : "#cbd5e1",
     cursor: state.isDisabled ? "not-allowed" : "pointer",
-    opacity: 1, 
-    color: state.isDisabled ? "#6D6D6D" : "#565656", 
+    opacity: 1,
+    color: state.isDisabled ? "#6D6D6D" : "#565656",
   }),
   menu: (provided) => ({
     ...provided,
-    width: "100%",  
+    width: "100%",
   }),
   menuList: (provided) => ({
     ...provided,
@@ -44,7 +45,7 @@ const getCustomStyles = (width?: string, height?: string): StylesConfig<Option, 
   }),
   placeholder: (provided, state) => ({
     ...provided,
-    color: state.isDisabled ? "#6D6D6D" : "#A0A0A0", 
+    color: state.isDisabled ? "#6D6D6D" : "#A0A0A0",
   }),
   valueContainer: (provided) => ({
     ...provided,
@@ -80,9 +81,10 @@ export default function CustomSelect({
   width,
   height,
   isDisabled = false,
+  required = true,
 }: CustomSelectProps) {
   const [menuIsOpen, setMenuIsOpen] = useState(false);
-  const { language } = useLanguage(); 
+  const { language } = useLanguage();
   const instanceId = `select-${label.replace(/\s+/g, "-").toLowerCase()}`;
 
   const noOptionsText = language === "TH" ? "ไม่พบผลลัพธ์ที่ตรงกับคำค้นหา" : "No matching results found";
@@ -90,7 +92,7 @@ export default function CustomSelect({
   return (
     <div className="relative w-full" style={{ maxWidth: width || "100%" }}>
       <label htmlFor={instanceId} className="block text-[#565656]">
-        {label} <span className="text-red-500">*</span>
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
       <Select
         instanceId={instanceId}

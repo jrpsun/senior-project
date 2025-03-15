@@ -45,7 +45,7 @@ const CheckboxDropdown: React.FC<CheckboxDropdownProps> = ({ label, options, sel
     <div className="relative w-full max-w-7xl" ref={dropdownRef}>
       <div className="relative w-full">
         <label className="block text-[#565656] mb-2">{label}</label>
-        <div className="flex flex-wrap md:flex-nowrap gap-3 md:gap-6 items-center">
+        <div className="flex flex-col xl:flex-row xl:items-center gap-3 xl:gap-6">
           <div className="w-full md:w-[625px] relative">
             <button
               type="button"
@@ -77,34 +77,41 @@ const CheckboxDropdown: React.FC<CheckboxDropdownProps> = ({ label, options, sel
               </div>
             </button>
             {/* Dropdown Content */}
-            {isOpen && (
-              <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg shadow-lg p-1 z-50
-                 max-h-none overflow-visible ">
-                {options.map((option) => (
-                  <label
-                    key={option.value}
-                    className="checkbox-label flex items-center w-full p-2 rounded cursor-pointer hover:bg-gray-100 text-[#565656]"
-                  >
-                    <input
-                      type="checkbox"
-                      id={option.value}
-                      checked={selected.includes(option.value)}
-                      onChange={() => handleCheckboxChange(option.value)}
-                      className="custom-checkbox mr-2"
-                    />
-                    {option.label}
-                  </label>
-                ))}
-              </div>
-            )}
+{/* Dropdown Content */}
+{isOpen && (
+  <div
+    className="absolute top-full left-0 right-0 w-full max-w-sm 
+               bg-white border border-gray-300 rounded-lg shadow-lg p-1 z-50 
+               max-h-[200px] overflow-y-auto overflow-x-hidden"
+  >
+    {options.map((option) => (
+      <label
+        key={option.value}
+        className="checkbox-label flex items-center w-full p-2 rounded cursor-pointer hover:bg-gray-100 text-[#565656]"
+      >
+        <input
+          type="checkbox"
+          id={option.value}
+          checked={selected.includes(option.value)}
+          onChange={() => handleCheckboxChange(option.value)}
+          className="custom-checkbox mr-2"
+        />
+        {option.label}
+      </label>
+    ))}
+  </div>
+)}
+
+
           </div>
 
           {/* Input โปรดระบุ */}
+                  {/* Input โปรดระบุ (แยกแถวสำหรับ Tablet) */}
           {selected.includes("other") && (
-            <div className="w-full md:w-[300px] flex-shrink-0 mt-3 md:mt-0">
+        <div className="w-full xl:w-[300px] flex-shrink-0 mt-3 xl:mt-0">
               <FormField
-                className="w-full h-full px-3 py-2 border border-gray-300 rounded-lg"
-                placeholder={otherInput ? otherInput : otherPlaceholder || "กรุณาระบุช่องทาง"} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                placeholder={otherInput ? otherInput : otherPlaceholder || "กรุณาระบุช่องทาง"}
                 value={otherInput}
                 onChange={(val) => {
                   setOtherInput(val);

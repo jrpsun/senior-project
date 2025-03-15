@@ -31,7 +31,7 @@ const EducationLevel: React.FC = () => {
     const programParam = searchParams.get("program"); // ดึงค่าจาก query params
 
     const [formData, setFormData] = useState({
-        program: programParam || "", //ลองเทสโดยเปลี่ยนเป็น DST หรือ ICT
+        program: "ICT", //ลองเทสโดยเปลี่ยนเป็น DST หรือ ICT
         currentStatus: "studying", // ตั้งค่าเริ่มต้นให้เป็น "กำลังศึกษา"
         graduationDate: null,
         graduationYear: "",
@@ -132,7 +132,7 @@ const EducationLevel: React.FC = () => {
     const renderSubjectField = (subjectKey: string, totalCreditKey: string, infoKey: string) => (
         <div className="mb-3 w-full">
             <label className="block text-[#565656] mb-1">{currentTexts?.[subjectKey]}</label>
-            <div className="grid grid-cols-1 sm:grid-cols-[350px_auto] gap-x-4 gap-y-1">
+            <div className="grid grid-cols-1 lg:grid-cols-[350px_350px] lg:gap-x-[100px] gap-y-1 mb-1">
                 {/* หน่วยกิตรวม (350px) */}
                 <div>
                     <FormField
@@ -159,6 +159,16 @@ const EducationLevel: React.FC = () => {
             <p className="text-sm text-[#B3B3B3] mt-1">{currentTexts?.[infoKey]}</p>
         </div>
     );
+    // กรองตัวเลือกระดับการศึกษา ตามโปรแกรมที่เลือก
+    const filteredDegreeOptions = (degreeOptions[language] || degreeOptions["ENG"]).filter(option => {
+        if (formData.program === "DST") {
+            return ["Mathayom6", "VocCert", "other"].includes(option.value); // DST แสดงเฉพาะ ม.6, ปวช., และ อื่นๆ
+        }
+        if (formData.program === "ICT") {
+            return option.value !== "VocCert"; // ICT แสดงทุกตัวเลือก ยกเว้น ปวช.
+        }
+        return true; // กรณีไม่มี program แสดงทั้งหมด
+    });
 
     const formatInputValue = (field: string, value: string) => {
         const formatRules: Record<string, (val: string) => string> = {
@@ -258,20 +268,21 @@ const EducationLevel: React.FC = () => {
                         <label className="block text-[#565656] mb-1">
                             {currentTexts.currentStatus} <span className="text-red-500">*</span>
                         </label>
-                        <div className="flex items-center gap-x-4">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:gap-x-4">
                             {renderRadioButton("studying", currentTexts.studyingStatus, formData.degree === "GED")}
                             {renderRadioButton("graduated", currentTexts.graduatedStatus)}
                         </div>
                     </div>
+
                     {/* อัปโหลดเอกสาร */}
                     <div className="mt-4">{renderFileUpload()}</div>
 
-                    <div className="mb-4 grid grid-cols-1 sm:grid-cols-[350px_auto] gap-x-2 gap-y-1 items-center">
+                    <div className="grid grid-cols-1 lg:grid-cols-[350px_350px] lg:gap-x-[100px] gap-y-1 mb-1">
                         {/* Dropdown เลือกระดับการศึกษา */}
-                        <div className="w-[350px]">
+                        <div className="w-full sm:w-[350px]">
                             <CustomSelect
                                 label={currentTexts.degree}
-                                options={degreeOptions[language] || degreeOptions["ENG"]}
+                                options={filteredDegreeOptions} // ใช้ตัวเลือกที่ผ่านการกรองแล้ว
                                 value={formData.degree}
                                 onChange={(selectedOption) =>
                                     handleChange("degree", selectedOption ? selectedOption.value : "")
@@ -282,7 +293,7 @@ const EducationLevel: React.FC = () => {
 
                         {/* แสดงฟิลด์ระบุเพิ่มเติมเมื่อเลือก "อื่นๆ" */}
                         {formData.degree === "other" && (
-                            <div className="w-[350px]">
+                            <div className="w-full sm:w-[350px]">
                                 <FormField
                                     label={currentTexts.other}
                                     value={formData.customDegree || ""}
@@ -297,7 +308,7 @@ const EducationLevel: React.FC = () => {
                     {/* แสดงฟิลด์ปีที่สำเร็จการศึกษา กรณีที่เลือกจบการศึกษา */}
                     {formData.currentStatus === "graduated" &&
                         (["GED", "Grade12/13", "other"].includes(formData.degree)) && (
-                            <div className="mb-4 w-[350px]">
+                            <div className="mb-4 sm:w-[350px]">
                                 <CustomSelect
                                     label={currentTexts.graduationYear}
                                     options={graduationYearOptions}
@@ -312,10 +323,11 @@ const EducationLevel: React.FC = () => {
                     {/* แสดงฟอร์มเฉพาะเมื่อเลือก มัธยมศึกษาตอนปลาย (ม.6), Grade 12, 13, ปวช. */}
                     {isHighSchoolOrVocational && (
                         <>
-                            <div className="grid grid-cols-1 sm:grid-cols-[350px_350px] gap-x-[100px] gap-y-1 mb-1">
+                            <div className="grid grid-cols-1 lg:grid-cols-[350px_350px] lg:gap-x-[100px] gap-y-1 mb-1">
+
                                 {/* กรณีเป็น ม.6 หรือ ปวช. แสดง "Thailand" */}
                                 {isThaiEducation ? (
-                                    <div>
+                                    <div className="w-full sm:w-[350px]">
                                         <label className="block text-[#565656] mb-1">
                                             {currentTexts?.country || "ประเทศที่ตั้งสถานศึกษา"} <span className="text-red-500">*</span>
                                         </label>
@@ -323,35 +335,35 @@ const EducationLevel: React.FC = () => {
                                     </div>
                                 ) : (
                                     /* กรณีเป็น Grade 12/Year 13 ให้เลือกประเทศได้ */
-                                    <div className="w-full sm:w-auto max-w-[350px]">
+                                    <div className="w-full sm:w-[350px]">
                                         <CustomSelect
                                             label={currentTexts.country}
                                             options={countries}
                                             value={formData.country}
                                             onChange={(selectedOption) => handleChange("country", selectedOption?.value || "")}
                                             placeholder={currentTexts.countryPlaceholder}
-                                            className="w-full sm:w-[350px] max-w-[350px] inline-block"
+                                            className="w-full"
                                         />
                                     </div>
                                 )}
 
                                 {/* จังหวัดที่ตั้งสถานศึกษา (แสดงเฉพาะเมื่อเป็นไทย) */}
                                 {shouldShowProvince && (
-                                    <div className="w-full sm:w-auto max-w-[350px]">
+                                    <div className="w-full sm:w-[350px]">
                                         <CustomSelect
                                             label={currentTexts.province}
                                             options={provinceOptions}
                                             value={formData.province}
                                             onChange={(selectedOption) => handleChange("province", selectedOption ? selectedOption.value : "")}
                                             placeholder={currentTexts.provincePlaceholder}
-                                            className="w-full sm:w-[350px] max-w-[350px] inline-block"
+                                            className="w-full"
                                         />
                                     </div>
                                 )}
 
                                 {/* ฟิลด์วันที่จบการศึกษา (แสดงเฉพาะ ม.6 หรือ ปวช. ที่จบแล้ว) */}
                                 {shouldShowGraduationDate && (
-                                    <div className="mb-4 w-[350px]">
+                                    <div className="mb-4 w-sm:w-[350px]">
                                         <label className="block text-[#565656] mb-1">{currentTexts.graduationDate} <span className="text-red-500">*</span></label>
                                         <DateInput
                                             selected={formData.graduationDate}
@@ -364,7 +376,7 @@ const EducationLevel: React.FC = () => {
 
                             </div>
                             {/* ชื่อสถานศึกษา */}
-                            <div className="mb-4 w-[350px]">
+                            <div className="mb-4 w-full sm:w-[350px]">
                                 <FormField
                                     label={currentTexts.school}
                                     value={formData.schoolName}
@@ -376,21 +388,23 @@ const EducationLevel: React.FC = () => {
                             </div>
 
                             {hasMajorField && (
-                                <div className="mb-6 grid grid-cols-1 sm:grid-cols-[350px_auto] gap-x-[100px] gap-y-4 items-center">
+                                <div className="grid grid-cols-1 lg:grid-cols-[350px_350px] lg:gap-x-[100px] gap-y-1 mb-1">
                                     {/* Dropdown เลือกสาขา */}
-                                    <div className="w-[350px]">
+                                    <div className="w-full sm:w-[350px]">
                                         <CustomSelect
                                             label={currentTexts.major}
                                             options={[...majorList]}
                                             value={formData.major}
-                                            onChange={(selectedOption) => handleChange("major", selectedOption ? selectedOption.value : "")}
+                                            onChange={(selectedOption) =>
+                                                handleChange("major", selectedOption ? selectedOption.value : "")
+                                            }
                                             placeholder={currentTexts.majorPlaceholder}
                                         />
                                     </div>
 
                                     {/* ฟิลด์ระบุเพิ่มเติมเมื่อเลือก "อื่นๆ" */}
                                     {formData.major === "other" && (
-                                        <div className="w-[350px]">
+                                        <div className="w-full sm:w-[350px]">
                                             <FormField
                                                 label={currentTexts.other}
                                                 value={formData.customMajor || ""}
@@ -402,10 +416,11 @@ const EducationLevel: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
+
                             )}
                             {/* แสดง GPAX สำหรับทั้ง DST และ ICT */}
                             {shouldShowGPAX && (
-                                <div className="w-[350px]">
+                                <div className="w-full sm:w-[350px]">
                                     <FormField
                                         label={currentTexts.cumulativeGPA}
                                         value={formData.cumulativeGPA}
@@ -416,6 +431,7 @@ const EducationLevel: React.FC = () => {
                                     />
                                 </div>
                             )}
+
                             {shouldShowGPAX && <p className="text-sm text-[#B3B3B3] mt-1">{currentTexts.cumulativeGPAInfo}</p>}
 
                             {/* แสดงเกรดเฉลี่ย 4 วิชาเฉพาะ DST */}
@@ -484,7 +500,7 @@ const EducationLevel: React.FC = () => {
                             </div>
 
                             {/* กล่องกรอกคะแนน (4 วิชา) */}
-                            <div className="grid grid-cols-1 sm:grid-cols-[350px_350px] gap-x-[100px] gap-y-1 mb-1">
+                            <div className="grid grid-cols-1 lg:grid-cols-[350px_350px] lg:gap-x-[100px] gap-y-1 mb-1">
                                 {[
                                     { key: "mathScore", label: currentTexts.mathScore, placeholder: currentTexts.mathScorePlaceholder },
                                     { key: "scienceScore", label: currentTexts.scienceScore, placeholder: currentTexts.scienceScorePlaceholder },

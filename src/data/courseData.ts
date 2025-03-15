@@ -1,4 +1,4 @@
-const courseDataRaw = [
+const courseData = [
   {
     name: { TH: "หลักสูตร DST (ไทย)", EN: "DST Program (Thai)" },
     status: { TH: "เปิดรับสมัคร", EN: "Open for Application" },
@@ -20,4 +20,4 @@ const courseDataRaw = [
     shadow: "bg-[#F9FAFB] opacity-75 border-2 border-[#E5E7EB]",
   },
 ]
-export default courseDataRaw;
+export default courseData;

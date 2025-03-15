@@ -65,14 +65,14 @@ const ContactInfo: React.FC = () => {
             />
 
             <FormField
-              label="Facebook"
+              label={currentTexts.facebook || "Facebook"}
               value={formData.facebook}
               onChange={(value) => handleChange("facebook", (value))}
               placeholder={currentTexts.facebook}
             />
             {/* Instagram */}
             <FormField
-              label="Instagram"
+              label={currentTexts.instagram || "Instagram"}
               value={formData.instagram}
               onChange={(value) => handleChange("instagram", (value))}
               placeholder={currentTexts.instagram}

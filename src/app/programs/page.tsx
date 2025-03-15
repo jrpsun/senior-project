@@ -13,33 +13,37 @@ export default function CourseList() {
   const [courseData, setCourseData] = useState([]);
   const [filter, setFilter] = useState("all");
 
+  const texts = programTexts[language] ?? programTexts["TH"];
+
   useEffect(() => {
     console.log("Current Language in CourseList:", language);
 
-    // อัปเดตข้อมูล courseData ตามภาษาที่เลือก
+    if (!courseDataRaw || !texts) return;
+
     const updatedCourses = courseDataRaw.map((course) => ({
       ...course,
-      name: course.name[language],
-      status: course.status[language],
-      timeLeft: course.timeLeft[language],
-      period: course.period[language],
-      round: course.round[language],
+      name: course.name?.[language] ?? course.name, // ป้องกัน undefined
+      status: course.status?.[language] ?? "", // ป้องกัน undefined
+      timeLeft: course.timeLeft?.[language] ?? "",
+      period: course.period?.[language] ?? "",
+      round: course.round?.[language] ?? "",
     }));
 
     console.log("Updated CourseData:", updatedCourses);
     setCourseData(updatedCourses);
-  }, [language]); // อัปเดตเมื่อ `language` เปลี่ยน
+  }, [language]);
 
+  // ตรวจสอบ texts และ texts.filterOptions
+  if (!texts || !texts.filterOptions) {
+    return <div>Loading...</div>;
+  }
+
+  // ตรวจสอบว่ามีค่าใน texts.filterOptions ก่อนกรอง
   const filteredCourses = courseData.filter((course) => {
+    if (!course.status) return false; // ถ้าไม่มี status ให้ข้าม
     if (filter === "all") return true;
-    if (filter === "open" && course.status.includes("Open")) return true;
-    if (filter === "closed" && course.status.includes("Closed")) return true;
-    if (filter === "upcoming" && course.status.includes("Upcoming")) return true;
-    return false;
+    return course.status.includes(texts.filterOptions[filter]);
   });
-
-  const texts = programTexts[language] ?? programTexts["TH"];
-
   return (
     <div className="bg-white min-h-screen">
       <Navbar />
@@ -79,20 +83,19 @@ export default function CourseList() {
           </div>
 
         </div>
-
         {/* Dropdown ตัวกรองหลักสูตร */}
         <div className="flex w-full mt-[20px] mb-[20px]">
           <div className="ml-auto relative border-[#E5E7EB] rounded-[10px] p-[2px] text-[#565656] border-2">
             <select
               name="filter"
               id="filter"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
+              value={filter} // ใช้ key ของ filter
+              onChange={(e) => setFilter(e.target.value)} // setFilter ตรงๆ เป็น key
               className="text-left px-2 py-[3px] bg-white border-none focus:outline-none appearance-none w-[165px]"
             >
-              {["all", "open", "upcoming", "closed"].map((opt) => (
-                <option key={opt} value={opt}>
-                  {texts.filterOptions[opt]}
+              {Object.entries(texts.filterOptions).map(([key, value]) => (
+                <option key={key} value={key}>
+                  {value} {/* แสดงข้อความที่แปลแล้ว */}
                 </option>
               ))}
             </select>
@@ -112,6 +115,8 @@ export default function CourseList() {
             </div>
           </div>
         </div>
+
+
         {/* รายการหลักสูตร */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 xl:gap-8 w-full max-w-[1200px] mx-auto px-4 lg:px-6 xl:px-8 mt-5">
           {filteredCourses.map((course, index) => (
@@ -119,15 +124,15 @@ export default function CourseList() {
               key={index}
               className={`flex flex-col p-[22px_26px] gap-4 rounded-lg min-h-[240px] h-full ${course.shadow}`}
             >
-           {/* หัวข้อหลักสูตร */}
-<div className="flex justify-between w-full">
-  <div className="font-bold text-[20px] text-[#565656]">{course.name}</div>
-  
-  {/* ปรับขนาดกล่อง timeLeft ให้กว้างขึ้น และให้ข้อความอยู่ตรงกลาง */}
-  <div className={`ml-auto rounded-[15px] p-1 min-w-[110px] px-4 text-[14px] flex items-center justify-center ${course.statusColor}`}>
-    {course.timeLeft}
-  </div>
-</div>
+              {/* หัวข้อหลักสูตร */}
+              <div className="flex justify-between w-full">
+                <div className="font-bold text-[20px] text-[#565656]">{course.name}</div>
+
+                {/* ปรับขนาดกล่อง timeLeft ให้กว้างขึ้น และให้ข้อความอยู่ตรงกลาง */}
+                <div className={`ml-auto rounded-[15px] p-1 min-w-[110px] px-4 text-[14px] flex items-center justify-center ${course.statusColor}`}>
+                  {course.timeLeft}
+                </div>
+              </div>
 
               {/* รายละเอียดหลักสูตร */}
               <div className="text-[16px] text-[#4B5563]">{course.round}</div>
@@ -143,19 +148,19 @@ export default function CourseList() {
                 {/* ปุ่มสมัครเรียน */}
                 <button
                   onClick={() => router.push("/apply/ApplicationInfo")}
-                  disabled={course.status.includes("Closed")}
-
-                  className={`flex items-center px-6 py-2 gap-2 rounded-lg 
-      ${course.canApply ? "bg-[#008A91] text-white" : "bg-[#D1D5DB] text-[#6B7280]"}`}
+                  disabled={["Closed for Application", "ปิดรับสมัคร"].includes(course.status)}
+                  className={`flex items-center px-6 py-2 gap-2 rounded-lg ${["Closed", "ปิด"].includes(course.status) ? "bg-[#D1D5DB] text-[#6B7280] cursor-not-allowed" : "bg-[#008A91] text-white"
+                    }`}
                 >
                   <img src="/images/applicant-info/apply_icon.svg" alt="Apply Icon" width={20} height={16} />
-                  {texts.filterOptions.apply}
+                  {texts.apply}
                 </button>
+
 
                 {/* ปุ่มดูรายละเอียด */}
                 <button className="flex items-center gap-2">
                   <img src="/images/applicant-info/more_info_icon.svg" alt="More Info Icon" width={20} height={16} />
-                  <span className="text-[16px] text-[#565656]">{texts.filterOptions.details}</span>
+                  <span className="text-[16px] text-[#565656]">{texts.details}</span>
                 </button>
               </div>
 

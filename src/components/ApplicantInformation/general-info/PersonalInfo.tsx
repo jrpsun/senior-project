@@ -77,14 +77,13 @@ const PersonalInfo: React.FC = () => {
     birthDate: "",
     age: "",
     gender: "",
-    district: "",
     houseNumber: "",
     moo: "",
     village: "",
     alley: "",
     street: "",
     subDistrict: "",
-    distrct: "",
+    district: "",
     province: "",
     city: "",
     country: "TH",
@@ -216,9 +215,12 @@ const PersonalInfo: React.FC = () => {
           {/* ชื่อภาษาไทย*/}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div>
-              <label className="block text-[#565656] mb-1">{currentTexts.firstName} <span className="text-red-500">*</span></label>
-              <p className="text-[#565656]  indent-5">จิรภัทร</p>
+              <label className="block text-[#565656] mb-1">
+                {currentTexts.firstName} {formData.nationality === "Thai" && <span className="text-red-500">*</span>}
+              </label>
+              <p className="text-[#565656] indent-5">ทดลอง</p>
             </div>
+
             <FormField
               label={currentTexts.middleName}
               value={formData.middleName}
@@ -226,10 +228,14 @@ const PersonalInfo: React.FC = () => {
               placeholder={currentTexts.enterMiddleName}
               onKeyDown={(e) => preventThaiInput(e)}
             />
+
             <div>
-              <label className="block text-[#565656] mb-1">{currentTexts.lastName} <span className="text-red-500">*</span></label>
-              <p className="text-[#565656]  indent-5">สุวรรณลมัย</p>
+              <label className="block text-[#565656] mb-1">
+                {currentTexts.lastName} {formData.nationality === "Thai" && <span className="text-red-500">*</span>}
+              </label>
+              <p className="text-[#565656] indent-5">ระบบสมัคร</p>
             </div>
+
             <FormField
               label={currentTexts.nickname}
               value={formData.nickname}
@@ -242,7 +248,7 @@ const PersonalInfo: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div>
               <label className="block text-[#565656] mb-1">{currentTexts.firstNameEng} <span className="text-red-500">*</span></label>
-              <p className="text-[#565656]  indent-5">Jirapat</p>
+              <p className="text-[#565656]  indent-5">Test</p>
             </div>
             <FormField
               label={currentTexts.middleNameEng}
@@ -253,7 +259,7 @@ const PersonalInfo: React.FC = () => {
             />
             <div>
               <label className="block text-[#565656] mb-1">{currentTexts.lastNameEng} <span className="text-red-500">*</span></label>
-              <p className="text-[#565656]  indent-5">Suwanlamai</p>
+              <p className="text-[#565656]  indent-5">Raboobsamak</p>
             </div>
             <FormField
               label={currentTexts.nicknameEng}
@@ -427,17 +433,17 @@ const PersonalInfo: React.FC = () => {
             />
           )}
           {/* เลือกประเทศ */}
-          <div className="w-full sm:w-auto max-w-[350px]">
+          <div className="w-full max-w-full sm:max-w-[315px]">
             <CustomSelect
               label={currentTexts.country}
               options={countries}
               value={formData.country}
               onChange={(selectedOption) => handleChange("country", selectedOption ? selectedOption.value : "")}
               placeholder={currentTexts.selectCountry}
-              width="315px"
+              width="100%"
             />
           </div>
-
+          
           {/* แสดงเฉพาะกรณีเลือก "ประเทศไทย (TH)" */}
           {formData.country === "TH" ? (
             <>

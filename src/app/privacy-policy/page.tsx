@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image"; // เพิ่มการนำเข้า Image
-import Button from "../../components/common/button";
+import { Button } from "../../components/common/button";
 import Navbar from "../../components/Navbar";
 import { Card, CardContent } from "../../components/common/card";
 import { useLanguage } from "../../hooks/LanguageContext"; // ใช้ context เพื่อดึงค่าภาษา

@@ -14,10 +14,9 @@ const SubscriptionForm: React.FC = () => {
   const [offlineSources, setOfflineSources] = useState<string[]>([]);
 
   return (
-    <div className="flex justify-center bg-[white]">
-      <div className="bg-white shadow-lg rounded-lg w-full max-w-4xl lg:max-w-screen-xl p-3 relative min-h-[420px]">
-
-        <div className="p-6 bg-white rounded-lg w-full max-w-5xl mx-auto">  
+    <div className="flex justify-center py-5 bg-[white]">
+      <div className="bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-3">
+        <div className="p-6 bg-white rounded-lg w-full max-w-5xl mx-auto">
           {/* หัวข้อเปลี่ยนตามภาษา */}
           <h2 className="text-2xl text-[#008A90] font-semibold">
             {currentTexts.titleSubscription}
