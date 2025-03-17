@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import React from 'react';
 import FileUpload from '../components/form/FileUpload';
-import { BackButton, NextButton } from "../components/common/button";
 import FormField from "../components/form/FormField";
 import CustomSelect from "../components/form/CustomSelect";
 import { useLanguage } from "../hooks/LanguageContext";

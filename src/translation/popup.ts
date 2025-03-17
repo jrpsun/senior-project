@@ -37,6 +37,35 @@ const popupTexts = {
           cancelText: "ไม่ใช่",
           image: "/images/warning-icon.svg",
       },
+      confirmApplication: {
+        title: "ยืนยันการสมัครหรือไม่ ?",
+        message: "โปรดตรวจสอบข้อมูลให้ครบถ้วนก่อนดำเนินการ\nหากยืนยันจะไม่สามารถแก้ไขข้อมูลการสมัครได้",
+        buttonText: "ยืนยัน",
+        image: "/images/warning_icon.svg",
+      },
+      applicationSuccess: {
+        title: "การสมัครสำเร็จแล้ว",
+        message: "ท่านได้ส่งข้อมูลการสมัครเรียบร้อยแล้ว\nกรุณาชำระเงินและติดตามสถานะการสมัครผ่านระบบ",
+        buttonText: "ปิด",
+        image: "/images/success_icon.svg", 
+      },
+      cancelApplication: {
+        title: "ยืนยันการยกเลิกการสมัคร?",
+        message: "เมื่อยืนยัน การสมัครจะถูกยกเลิกทันทีและไม่สามารถแก้ไขหรือกู้คืนได้",
+        buttonText: "ยืนยันการยกเลิก",
+        cancelButton: "ยกเลิก",
+        reasonLabel: "โปรดระบุสาเหตุในการยกเลิก",
+        selectReasonPlaceholder: "เลือกสาเหตุ",
+        additionalDetailsLabel: "รายละเอียดเพิ่มเติม",
+        additionalDetailsPlaceholder: "กรุณาระบุรายละเอียดเพิ่มเติม",
+        image: "/images/info_icon.svg",
+      },
+      cancelSuccess: {
+        title: "ยกเลิกการสมัครเรียบร้อยแล้ว",
+        message: "การยกเลิกการสมัครของคุณได้ดำเนินการเสร็จสิ้นแล้ว\nหากต้องการสมัครใหม่ กรุณาดำเนินการผ่านระบบอีกครั้ง",
+        buttonText: "ปิด",
+        image: "/images/success_icon.svg"
+      }
   },
   ENG: {
       success: {
@@ -76,6 +105,35 @@ const popupTexts = {
           cancelText: "No",
           image: "/images/warning-icon.svg",
       },
+      confirmApplication: {
+        title: "Confirm your application?",
+        message: "Please check your information before proceeding.\nOnce confirmed, you cannot edit your application.",
+        buttonText: "Confirm",
+        image: "/images/warning_icon.svg",
+      },
+      applicationSuccess: {
+        title: "Application Successful",
+        message: "Your application has been successfully submitted.\nPlease proceed with payment and check your application status.",
+        buttonText: "Close",
+        image: "/images/success_icon.svg",
+      },
+      cancelApplication: {
+        title: "Confirm Application Cancellation?",
+        message: "Cancellation is final and cannot be undone.",
+        buttonText: "Confirm Cancellation",
+        cancelButton: "Cancel",
+        reasonLabel: "Please specify the reason for cancellation",
+        selectReasonPlaceholder: "Select Reason",
+        additionalDetailsLabel: "Additional Details",
+        additionalDetailsPlaceholder: "Please provide additional details",
+        image: "/images/info_icon.svg",
+      },
+      cancelSuccess: {
+        title: "Cancellation Confirmed",
+        message: "Your application has been successfully canceled.\nIf you wish to reapply, please proceed through the system again.",
+        buttonText: "Close",
+        image: "/images/success_icon.svg"
+      }
   },
 };
 

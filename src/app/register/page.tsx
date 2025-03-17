@@ -360,12 +360,13 @@ export default function RegisterPage() {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   <Image
-                    src={showConfirmPassword ? "/images/Hide_Password.svg" : "/images/Unhide_Password.svg"}
+                    src={showPassword ? "/images/Hide_Password.svg" : "/images/Unhide_Password.svg"}
                     alt="แสดง/ซ่อนรหัสผ่าน"
                     width={24}
-                    height={30}
+                    height={24}
                   />
                 </button>
+
               </div>
 
               {/* Error Message */}

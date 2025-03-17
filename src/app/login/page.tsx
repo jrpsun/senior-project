@@ -32,7 +32,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen relative">
-      {/* 🔹 ปุ่มเปลี่ยนภาษา */}
+      {/* ปุ่มเปลี่ยนภาษา */}
       <div className="absolute top-4 right-4">
         <button
           className={`px-3 py-1 text-sm font-medium ${language === "TH" ? "text-[#008A90] font-bold" : "text-gray-500"}`}

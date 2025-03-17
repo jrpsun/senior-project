@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { CheckCircle, X } from "lucide-react";
 import forgotPasswordTexts from "../../translation/forgotPassword";
+import Alert from "../../components/common/alert"; // นำเข้า Alert Component
 
 export default function ForgetPasswordPage() {
   const [email, setEmail] = useState("");
@@ -12,6 +14,7 @@ export default function ForgetPasswordPage() {
   const [language, setLanguage] = useState<"TH" | "ENG">("TH");
   const [isEmailSubmitted, setIsEmailSubmitted] = useState(false);
   const [isAlertVisible, setIsAlertVisible] = useState(false);
+  const [alertType, setAlertType] = useState<"success" | "error">("success");
 
   const texts = forgotPasswordTexts[language];
 
@@ -20,24 +23,31 @@ export default function ForgetPasswordPage() {
     if (!email) {
       setError(texts.errorMessage);
       setSuccessMessage(null);
+      setAlertType("error");
+      setIsAlertVisible(true);
       return;
     }
 
     setSuccessMessage(texts.successMessage);
     setError(null);
-    setIsEmailSubmitted(true);
+    setAlertType("success");
     setIsAlertVisible(true);
   };
 
+
   return (
     <div className="flex min-h-screen relative">
+    {/* Alert Component */}
+    {isAlertVisible && (
+      <Alert
+        message={alertType === "success" ? successMessage! : texts.errorMessage}
+        type={alertType}
+        onClose={() => setIsAlertVisible(false)}
+      />
+    )}
+
       {/* Language Switcher */}
       <div className="absolute top-4 right-4">
-        {isAlertVisible && (
-          <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg">
-            {successMessage}
-          </div>
-        )}
         <button
           className={`px-3 py-1 text-sm font-medium ${language === "TH" ? "text-[#008A90] font-bold" : "text-gray-500"}`}
           onClick={() => setLanguage("TH")}
@@ -67,7 +77,6 @@ export default function ForgetPasswordPage() {
           style={{ backgroundImage: "url('/images/background.png')" }}
         />
       </div>
-
 
       {/* Right Section - Form */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-white">
@@ -126,23 +135,6 @@ export default function ForgetPasswordPage() {
                 </svg>
                 {texts.backToLogin}
               </Link>
-            </div>
-
-            {/* Contact Info */}
-            <hr className="border-gray-300 w-full mx-auto mb-4" />
-            <div className="text-center text-gray-600 text-sm">
-              <p>
-                {texts.contactMessage} <a href={`mailto:${texts.contactEmail}`} className="text-[#008A90] hover:underline ml-1">{texts.contactEmail}</a>
-              </p>
-              <p className="mt-2">
-                <span className="text-[#565656]">{texts.contactPhone.split("+")[0]}</span>
-                <span className="text-[#008A90]">+{texts.contactPhone.split("+")[1]}</span>
-                <span className="text-[#565656]">{texts.lineAccount.split("Line official account:")[0]}</span>
-                <span className="text-[#008A90]">Line official account: </span>
-                <a href="https://line.me/R/ti/p/@ictmahidol" className="text-[#008A90] hover:underline">
-                  {texts.lineLink}
-                </a>
-              </p>
             </div>
 
           </div>

@@ -20,23 +20,26 @@ const AwardSummary: React.FC<AwardSummaryProps> = ({ awards }) => {
 
     if (!awards || awards.length === 0) {
         return (
-          <div className="flex justify-center py-5 bg-[white]">
-             <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl lg:max-w-screen-xl p-3">
-                <div className="p-6 bg-white rounded-lg w-full max-w-6xl mx-auto">
-                    <h2 className="text-2xl text-[#008A90] font-semibold mb-6">
-                        {texts.comAwardSumTitle}
-                    </h2>
-                <p className="text-[#C8C8CC] text-lg font-medium text-center">
-                  {language === "TH"
-                    ? "ยังไม่มีข้อมูลเกียรติบัตรหรือรางวัล ด้านคอมพิวเตอร์"
-                    : "No Award or Achievement Information Available."}
-                </p>
-              </div>
+            <div className="flex justify-center py-2 bg-[white] h-[200px]">
+                <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl lg:max-w-screen-xl p-1">
+                    <div className="p-3 bg-white rounded-lg w-full max-w-6xl mx-auto">
+                        <h2 className="text-2xl text-[#008A90] font-semibold mb-6 text-left">
+                            {texts.comAwardSumTitle}
+                        </h2>
+
+                        <div className="flex justify-center">
+                            <p className="text-[#C8C8CC] text-xl font-medium text-center mt-10">
+                                {language === "TH"
+                                    ? "ไม่มีข้อมูลเกียรติบัตรหรือรางวัล ด้านคอมพิวเตอร์"
+                                    : "No Certificate or Award Information in Computer"}
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         );
-      }
-      
+    }
+
     return (
         <div className="flex justify-center py-5 bg-[white]">
             <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl lg:max-w-screen-xl p-3">

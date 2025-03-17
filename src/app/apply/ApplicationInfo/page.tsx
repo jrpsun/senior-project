@@ -7,18 +7,23 @@ import Summary from "@components/components/ApplicantInformation/Summary";
 import Training from "@components/components/ApplicantInformation/Training";
 import React, { useEffect, useState } from "react";
 import { useLanguage } from "../../../hooks/LanguageContext";
-
+import Popup from "../../../components/common/popup";
 
 const ApplicationInfo = () => {
   const { language } = useLanguage();
   const [selected, setSelected] = useState(0);
+  const [isPopupOpen, setPopupOpen] = useState(false);
+
+  const handleOpenPopup = () => setPopupOpen(true);
+  const handleClosePopup = () => setPopupOpen(false);
+  
   const contents = [
     <GeneralInformation key="general" />,
     <EducationInformation key="education" />,
     <Award key="award" />,
     <Training key="training" />,
     <AdditionalDocuments key="documents" />,
-    <Summary key="summary" />,
+    <Summary key="summary" onOpenPopup={handleOpenPopup} />,
   ];
 
   useEffect(() => {
@@ -197,6 +202,11 @@ const ApplicationInfo = () => {
         </div>
         <div className="mt-10">{contents[selected]}</div>
       </div>
+      {isPopupOpen && (
+        <Popup isOpen={isPopupOpen} onClose={handleClosePopup} type="confirmApplication">
+          <p>คุณต้องการยืนยันการสมัครหรือไม่?</p>
+        </Popup>
+      )}
     </div>
   );
 };

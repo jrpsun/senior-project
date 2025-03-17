@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import { useLanguage } from "../../hooks/LanguageContext";
 import programTexts from "../../translation/programs";
@@ -9,6 +9,8 @@ import courseDataRaw from "../../data/courseData";
 
 export default function CourseList() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [program, setProgram] = useState("DST"); // ค่า default เป็น DST
   const { language } = useLanguage();
   const [courseData, setCourseData] = useState([]);
   const [filter, setFilter] = useState("all");
@@ -81,7 +83,6 @@ export default function CourseList() {
               </div>
             ))}
           </div>
-
         </div>
         {/* Dropdown ตัวกรองหลักสูตร */}
         <div className="flex w-full mt-[20px] mb-[20px]">
@@ -145,16 +146,18 @@ export default function CourseList() {
 
               {/* ปุ่มสมัครเรียน และดูรายละเอียด */}
               <div className="flex justify-between w-full mt-auto">
+
                 {/* ปุ่มสมัครเรียน */}
                 <button
-                  onClick={() => router.push("/apply/ApplicationInfo")}
-                  disabled={["Closed for Application", "ปิดรับสมัคร"].includes(course.status)}
-                  className={`flex items-center px-6 py-2 gap-2 rounded-lg ${["Closed", "ปิด"].includes(course.status) ? "bg-[#D1D5DB] text-[#6B7280] cursor-not-allowed" : "bg-[#008A91] text-white"
+                    onClick={() => router.push(`/CourseList?program=${program}`)}
+                    disabled={["Closed for Application", "ปิดรับสมัคร"].includes(course.status)}
+                    className={`flex items-center px-6 py-2 gap-2 rounded-lg ${
+                      ["Closed", "ปิด"].includes(course.status) ? "bg-[#D1D5DB] text-[#6B7280] cursor-not-allowed" : "bg-[#008A91] text-white"
                     }`}
-                >
-                  <img src="/images/applicant-info/apply_icon.svg" alt="Apply Icon" width={20} height={16} />
-                  {texts.apply}
-                </button>
+                  >
+                    <img src="/images/applicant-info/apply_icon.svg" alt="Apply Icon" width={20} height={16} />
+                    {texts.apply}
+                  </button>
 
 
                 {/* ปุ่มดูรายละเอียด */}

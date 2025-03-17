@@ -57,7 +57,7 @@ const CheckboxDropdown: React.FC<CheckboxDropdownProps> = ({ label, options, sel
                   ? options.filter((opt) => selected.includes(opt.value)).map((opt) => opt.label).join(", ")
                   : placeholder || "เลือกช่องทาง"}
               </span>
-              
+
               <div className="w-[18px] h-[18px] flex items-center justify-center">
                 {selected.length > 0 && isOpen ? (
                   <div
@@ -77,38 +77,33 @@ const CheckboxDropdown: React.FC<CheckboxDropdownProps> = ({ label, options, sel
               </div>
             </button>
             {/* Dropdown Content */}
-{/* Dropdown Content */}
-{isOpen && (
-  <div
-    className="absolute top-full left-0 right-0 w-full max-w-sm 
-               bg-white border border-gray-300 rounded-lg shadow-lg p-1 z-50 
-               max-h-[200px] overflow-y-auto overflow-x-hidden"
-  >
-    {options.map((option) => (
-      <label
-        key={option.value}
-        className="checkbox-label flex items-center w-full p-2 rounded cursor-pointer hover:bg-gray-100 text-[#565656]"
-      >
-        <input
-          type="checkbox"
-          id={option.value}
-          checked={selected.includes(option.value)}
-          onChange={() => handleCheckboxChange(option.value)}
-          className="custom-checkbox mr-2"
-        />
-        {option.label}
-      </label>
-    ))}
-  </div>
-)}
-
-
+            {isOpen && (
+              <div
+                className="absolute top-full left-0 right-0 w-full min-w-[300px] md:min-w-[625px] 
+               bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-50 
+               max-h-[200px] overflow-y-auto"
+              >
+                {options.map((option) => (
+                  <label
+                    key={option.value}
+                    className="checkbox-label flex items-center w-full p-2 rounded cursor-pointer hover:bg-gray-100 text-[#565656]"
+                  >
+                    <input
+                      type="checkbox"
+                      id={option.value}
+                      checked={selected.includes(option.value)}
+                      onChange={() => handleCheckboxChange(option.value)}
+                      className="custom-checkbox mr-2"
+                    />
+                    {option.label}
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
-
           {/* Input โปรดระบุ */}
-                  {/* Input โปรดระบุ (แยกแถวสำหรับ Tablet) */}
           {selected.includes("other") && (
-        <div className="w-full xl:w-[300px] flex-shrink-0 mt-3 xl:mt-0">
+            <div className="w-full xl:w-[300px] flex-shrink-0 mt-3 xl:mt-0">
               <FormField
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 placeholder={otherInput ? otherInput : otherPlaceholder || "กรุณาระบุช่องทาง"}
@@ -120,7 +115,6 @@ const CheckboxDropdown: React.FC<CheckboxDropdownProps> = ({ label, options, sel
               />
             </div>
           )}
-
         </div>
       </div>
     </div>

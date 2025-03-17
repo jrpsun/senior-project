@@ -17,20 +17,23 @@ interface TalentSummaryProps {
 const TalentSummary: React.FC<TalentSummaryProps> = ({ talents }) => {
     const { language } = useLanguage();
     const texts = talentTexts[language] || talentTexts["ENG"];
-
+    
     if (!talents || talents.length === 0) {
         return (
-            <div className="flex justify-center py-5 bg-[white]">
-                <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl lg:max-w-screen-xl p-3">
-                    <div className="p-6 bg-white rounded-lg w-full max-w-6xl mx-auto">
-                        <h2 className="text-2xl text-[#008A90] font-semibold mb-6">
-                            {texts.talentSummaryTitle}
+            <div className="flex justify-center py-2 bg-[white] h-[200px]">
+                <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl lg:max-w-screen-xl p-1">
+                    <div className="p-3 bg-white rounded-lg w-full max-w-6xl mx-auto">
+                        <h2 className="text-2xl text-[#008A90] font-semibold mb-6 text-left">
+                        {texts.talentSummaryTitle}
                         </h2>
-                        <p className="text-[#C8C8CC] text-lg font-medium text-center">
-                            {language === "TH"
-                                ? "ยังไม่มีข้อมูลเกียรติบัตรหรือรางวัล ความสามารถพิเศษ"
-                                : "No Certificate or Award Information Available in Talent "}
-                        </p>
+    
+                        <div className="flex justify-center">
+                            <p className="text-[#C8C8CC] text-xl font-medium text-center mt-10">
+                                {language === "TH"
+                                       ? "ไม่มีข้อมูลเกียรติบัตรหรือรางวัล ความสามารถพิเศษ"
+                                       : "No Certificate or Award Information in Talent"}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -105,7 +108,7 @@ const TalentSummary: React.FC<TalentSummaryProps> = ({ talents }) => {
                                 <p className="text-[#565656] font-semibold">{texts.nameOfWorkActivity}: <span className="font-normal">{talent.talentActivity}</span></p>
                                 <p className="text-[#565656] font-semibold">{texts.awardsReceived}: <span className="font-normal">{talent.talentAward}</span></p>
                                 {talent.talentURL && (
-                                    <p className="text-[#565656] font-semibold">{texts.talentUrlLink}: 
+                                    <p className="text-[#565656] font-semibold">{texts.talentUrlLink}:
                                         <a href={talent.talentURL} className="text-[#008A90] hover:underline ml-2 truncate max-w-[200px] inline-block">
                                             {talent.talentURL}
                                         </a>

@@ -58,14 +58,28 @@ const AwardPage = () => {
   const { language } = useLanguage();
   const texts = summaryTexts[language] || summaryTexts["ENG"];
 
+  const hasAwards = awardsData.length > 0;
+  const hasTalents = talentData.length > 0;
+
   return (
     <div className="space-y-6">
+
       <div className="mb-4 bg-[#008A90] text-white text-[22px] md:text-[22px] font-medium py-3 px-6 rounded-lg w-full">
         {texts.awards}
       </div>
 
-      <AwardSummary awards={awardsData} />
-      <TalentSummary talents={talentData} />
+      {!hasAwards && !hasTalents ? (
+        <div className="flex justify-center items-center h-[200px] text-2xl text-[#C5C5C6] font-medium">
+          {language === "TH"
+            ? "ไม่มีข้อมูลรางวัลและผลงาน"
+            : "No Award or Achievement Information."}
+        </div>
+      ) : (
+        <>
+          <AwardSummary awards={awardsData} />
+          <TalentSummary talents={talentData} />
+        </>
+      )}
     </div>
   );
 };
