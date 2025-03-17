@@ -2,7 +2,7 @@ export const trainingTexts = {
   ENG: {
     trainingTitle: "Training",
     trainingCertificate: "Certificate of Training/Program",
-    uploadCertificate: "Upload a certificate or document for training or courses, one file per entry (PDF format, maximum file size 5 MB).",
+    uploadCertificate: "Upload a certificate or document for training or courses, one file per entry (Supported formats: PDF, JPG, JPEG, and PNG, maximum file size 5 MB).",
     programName: "Program Name",
     enterProgramName: "Enter Program Name",
     institution: "Institution/Program Provider",
@@ -26,7 +26,7 @@ export const trainingTexts = {
   TH: {
     trainingTitle: "การฝึกอบรม",
     trainingCertificate: "เอกสารรับรองการฝึกอบรม/หลักสูตร",
-    uploadCertificate: "กรุณาอัปโหลดเอกสารรับรองการฝึกอบรมหรือหลักสูตร จำนวน 1 ไฟล์ต่อรายการ (ไฟล์ประเภท PDF ขนาดไม่เกิน 5 MB)",
+    uploadCertificate: "กรุณาอัปโหลดเอกสารรับรองการฝึกอบรมหรือหลักสูตร จำนวน 1 ไฟล์ต่อรายการ (รองรับไฟล์ PDF, JPG, JPEG, และ PNG ขนาดไม่เกิน 5 MB)",
     programName: "ชื่อโปรแกรม",
     enterProgramName: "ระบุชื่อโปรแกรม",
     institution: "สถาบัน/ผู้ให้บริการโปรแกรม",

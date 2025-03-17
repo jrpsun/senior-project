@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import FormField from "../../form/FormField";
 import { useLanguage } from "../../../hooks/LanguageContext";
 import { educationInfoTexts, EnglishTestTypeOptions, ScoreOptions } from "../../../translation/educationInfo";
@@ -8,20 +9,22 @@ import DateInput from "../../common/date";
 import { validateTestScore, preventInvalidTestScoreInput } from "../../../utils/validation";
 
 const EnglishTestScore = () => {
+  const searchParams = useSearchParams();
+  const programParam = searchParams.get("program"); // ดึงค่าจาก query params
+
   const { language } = useLanguage();
   const currentLanguage = language || "ENG";
   const currentTexts = educationInfoTexts[currentLanguage] || educationInfoTexts["ENG"];
 
-  const [program, setProgram] = useState("ICT"); // เปลี่ยนเป็น "DST" 
+  const [program, setProgram] = useState(programParam || "ICT");
 
   useEffect(() => {
-    const fetchProgram = async () => { };
-    fetchProgram();
-  }, []);
+    if (programParam) {
+      setProgram(programParam);
+    }
+  }, [programParam]);
 
-  if (program !== "ICT") {
-    return null;
-  }
+  if (program !== "ICT") return null;
 
   const [formData, setFormData] = useState({
     testType: "",

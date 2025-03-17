@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload } from "lucide-react";
@@ -23,12 +23,15 @@ const FileUpload: React.FC<FileUploadProps> = ({
   recommendedSize = "",
   accept = ".pdf",
   infoMessage,
-  required = true, 
+  required = true,
 }) => {
   const { language } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [fileUrl, setFileUrl] = useState<string | null>(null);
+
+  // ตรวจสอบว่าภาษาที่เลือกมีอยู่ใน `translations` หรือไม่
+  const selectedLanguage = ["TH", "ENG"].includes(language) ? language : "ENG";
 
   const translations = {
     TH: {
@@ -36,38 +39,76 @@ const FileUpload: React.FC<FileUploadProps> = ({
       fileType: "ไฟล์ประเภท",
       maxSize: "ขนาดไม่เกิน",
       recommendedSize: "ขนาดแนะนำ: ",
+      errorFileType: "ประเภทไฟล์ไม่รองรับ! กรุณาอัปโหลดไฟล์ที่ถูกต้อง.",
+      errorFileSize: "ไฟล์ต้องมีขนาดไม่เกิน 5 MB.",
     },
     ENG: {
       selectFile: "Select a file to upload or drag and drop",
       fileType: "File Type",
       maxSize: "Maximum size",
       recommendedSize: "Recommended size: ",
+      errorFileType: "Invalid file type! Please upload a valid file.",
+      errorFileSize: "File must not exceed 5 MB.",
     },
   };
 
+  const allowedExtensions = accept.replace(/\./g, "").split(", ");
+  const maxFileSize = 5 * 1024 * 1024; // 5 MB
+  const mimeTypes = {
+    pdf: "application/pdf",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+  };
+
+  // แปลง `accept` ให้เป็น Object ที่รองรับ `useDropzone`
+  const acceptedMimeTypes = accept.split(", ").reduce((acc, ext) => {
+    const cleanExt = ext.replace(".", "").toLowerCase();
+    if (mimeTypes[cleanExt]) {
+      acc[mimeTypes[cleanExt]] = [`.${cleanExt}`];
+    }
+    return acc;
+  }, {} as { [key: string]: string[] });
+
+
+
   const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
     if (rejectedFiles.length > 0) {
-      setError("Only PDF files under 5MB are allowed.");
+      setError(translations[selectedLanguage].errorFileType);
       return;
     }
 
     const selectedFile = acceptedFiles[0];
+    const fileExtension = selectedFile.name.split(".").pop()?.toLowerCase();
+
+    if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
+      setError(translations[selectedLanguage].errorFileType);
+      return;
+    }
+
+    if (selectedFile.size > maxFileSize) {
+      setError(translations[selectedLanguage].errorFileSize);
+      return;
+    }
+
     setFile(selectedFile);
     onChange(selectedFile);
     setFileUrl(URL.createObjectURL(selectedFile));
     setError("");
-  }, [onChange]);
+  }, [onChange, accept, selectedLanguage]);
+
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    accept: { "application/pdf": [".pdf"] },
-    maxSize: 5 * 1024 * 1024,
+    accept: acceptedMimeTypes,
+    maxSize: maxFileSize,
   });
+
 
   return (
     <div className="mb-6">
-    <label className="block text-[#565656] font-medium mb-1">
-      {label} {required && <span className="text-red-500">*</span>}
+      <label className="block text-[#565656] font-medium mb-1">
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
 
       {infoMessage && (
@@ -93,26 +134,33 @@ const FileUpload: React.FC<FileUploadProps> = ({
         <input {...getInputProps()} />
         <Upload className="text-[#008A90] w-6 h-6" />
         <span className="text-[#008A90] mt-2 font-medium">
-          {translations[language]?.selectFile || translations["ENG"].selectFile}
+          {translations[selectedLanguage]?.selectFile ?? "Select a file to upload or drag and drop"}
         </span>
         <p className="text-[#B3B3B3] text-sm mt-1">
-          {translations[language]?.fileType || translations["ENG"].fileType} {fileType},
-          {translations[language]?.maxSize || translations["ENG"].maxSize} {maxSize}
+          {translations[selectedLanguage]?.fileType ?? "File Type"} &nbsp;
+          {fileType}, &nbsp;
+          {translations[selectedLanguage]?.maxSize ?? "Maximum size"} &nbsp;
+          {maxSize}
         </p>
-        {recommendedSize && (
-          <p className="text-[#B3B3B3] text-sm mt-1">
-            {translations[language].recommendedSize} {recommendedSize}
-          </p>
-        )}
+
       </div>
 
       {error && <p className="text-red-500 mt-2">{error}</p>}
       {file && (
-  <p className="text-[#008A90] mt-2 border-[#008A90] inline-block flex justify-center">
-    Selected: <a href={fileUrl || "#"} target="_blank" rel="noopener noreferrer" className="underline ml-1">{file.name}</a>
-  </p>
-)}
-
+        <div className="flex justify-center items-center mt-2">
+          <p className="text-[#008A90] text-center">
+            Selected:{" "}
+            <a
+              href={fileUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              {file.name}
+            </a>
+          </p>
+        </div>
+      )}
     </div>
   );
 };

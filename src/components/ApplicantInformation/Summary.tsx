@@ -18,7 +18,7 @@ const Summary = () => {
     const [isConfirmOpen, setConfirmOpen] = useState(false);
     const [isSuccessOpen, setSuccessOpen] = useState(false);
     const [isCancelOpen, setCancelOpen] = useState(false);
-    const [isCancelSuccessOpen, setCancelSuccessOpen] = useState(false); // แสดง popup ยืนยันการสมัครหลังจากกดปุ่มยืนยันการสมัคร 
+    const [isCancelSuccessOpen, setCancelSuccessOpen] = useState(false); // true = แสดง popup ยืนยันการสมัครหลังจากกดปุ่มยืนยันการสมัคร (คิดสักอย่างใน applicationInfo)
     const [isConfirmed, setIsConfirmed] = useState(false); // true = กดยืนยันการสมัคร (ข้อมูลการสมัคร+แถบเลือกหน้าหาย)
 
     return (

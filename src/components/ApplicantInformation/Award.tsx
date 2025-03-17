@@ -11,14 +11,14 @@ import Talent from "@components/components/Talent";
 import { useLanguage } from "../../hooks/LanguageContext";
 import { awardTexts, YearOptions, competitionLevelOptions } from "../../translation/AwardInfo";
 import Popup from '../../components/common/popup';
-import Alert from '../../components/common/alert';
+//import Alert from '../../components/common/alert';
 
 const Award = () => {
   const { language } = useLanguage();
   const currentTexts = awardTexts[language] || awardTexts["ENG"];
   const [isPopupOpen, setPopupOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  const [alertMessage, setAlertMessage] = useState("");
+  //const [alertMessage, setAlertMessage] = useState("");
 
   const [containers, setContainers] = useState([{
     id: Date.now(), formData: {
@@ -64,7 +64,7 @@ const Award = () => {
   };
 
   // ฟังก์ชันตรวจสอบข้อมูลจาก OCR
-  const checkOCRData = (id, ocrName) => {
+  {/*const checkOCRData = (id, ocrName) => {
     const container = containers.find(c => c.id === id);
     if (container) {
       const userName = container.formData.competitionName;
@@ -77,12 +77,12 @@ const Award = () => {
         handleChange(id, "competitionName", "");
       }
     }
-  };
+  }; */}
 
   return (
     <div>
       {/* แสดง Alert เมื่อพบปัญหา OCR */}
-      {alertMessage && <Alert message={alertMessage} onClose={() => setAlertMessage("")} />}
+      {/*alertMessage && <Alert message={alertMessage} onClose={() => setAlertMessage("")} />*/}
       {containers.map(container => (
         <div key={container.id}>
           <div className="flex justify-center pt-10 bg-[#FFFFFF] p-6">
@@ -105,12 +105,12 @@ const Award = () => {
                   onChange={(file) => {
                     handleChange(container.id, "document", file);
                     // จำลองการ OCR (สมมติว่า OCR อ่านได้ชื่อ "John Doe")
-                    const ocrName = "John Doe";
-                    checkOCRData(container.id, ocrName);
+                    //const ocrName = "John Doe";
+                    //checkOCRData(container.id, ocrName);
                   }}
-                  fileType="pdf"
+                  fileType="jpg., png., jpeg., pdf."
                   maxSize="5 MB"
-                  accept=".pdf"
+                  accept="jpg., png., jpeg., pdf."
                   infoMessage={<p>{currentTexts.uploadCertificateInfo}</p>}
                   required={false}
                 />

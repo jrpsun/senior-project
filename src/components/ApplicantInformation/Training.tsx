@@ -103,9 +103,9 @@ const Training = () => {
                 <FileUpload
                   label={currentTexts.trainingCertificate}
                   onChange={(file) => handleChange(container.id, "document", file)}
-                  fileType="pdf"
+                  fileType="jpg., png., jpeg., pdf."
                   maxSize="5 MB"
-                  accept=".pdf"
+                  accept="jpg., png., jpeg., pdf."
                   infoMessage={<p>{currentTexts.uploadCertificate}</p>}
                   required={false}
                 />

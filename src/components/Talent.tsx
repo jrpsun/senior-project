@@ -85,9 +85,9 @@ const Talent = () => {
                 <FileUpload
                   label={currentTexts.certificatesOrAwards}
                   onChange={(file) => handleChange(container.id, "document", file)}
-                  fileType="pdf"
+                  fileType="jpg., png., jpeg., pdf."
                   maxSize="5 MB"
-                  accept=".pdf"
+                  accept="jpg., png., jpeg., pdf."
                   infoMessage={<p>{currentTexts.uploadCertificateInfo}</p>}
                   required={false}
                 />

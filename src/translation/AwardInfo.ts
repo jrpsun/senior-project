@@ -16,7 +16,7 @@ export const awardTexts = {
     back: "Back",
     next: "Next",
     uploadCertificate: "Computer-Related Certificates or Awards",
-    uploadCertificateInfo: "Upload a certificate or document related to a computer award, one file per entry (PDF format, maximum file size 5 MB)",
+    uploadCertificateInfo: "Upload a certificate or document related to a computer award, one file per entry (Supported formats: PDF, JPG, JPEG, and PNG, maximum file size 5 MB).",
 
     /*Summary*/
     comAwardSumTitle:"Reward and Works in Computer",
@@ -42,7 +42,7 @@ export const awardTexts = {
     back: "ย้อนกลับ",
     next: "ถัดไป",
     uploadCertificate: "อัปโหลดเกียรติบัตรหรือเอกสารรางวัล",
-    uploadCertificateInfo: "กรุณาอัปโหลดเกียรติบัตรหรือเอกสารที่เกี่ยวข้องกับรางวัลด้านคอมพิวเตอร์จำนวน 1 ไฟล์ต่อรายการ (ไฟล์ประเภท PDF ขนาดไม่เกิน 5 MB)",
+    uploadCertificateInfo: "กรุณาอัปโหลดเกียรติบัตรหรือเอกสารที่เกี่ยวข้องกับรางวัลด้านคอมพิวเตอร์ จำนวน 1 ไฟล์ต่อรายการ (รองรับไฟล์ PDF, JPG, JPEG, และ PNG ขนาดไม่เกิน 5 MB)",
 
     /*Summary*/
     comAwardSumTitle:"เกียรติบัตรหรือรางวัล ด้านคอมพิวเตอร์",
@@ -101,7 +101,7 @@ export const talentTexts = {
   ENG: {
     talentInformation: "Talent Information",
     certificatesOrAwards: "Certificates or Awards for Talents",
-    uploadCertificateInfo: "Upload a certificate or awards for talents, one file per entry (PDF format, maximum file size 5 MB)",
+    uploadCertificateInfo: "Upload a certificate or awards for talents, one file per entry (Supported formats: PDF, JPG, JPEG, and PNG, maximum file size 5 MB).",
     talentType: "Talent Type",
     selectTalentType: "Select Talent Type",
     nameOfWorkActivity: "Name of Work/Activity",
@@ -131,7 +131,7 @@ export const talentTexts = {
   TH: {
     talentInformation: "ข้อมูลความสามารถพิเศษ",
     certificatesOrAwards: "เอกสารเกียรติบัตรหรือรางวัลความสามารถพิเศษ",
-    uploadCertificateInfo: "กรุณาอัปโหลดเกียรติบัตรหรือรางวัลความสามารถพิเศษ จำนวน 1 ไฟล์ต่อรายการ (ไฟล์ประเภท PDF ขนาดไม่เกิน 5 MB)",
+    uploadCertificateInfo: "กรุณาอัปโหลดเกียรติบัตรหรือรางวัลความสามารถพิเศษ จำนวน 1 ไฟล์ต่อรายการ (รองรับไฟล์ PDF, JPG, JPEG, และ PNG ขนาดไม่เกิน 5 MB)",
     talentType: "ประเภทความสามารถพิเศษ",
     selectTalentType: "เลือกประเภทความสามารถพิเศษ",
     nameOfWorkActivity: "ชื่อผลงาน/กิจกรรม",

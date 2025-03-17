@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import FormField from "../../form/FormField";
 import { useLanguage } from "../../../hooks/LanguageContext";
 import { educationInfoTexts, MathTestTypeOptions, ScoreOptions } from "../../../translation/educationInfo";
@@ -8,9 +9,14 @@ import DateInput from "../../common/date";
 import { validateTestScore, preventInvalidTestScoreInput } from "../../../utils/validation";
 
 const MathTestScore = () => {
+    const searchParams = useSearchParams();
+    const programParam = searchParams.get("program"); // ดึงค่าจาก query params
+
     const { language } = useLanguage();
     const currentLanguage = language || "ENG";
     const currentTexts = educationInfoTexts[currentLanguage] || educationInfoTexts["ENG"];
+
+    const [program, setProgram] = useState(programParam || "ICT");
 
     const [formData, setFormData] = useState({
         testType: "",
@@ -19,13 +25,14 @@ const MathTestScore = () => {
         document: null,
     });
 
-    const [program, setProgram] = useState("ICT"); // เปลี่ยนเป็น "DST" เพื่อทดสอบเงื่อนไข
 
     useEffect(() => {
-        const fetchProgram = async () => { };
+        if (programParam) {
+            setProgram(programParam);
+        }
+    }, [programParam]);
 
-        fetchProgram();
-    }, []);
+    if (program !== "ICT") return null;
 
     const handleChange = (field, value) => {
         setFormData((prev) => {
@@ -103,7 +110,7 @@ const MathTestScore = () => {
                                     placeholder={currentTexts.scorePlaceholder}
                                     required={false}
                                     onKeyDown={(event) => preventInvalidTestScoreInput(event, formData.score, formData.testType)}
-                                    
+
                                 />
                             )}
                         </div>
