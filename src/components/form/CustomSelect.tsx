@@ -19,6 +19,7 @@ interface CustomSelectProps {
   height?: string;
   isDisabled?: boolean;
   required?: boolean;
+  boldLabel?: boolean;
 }
 
 const getCustomStyles = (width?: string, height?: string): StylesConfig<Option, false> => ({
@@ -82,6 +83,7 @@ export default function CustomSelect({
   height,
   isDisabled = false,
   required = true,
+  boldLabel = false,
 }: CustomSelectProps) {
   const [menuIsOpen, setMenuIsOpen] = useState(false);
   const { language } = useLanguage();
@@ -91,7 +93,10 @@ export default function CustomSelect({
 
   return (
     <div className="relative w-full" style={{ maxWidth: width || "100%" }}>
-      <label htmlFor={instanceId} className="block text-[#565656]">
+            <label
+        htmlFor={instanceId}
+        className={`block text-[#565656] ${boldLabel ? "font-bold" : ""}`} 
+      >
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <Select

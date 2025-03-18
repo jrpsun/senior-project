@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 // กำหนดชื่อของหน้าเพื่อนำไปแสดงใน Navbar
 const pageTitles = {
     "/admin/users/permission": "การจัดการสิทธิ์ผู้ใช้งาน",
+    "/admin/admissions/rounds": "กำหนดรอบรับสมัคร",
     "/admin/dashboard": "แดชบอร์ดผู้ดูแลระบบ",
     "/admin/users": "การจัดการผู้ใช้",
     "/admin/reports": "รายงานระบบ",
@@ -27,9 +28,11 @@ const AdminNavbar = ({ isCollapsed }: { isCollapsed: boolean }) => {
     const currentTitle = pageTitles[pathname] || "หน้าผู้ดูแลระบบ";
 
     return (
-        <div className="bg-white text-black fixed top-0 z-40 h-[64px] flex items-center transition-all" style={{ width: `calc(100% - ${isCollapsed ? "80px" : "300px"})`, left: isCollapsed ? "80px" : "300px" }}>
+        <div className="bg-white text-black fixed top-0 z-40 h-[80px] flex items-center transition-all shadow-md"
+    style={{ width: `calc(100% - ${isCollapsed ? "80px" : "300px"})`, left: isCollapsed ? "80px" : "300px" }}>
+
             {/* Title ชิด Sidebar */}
-            <h1 className="text-2xl font-bold text-[#565656] pl-6">{currentTitle}</h1>
+            <h1 className="text-xl md:text-[25px] font-bold text-[#565656] pl-6">{currentTitle}</h1>
 
             {/* Username & เปลี่ยนภาษา (อยู่ชิดขวาสุด) */}
             <div className="flex items-center gap-6 ml-auto pr-6">
