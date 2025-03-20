@@ -17,6 +17,7 @@ interface SearchFieldProps {
     error?: string;
     isDisabled?: boolean;
     required?: boolean;
+    customWidth?: string;
 }
 
 const getCustomStyles = (): StylesConfig<Option, false> => ({
@@ -50,12 +51,12 @@ const getCustomStyles = (): StylesConfig<Option, false> => ({
     }),
     placeholder: (provided, state) => ({
         ...provided,
-        paddingLeft: "20px",
+        paddingLeft: "15px",
         color: state.isDisabled ? "#6D6D6D" : "#A0A0A0",
     }),
     valueContainer: (provided) => ({
         ...provided,
-        paddingLeft: "20px",
+        paddingLeft: "15px",
         height: "32px",
         display: "flex",
         alignItems: "center",
@@ -64,6 +65,7 @@ const getCustomStyles = (): StylesConfig<Option, false> => ({
         ...provided,
         margin: "0px",
         height: "32px",
+        paddingLeft: "10px",
     }),
     indicatorsContainer: (provided) => ({
         ...provided,
@@ -80,7 +82,6 @@ const getCustomStyles = (): StylesConfig<Option, false> => ({
     }),
 });
 
-
 const SearchField: React.FC<SearchFieldProps> = ({
     label,
     value,
@@ -91,6 +92,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
     error,
     isDisabled = false,
     required = false,
+    customWidth,
 }) => {
     const [menuIsOpen, setMenuIsOpen] = useState(false);
 
@@ -120,7 +122,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
     );
 
     return (
-        <div className="w-full relative">
+        <div className="relative" style={{ width: customWidth || "100%" }}>
             <label className="block text-[#565656] font-bold mb-1">
                 {label} {required && <span className="text-red-500">*</span>}
             </label>
@@ -139,7 +141,11 @@ const SearchField: React.FC<SearchFieldProps> = ({
                     <Select
                         instanceId={`select-${label.replace(/\s+/g, "-").toLowerCase()}`}
                         options={options}
-                        value={options.find((option) => option.value === value) || null}
+                        value={
+                            value && typeof value === "string"
+                                ? options.find((option) => option.value === value) || null
+                                : value
+                        }
                         onChange={(selectedOption) => onChange(selectedOption)}
                         placeholder={placeholder}
                         isSearchable
@@ -151,6 +157,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
                         onMenuClose={() => setMenuIsOpen(false)}
                         components={{ DropdownIndicator: CustomIndicator, ClearIndicator: () => null, SingleValue: CustomSingleValue }}
                     />
+
                 ) : (
                     <div className="relative z-10 overflow-visible">
                         <input

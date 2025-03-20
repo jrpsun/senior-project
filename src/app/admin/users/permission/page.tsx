@@ -81,15 +81,25 @@ const PermissionPage = () => {
   const handleOpenMenu = (event: React.MouseEvent, user) => {
     event.stopPropagation();
     const rect = event.currentTarget.getBoundingClientRect();
+    const menuHeight = 150; // ปรับตามขนาดของเมนูจริง
+    const viewportHeight = window.innerHeight;
+
+    let topPosition = rect.bottom + window.scrollY + 8; // ตำแหน่งปกติ
+
+    // ถ้าตำแหน่งเมนูเลยหน้าจอ ให้เลื่อนขึ้นด้านบนแทน
+    if (topPosition + menuHeight > viewportHeight + window.scrollY) {
+      topPosition = rect.top + window.scrollY - menuHeight - 8;
+    }
 
     setMenuPosition({
-      top: rect.bottom + window.scrollY + 8, // เว้นจากปุ่มลงมา 8px
-      left: rect.left + window.scrollX - 260, // เลื่อนเมนูไปทางซ้าย (250px เป็นขนาดเมนู + 10px เว้นระยะ)
+      top: topPosition,
+      left: rect.left + window.scrollX - 260, // ปรับให้เมนูไม่ชิดขวาเกินไป
     });
 
     setSelectedUser(user);
     setIsMenuOpen(true);
   };
+
 
   // ปิด PopupMenu
   const handleCloseMenu = () => {
@@ -108,16 +118,16 @@ const PermissionPage = () => {
 
   // ฟังก์ชันบันทึกข้อมูลเมื่อเพิ่มผู้ใช้ใหม่
   const handleSaveAddUser = (newUser) => {
+    if (!newUser) return;
 
-    // อัปเดต State (ในของจริงควรอัปเดตผ่าน API)
-    const updatedPermissions = [...permissions, newUser];
-    setSortedPermissions(updatedPermissions);
+    setPermissions((prev) => [...prev, { ...newUser, id: prev.length + 1 }]);
+    setSortedPermissions((prev) => [...prev, { ...newUser, id: prev.length + 1 }]);
 
-    // แสดง Alert หลังจากเพิ่มสำเร็จ
     handleShowAlert(`เพิ่มผู้ใช้ "${newUser.title} ${newUser.username} ${newUser.lastName}" สำเร็จ!`);
 
-    setIsOpen(false); // ปิด PopupAdmin
+    setIsOpen(false); // ปิด popup หลังเพิ่มผู้ใช้
   };
+  ;
 
   const handleEditUser = () => {
     setIsEditMode(true);
@@ -126,22 +136,18 @@ const PermissionPage = () => {
   };
 
   // ฟังก์ชันบันทึกข้อมูลเมื่อแก้ไขผู้ใช้
-  const handleSaveEditUser = () => {
+  const handleSaveEditUser = (updatedUser) => {
     if (!selectedUser) return;
 
-    // อัปเดตค่าผู้ใช้ที่แก้ไข
-    setPermissions(prevPermissions =>
-      prevPermissions.map(user =>
-        user.id === selectedUser.id ? selectedUser : user
-      )
+    setPermissions((prev) =>
+      prev.map((user) => (user.id === selectedUser.id ? updatedUser : user))
     );
 
-    // แสดง Alert
-    handleShowAlert(`ข้อมูล "${selectedUser.title} ${selectedUser.username} ${selectedUser.lastName}" อัปเดตเรียบร้อย`);
-
+    handleShowAlert(`ข้อมูล "${updatedUser.title} ${updatedUser.username} ${updatedUser.lastName}" อัปเดตเรียบร้อย`);
     setIsOpen(false); // ปิด Popup
     setSelectedUser(null);
   };
+
 
   // เปิด Popup แก้ไขบทบาท (ลบ handleShowAlert ออก)
   const handleEditRole = (user) => {
@@ -150,23 +156,22 @@ const PermissionPage = () => {
     handleCloseMenu();
   };
 
+
   // ฟังก์ชันบันทึกข้อมูลเมื่อแก้ไขบทบาท
-  const handleSaveRole = () => {
+  const handleSaveRole = (updatedRoles) => {
     if (!selectedUser) return;
 
-    // อัปเดตบทบาทของผู้ใช้
-    const updatedPermissions = permissions.map((user) =>
-      user.id === selectedUser.id ? selectedUser : user
+    setPermissions((prev) =>
+      prev.map((user) =>
+        user.id === selectedUser.id ? { ...user, role: updatedRoles } : user
+      )
     );
 
-    setSortedPermissions(updatedPermissions);
-
-    // แสดง Alert หลังจากแก้ไขบทบาทสำเร็จ
     handleShowAlert(`บทบาทของ "${selectedUser.title} ${selectedUser.username} ${selectedUser.lastName}" อัปเดตเรียบร้อย`);
-
     setIsEditRoleOpen(false);
     setSelectedUser(null);
   };
+
   // เปิด Popup ลบผู้ใช้
   const handleDeleteUser = (user) => {
     setSelectedUser(user);
@@ -314,7 +319,7 @@ const PermissionPage = () => {
           <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 px-6">
             {/* แสดงจำนวนผู้ใช้ทั้งหมด */}
             <h2 className="text-lg font-bold text-[#565656] whitespace-nowrap">
-              ผู้ใช้งานทั้งหมด <span className="text-[#6B7280] font-normal">{sortedPermissions.length}</span>
+              ผู้ใช้งานทั้งหมด <span className="text-[#6B7280] font-bold">{sortedPermissions.length}</span>
             </h2>
 
             {/* ปุ่มเพิ่มผู้ใช้งาน */}
@@ -331,19 +336,51 @@ const PermissionPage = () => {
               </button>
             </div>
           </div>
+          {/* Popup เพิ่ม/แก้ไขข้อมูลผู้ใช้ */}
+          {isOpen && (
+            <PopupAdmin
+              isOpen={isOpen}
+              onClose={() => {
+                setIsOpen(false);
+                setIsEditMode(false); // รีเซ็ตโหมดเพิ่ม/แก้ไข
+                setSelectedUser(null);
+              }}
+              isEdit={isEditMode} // ถ้าแก้ไข = true, ถ้าเพิ่ม = false
+              isEditRole={false}
+              onSave={(formData) => {
+                if (isEditMode) {
+                  handleSaveEditUser(formData); // เซฟข้อมูลที่แก้ไข
+                } else {
+                  handleSaveAddUser(formData); // เซฟผู้ใช้ใหม่
+                }
+              }}
+              userData={selectedUser} // ถ้าเป็นโหมดเพิ่ม userData จะเป็น null
+            />
+          )}
 
-          {/* Popup สำหรับเพิ่มข้อมูลผู้ใช้ */}
-          {isOpen && !isEditMode && (<PopupAdmin isOpen={isOpen} onClose={() => setIsOpen(false)} isEdit={false} onSave={handleSaveAddUser} />)}
-          {/* Popup สำหรับแก้ไขข้อมูลผู้ใช้ */}
-          {isOpen && isEditMode && selectedUser && (<PopupAdmin isOpen={isOpen} onClose={() => setIsOpen(false)} isEdit={true} userData={selectedUser} onSave={handleSaveEditUser} />)}
+          {isEditRoleOpen && selectedUser && (
+            <PopupAdmin
+              isOpen={isEditRoleOpen} // เปิดเฉพาะตอนแก้ไขบทบาท
+              onClose={() => setIsEditRoleOpen(false)}
+              isEdit={false}
+              isEditRole={true}
+              onSave={(formData) => handleSaveRole(formData.role)}
+              userData={selectedUser} // ใช้ข้อมูลผู้ใช้ที่ถูกเลือก
+            />
+          )}
 
-          {/* Popup แก้ไขบทบาท */}
-          {isEditRoleOpen && (<PopupAdmin isOpen={isEditRoleOpen} onClose={() => setIsEditRoleOpen(false)} isEditRole={true} userData={selectedUser} onSave={handleSaveRole} />)}
-          {/* Popup ลบผู้ใช้งาน */}
-          <PopupAdmin isOpen={isDeletePopupOpen} onClose={() => setIsDeletePopupOpen(false)} isDelete={true} onDeleteConfirm={confirmDeleteUser} userData={selectedUser} />
+          {isDeletePopupOpen && (
+            <PopupAdmin
+              isOpen={isDeletePopupOpen}
+              onClose={() => setIsDeletePopupOpen(false)}
+              isDelete={true}
+              onDeleteConfirm={confirmDeleteUser}
+              userData={selectedUser}
+            />
+          )}
 
           {/* ตารางแสดงรายการสิทธิ์ */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
             <table className="w-full min-w-[1200px] border-collapse">
               <thead className="bg-[#F3F5F6] text-[#565656] text-left">
                 <tr>
@@ -358,7 +395,7 @@ const PermissionPage = () => {
                   >
                     ใช้งานล่าสุด
                     <Image
-                      src={sortOrder === "recent" ? "/images/admin/last_active_recent.svg" : "/images/admin/last_active_oldest.svg"}
+                      src={sortOrder === "recent" ? "/images/admin/permission/last_active_recent.svg" : "/images/admin/permission/last_active_oldest.svg"}
                       alt="Sort Icon"
                       width={14}
                       height={14}
@@ -377,14 +414,14 @@ const PermissionPage = () => {
                     <td className="px-6 py-3 text-[#565656] whitespace-nowrap">{user.email}</td>
                     <td className="px-6 py-3 text-[#565656] whitespace-nowrap">{user.phone}</td>
                     <td className="px-6 py-3 text-[#565656] whitespace-nowrap">
-                      {user.role.map((role) => (
+                      {user.role.map((role, idx) => (
                         <span
-                          key={role}
+                          key={`${user.id}-${idx}`}
                           className={`mr-2 
-                  ${role === "กรรมการหลักสูตร" ? "text-[#008A90]" : ""}
-                  ${role === "กรรมการสัมภาษณ์" ? "text-[#4F46E5]" : ""}
-                  ${role === "ประชาสัมพันธ์ (PR)" ? "text-[#DAA520]" : ""}
-                  ${role === "ฝ่ายการศึกษา" ? "text-[#166534]" : ""}`}
+              ${role === "กรรมการหลักสูตร" ? "text-[#008A90]" : ""}
+              ${role === "กรรมการสัมภาษณ์" ? "text-[#4F46E5]" : ""}
+              ${role === "ประชาสัมพันธ์ (PR)" ? "text-[#DAA520]" : ""}
+              ${role === "ฝ่ายการศึกษา" ? "text-[#166534]" : ""}`}
                         >
                           {role}
                         </span>
@@ -392,14 +429,18 @@ const PermissionPage = () => {
                     </td>
                     <td className="px-6 py-3 text-[#565656] whitespace-nowrap">{user.lastUsed}</td>
                     <td className="px-6 py-3 text-center relative whitespace-nowrap">
-                      <button className="text-[#565656] hover:text-gray-900 flex items-center justify-center" style={{ minWidth: "24px", minHeight: "24px" }}
-                        onClick={(event) => handleOpenMenu(event, user)}>
-                        <Image src="/images/admin/select_menu_icon.svg" alt="Menu" width={3.5} height={10} />
+                      <button
+                        className="text-[#565656] hover:text-gray-900 flex items-center justify-center"
+                        style={{ minWidth: "24px", minHeight: "24px" }}
+                        onClick={(event) => handleOpenMenu(event, user)}
+                      >
+                        <Image src="/images/admin/permission/select_menu_icon.svg" alt="Menu" width={3.5} height={10} />
                       </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
+
             </table>
           </div>
 

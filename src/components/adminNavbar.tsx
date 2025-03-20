@@ -48,7 +48,7 @@ const AdminNavbar = ({ isCollapsed }: { isCollapsed: boolean }) => {
                         window.dropdownTimeout = setTimeout(() => setDropdownOpen(false), 300);
                     }}
                 >
-                    <Image src="/images/admin/AdminProfile.svg" alt="Admin" width={30} height={30} />
+                    <Image src="/images/admin/adminNavbar/AdminProfile.svg" alt="Admin" width={30} height={30} />
                     <span className="text-[#008A90] ">TESTADMIN.SYS</span>
                     <Image src="/images/dropdown_button.svg" alt="Dropdown" width={15} height={10} />
                     {dropdownOpen && (

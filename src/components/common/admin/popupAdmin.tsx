@@ -13,6 +13,7 @@ interface PopupAdminProps {
   isEdit?: boolean;
   isEditRole?: boolean;
   isDelete?: boolean;
+  onSave?: (formData: any) => void;
   onDeleteConfirm?: () => void;
   onDelete: () => void;
   userData?: {
@@ -33,31 +34,30 @@ const PopupMenu: React.FC<PopupMenuProps> = ({ isOpen, onClose, onEdit, onEditRo
       <Dialog.Panel className="bg-white shadow-lg rounded-lg p-2 w-auto min-w-[250px] border border-gray-300">
         {/* แก้ไขข้อมูล */}
         <button className="flex items-center w-full px-4 py-2 text-[#565656] hover:bg-gray-100" onClick={onEdit}>
-          <Image src="/images/admin/edit_icon.svg" alt="Edit" width={16} height={16} className="mr-2" />
+          <Image src="/images/admin/permission/edit_icon.svg" alt="Edit" width={16} height={16} className="mr-2" />
           แก้ไขข้อมูล
         </button>
 
         {/* แก้ไขบทบาท */}
         <button className="flex items-center w-full px-4 py-2 text-[#565656] hover:bg-gray-100" onClick={onEditRole}>
-          <Image src="/images/admin/key_icon.svg" alt="Role" width={16} height={16} className="mr-2" />
+          <Image src="/images/admin/permission/key_icon.svg" alt="Role" width={16} height={16} className="mr-2" />
           แก้ไขบทบาท/สิทธิ์การเข้าถึง
         </button>
 
         {/* ลบผู้ใช้งาน */}
         <button className="flex items-center justify-between w-full px-4 py-2 text-[#565656] hover:bg-gray-100" onClick={onDelete}>
           <div className="flex items-center">
-            <Image src="/images/admin/trash_icon.svg" alt="Delete" width={16} height={16} className="mr-2" />
+            <Image src="/images/admin/permission/trash_icon.svg" alt="Delete" width={16} height={16} className="mr-2" />
             ลบผู้ใช้งาน
           </div>
-          <Image src="/images/admin/warning_icon.svg" alt="Warning" width={16} height={16} />
+          <Image src="/images/admin/permission/warning_icon.svg" alt="Warning" width={16} height={16} />
         </button>
       </Dialog.Panel>
     </Dialog>
   );
 };
 
-
-const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false, isEditRole = false, isDelete = false, onDeleteConfirm, userData }) => {
+const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false, isEditRole = false, isDelete = false, onDeleteConfirm, userData  ,onSave = () => {} }) => {
   const [formData, setFormData] = useState({
     title: "",
     username: "",
@@ -65,7 +65,13 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
     email: "",
     phone: "",
     role: [] as string[],
+    course: "",
+    roundName: "",
+    academicYear: "",
+    startDate: "",
+    endDate: "",
   });
+
   useEffect(() => {
     if ((isEdit || isEditRole) && userData) {
       setFormData({
@@ -86,7 +92,9 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
         role: [],
       });
     }
-  }, [isEdit, isEditRole, userData, isDelete]);
+  }, [isEdit, isEditRole, userData]);
+
+
 
   const handleChange = (field: string, value: string) => {
     if (field === "phone") {
@@ -133,7 +141,7 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
                   className="px-4 py-2 bg-[#D92D20] text-[15px] text-white rounded-[8px] flex items-center gap-2 w-full md:w-auto min-w-[110px] justify-center"
                   onClick={onDeleteConfirm}
                 >
-                  <Image src="/images/admin/confirm_delete_user.svg" alt="Delete" width={18} height={18} />
+                  <Image src="/images/admin/permission/confirm_delete_user.svg" alt="Delete" width={18} height={18} />
                   ยืนยันการลบ
                 </button>
               </div>
@@ -257,6 +265,11 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
               </button>
               <button
                 className="px-4 py-2 bg-[#008A90] text-white rounded-[8px] flex items-center gap-2 w-full md:w-auto min-w-[120px] justify-center"
+                onClick={() => {
+                  if (onSave) {
+                    onSave(formData);
+                  }
+                }}
               >
                 <Image src="/images/admin/save_icon.svg" alt="Save" width={18} height={18} />
                 บันทึก

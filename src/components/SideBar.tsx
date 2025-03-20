@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
 
 const menuItemsBeforePayment = [
     { href: '/', icon: 'dashboard_icon.svg', label: 'Dashboard' },
@@ -60,11 +62,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
             setIsCollapsed(true); // บังคับ Sidebar ให้ย่อเมื่อจอเล็ก
         }
     }, [isMobile]);
-    const toggleSidebar = () => {
-        if (!isMobile) { // ป้องกันการขยาย Sidebar เมื่อจอเล็ก
-            setIsCollapsed(!isCollapsed);
-        }
-    };
 
     const [openMenu, setOpenMenu] = useState(null);
 
@@ -77,6 +74,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         clearTimeout(window.menuTimeout);
         window.menuTimeout = setTimeout(() => setOpenMenu(null), 300);
     };
+    const pathname = usePathname();
 
     return (
         <div className={`fixed left-0 top-0 h-screen bg-[#008A90] text-white p-4  ${isCollapsed ? 'w-[80px]' : 'w-[300px]'}`}>
@@ -105,16 +103,20 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
 
             <nav className="flex flex-col gap-3 relative">
                 {/* เมนูหลัก (ก่อน "จัดการการชำระเงิน") */}
-                {menuItemsBeforePayment.map(({ href, icon, label, disabled }) => (
-                    <Link
-                        key={label}
-                        href={disabled ? '#' : href}
-                        className={`flex items-center gap-x-3 p-1.5 rounded-lg ${disabled ? 'text-[#565656] cursor-not-allowed' : 'hover:bg-[#00A2A8] transition'}`}
-                    >
-                        <img src={`/images/admin/Sidebar/${icon}`} alt={label} width={25} height={25} title={label} />
-                        {!isCollapsed && <span>{label}</span>}
-                    </Link>
-                ))}
+
+                {menuItemsBeforePayment.map(({ href, icon, label, disabled }) => {
+                    const isActive = pathname === href || pathname.startsWith(href + "/");
+
+                    return (
+                        <Link key={label} href={disabled ? '#' : href}
+                            className={`flex items-center gap-x-3 p-1.5 rounded-lg  
+                            ${isActive ? 'font-bold underline bg-[#00767A]' : 'hover:bg-[#00A2A8] transition'}  
+                            ${disabled ? 'text-[#565656] cursor-not-allowed' : ''}`}>
+                            <img src={`/images/admin/Sidebar/${icon}`} alt={label} width={25} height={25} title={label} />
+                            {!isCollapsed && <span>{label}</span>}
+                        </Link>
+                    );
+                })}
 
                 {/* เมนู "จัดการการชำระเงิน" */}
                 {menuItemsAfterPayment.slice(0, 1).map(({ href, icon, label, disabled }) => (
@@ -174,16 +176,19 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                     </div>
                 ))}
 
-                {menuItemsAfterPayment.slice(1).map(({ href, icon, label, disabled }) => (
-                    <Link
-                        key={label}
-                        href={disabled ? '#' : href}
-                        className={`flex items-center gap-x-3 p-1.5 rounded-lg ${disabled ? 'text-[#565656] cursor-not-allowed' : 'hover:bg-[#00A2A8] transition'}`}
-                    >
-                        <img src={`/images/admin/Sidebar/${icon}`} alt={label} width={25} height={25} title={label} />
-                        {!isCollapsed && <span>{label}</span>}
-                    </Link>
-                ))}
+                {menuItemsAfterPayment.map(({ href, icon, label, disabled }) => {
+                    const isActive = pathname === href || pathname.startsWith(href + "/");
+
+                    return (
+                        <Link key={label} href={disabled ? '#' : href}
+                            className={`flex items-center gap-x-3 p-1.5 rounded-lg  
+                            ${isActive ? 'font-bold underline bg-[#00767A]' : 'hover:bg-[#00A2A8] transition'}  
+                            ${disabled ? 'text-[#565656] cursor-not-allowed' : ''}`}>
+                            <img src={`/images/admin/Sidebar/${icon}`} alt={label} width={25} height={25} title={label} />
+                            {!isCollapsed && <span>{label}</span>}
+                        </Link>
+                    );
+                })}
             </nav>
         </div>
     );
