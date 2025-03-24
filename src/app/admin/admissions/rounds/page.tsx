@@ -1,0 +1,383 @@
+"use client";
+import React, { useState, useEffect } from "react";
+import SideBar from "../../../../components/SideBar";
+import AdminNavbar from "../../../../components/adminNavbar";
+import SearchField from "../../../../components/form/searchField";
+import PopupAdmissionRound from "../../../../components/common/admin/popupAdmissionRound";
+import Image from "next/image";
+import { format, parse } from "date-fns";
+import { th } from "date-fns/locale";
+import AlertAdmin from "../../../../components/common/admin/alertAdmin";
+
+
+const AdmissionRoundsPage = () => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [selectedRound, setSelectedRound] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [isAddRoundOpen, setIsAddRoundOpen] = useState(false);
+  const [isEditRoundOpen, setIsEditRoundOpen] = useState(false);
+  const [isDeleteRoundOpen, setIsDeleteRoundOpen] = useState(false);
+  const [selectedEditRound, setSelectedEditRound] = useState(null);
+  const [selectedDeleteRound, setSelectedDeleteRound] = useState(null);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+
+
+  const formatDateToDisplay = (dateString) => {
+    if (!dateString) return "";
+
+    const date = parse(dateString, "yyyy-MM-dd", new Date());
+    const year = date.getFullYear();
+
+    return format(date, `dd LLL ${year.toString().slice(-2)}`, { locale: th });
+  };
+
+  const courseMapping = {
+    "หลักสูตร DST (ไทย)": "หลักสูตร DST (ไทย)",
+    "หลักสูตร ICT (นานาชาติ)": "หลักสูตร ICT (นานาชาติ)"
+  };
+  const courseMappingReverse = {
+    "หลักสูตร DST (ไทย)": "หลักสูตร DST (ไทย)",
+    "หลักสูตร ICT (นานาชาติ)": "หลักสูตร ICT (นานาชาติ)"
+  };
+  const determineAdmissionStatus = (startDate, endDate) => {
+    const today = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (today < start) {
+      return "กำลังจะเปิดรับสมัคร"; // ยังไม่ถึงวันเปิดรับสมัคร
+    } else if (today >= start && today <= end) {
+      return "เปิดรับสมัคร"; // อยู่ในช่วงเปิดรับสมัคร
+    } else {
+      return "ปิดรับสมัคร"; // เลยกำหนดวันปิดรับสมัครแล้ว
+    }
+  };
+
+  const handleSaveAddRound = (newRound) => {
+    setAdmissionRounds((prev) => {
+      const newId = prev.length > 0 ? Math.max(...prev.map(r => r.id)) + 1 : 1;
+      const startDateFormatted = formatDateToDisplay(newRound.startDate);
+      const endDateFormatted = formatDateToDisplay(newRound.endDate);
+
+      return [...prev, {
+        id: newId,
+        course: newRound.course?.value || "หลักสูตรไม่ระบุ",
+        round: newRound.roundName,
+        year: newRound.academicYear?.value || "ไม่ระบุ",
+        period: `${startDateFormatted} – ${endDateFormatted}`,
+        status: determineAdmissionStatus(newRound.startDate, newRound.endDate)
+      }];
+    });
+
+    setIsAddRoundOpen(false);
+    setAlertMessage("เพิ่มรอบรับสมัครสำเร็จ!");
+  };
+  const [admissionRounds, setAdmissionRounds] = useState([
+    {
+      id: 1,
+      course: "หลักสูตร DST (ไทย)",
+      round: "รอบ 1 MU – Portfolio (TCAS 1) ",
+      year: "2568",
+      period: "01 ม.ค. 25 – 31 มี.ค. 25",
+      status: "เปิดรับสมัคร",
+    },
+    {
+      id: 2,
+      course: "หลักสูตร ICT (นานาชาติ)",
+      round: "รอบ 1 ICT – Portfolio ",
+      year: "2568",
+      period: "20 พ.ย. 24 – 30 ธ.ค. 24",
+      status: "ปิดรับสมัคร",
+    },
+  ]);
+  const currentYear = new Date().getFullYear() + 543;
+  const yearOptions = [{ value: "ทั้งหมด", label: "แสดงทุกปี" }, ...Array.from({ length: 5 }, (_, i) => {
+    const year = currentYear - 2 + i;
+    return { value: String(year), label: String(year) };
+  })];
+
+  const [filteredAdmissionRounds, setFilteredAdmissionRounds] = useState(admissionRounds);
+  const thaiMonths = {
+    "ม.ค.": "Jan", "ก.พ.": "Feb", "มี.ค.": "Mar", "เม.ย.": "Apr",
+    "พ.ค.": "May", "มิ.ย.": "Jun", "ก.ค.": "Jul", "ส.ค.": "Aug",
+    "ก.ย.": "Sep", "ต.ค.": "Oct", "พ.ย.": "Nov", "ธ.ค.": "Dec"
+  };
+
+  const convertThaiDateToEnglish = (thaiDate) => {
+    const parts = thaiDate.split(" ");
+    if (parts.length !== 3) return null;
+    const day = parts[0];
+    const month = thaiMonths[parts[1]];
+    const year = "20" + parts[2]; // เปลี่ยน 25 → 2025
+    return month ? `${day} ${month} ${year}` : null;
+  };
+
+
+  useEffect(() => {
+    setFilteredAdmissionRounds(admissionRounds);
+  }, [admissionRounds]);
+
+  const handleEdit = (round) => {
+    if (!round.period) return;
+
+    // แปลง period เป็น yyyy-MM-dd
+    const periodParts = round.period.split("–").map(date => date.trim());
+    const startDate = convertThaiDateToEnglish(periodParts[0]);
+    const endDate = convertThaiDateToEnglish(periodParts[1]);
+
+    setSelectedEditRound({
+      id: round.id,
+      course: round.course ? { value: round.course, label: round.course } : null,
+      roundName: round.round.replace(/ ปีการศึกษา \d{4}/, "").trim(),
+      academicYear: round.year ? { value: round.year, label: round.year } : null,
+      startDate: startDate ? format(parse(startDate, "dd MMM yyyy", new Date()), "yyyy-MM-dd") : "",
+      endDate: endDate ? format(parse(endDate, "dd MMM yyyy", new Date()), "yyyy-MM-dd") : "",
+    });
+
+    setIsEditRoundOpen(true);
+  };
+  const handleSaveEditRound = (updatedRound) => {
+    setAdmissionRounds((prev) =>
+      prev.map((round) =>
+        round.id === selectedEditRound.id
+          ? {
+            ...round,
+            course: updatedRound.course?.value || "หลักสูตรไม่ระบุ",
+            round: updatedRound.roundName.includes("ปีการศึกษา")
+              ? updatedRound.roundName
+              : `${updatedRound.roundName} ปีการศึกษา ${updatedRound.academicYear?.value || "ไม่ระบุ"}`,
+            period: `${formatDateToDisplay(updatedRound.startDate)} – ${formatDateToDisplay(updatedRound.endDate)}`,
+            status: determineAdmissionStatus(updatedRound.startDate, updatedRound.endDate) // กำหนดสถานะอัตโนมัติ
+          }
+          : round
+      )
+    );
+
+    setIsEditRoundOpen(false);
+    setSelectedEditRound(null);
+    setAlertMessage("แก้ไขรอบรับสมัครสำเร็จ!");
+  };
+
+  const handleDelete = (round) => {
+    setSelectedDeleteRound(round); // กำหนดค่ารอบที่ต้องการลบ
+    setIsDeleteRoundOpen(true); // เปิด Popup ยืนยันการลบ
+  };
+  
+  const handleDeleteRound = () => {
+    if (selectedDeleteRound) {
+      setAdmissionRounds((prev) =>
+        prev.filter((item) => item.id !== selectedDeleteRound.id)
+      );
+      setIsDeleteRoundOpen(false); // ปิด Popup หลังลบเสร็จ
+      setSelectedDeleteRound(null); // รีเซ็ตค่า
+      setAlertMessage("ลบรอบรับสมัครสำเร็จ!"); 
+      
+    }
+  };
+  
+  // ตัวเลือกสำหรับ Dropdown
+  const roundOptions = admissionRounds.map((round) => ({
+    value: round.round,
+    label: round.round,
+  }));
+
+  const statusOptions = [
+    { value: "ทั้งหมด", label: "แสดงทั้งหมด" },
+    { value: "เปิดรับสมัคร", label: "เปิดรับสมัคร" },
+    { value: "กำลังจะเปิดรับสมัคร", label: "กำลังจะเปิดรับสมัคร" },
+    { value: "ปิดรับสมัคร", label: "ปิดรับสมัคร" },
+  ];
+
+  // ทำให้ค่าที่เลือกแสดงใน dropdown
+  useEffect(() => {
+    if (selectedRound && typeof selectedRound === "string") {
+      setSelectedRound(roundOptions.find(option => option.value === selectedRound) || null);
+    }
+    if (selectedYear && typeof selectedYear === "string") {
+      setSelectedYear(yearOptions.find(option => option.value === selectedYear) || null);
+    }
+    if (selectedStatus && typeof selectedStatus === "string") {
+      setSelectedStatus(statusOptions.find(option => option.value === selectedStatus) || null);
+    }
+  }, [selectedRound, selectedYear, selectedStatus]);
+
+  const handleSearch = () => {
+    const filteredRounds = admissionRounds.filter((round) => {
+      const roundMatch = selectedRound ? round.round.includes(selectedRound.value) : true;
+      const yearMatch = selectedYear ? round.year === selectedYear.value || selectedYear.value === "ทั้งหมด" : true;
+      const statusMatch = selectedStatus ? round.status === selectedStatus.value || selectedStatus.value === "ทั้งหมด" : true;
+
+      return roundMatch && yearMatch && statusMatch;
+    });
+
+    setFilteredAdmissionRounds(filteredRounds);
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-white">
+      {alertMessage && <AlertAdmin message={alertMessage} onClose={() => setAlertMessage(null)} />}
+      <AdminNavbar isCollapsed={isCollapsed} className="relative z-40" />
+      <div className="flex flex-row flex-1">
+                {/* Sidebar */}
+                <div className="relative z-50">
+          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        </div>
+        <div className={`flex flex-col w-full p-6 mt-[64px] transition-all bg-white ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}>
+
+          {/* ส่วนค้นหารอบรับสมัคร */}
+          <div className="relative max-w-[1600px] w-full mx-auto p-5 rounded-lg shadow-md mb-6 px-4 md:px-8 z-10">
+            <h1 className="text-2xl font-bold text-[#565656] mb-5">ค้นหารอบรับสมัคร</h1>
+            <hr className="mb-4 border-gray-300" />
+
+            <div className="flex flex-wrap items-end gap-4 mt-5 relative z-10 overflow-visible">
+              <div className="flex-1 min-w-[300px] max-w-[750px] relative z-10">
+                <SearchField
+                  label=""
+                  value={selectedRound}
+                  onChange={setSelectedRound}
+                  placeholder="ค้นหารอบรับสมัครหรือปี"
+                  type="dropdown"
+                  options={roundOptions}
+                  customWidth="100%"
+                  className="relative z-10"
+                />
+              </div>
+
+              <div className="w-full max-w-[200px] relative z-10">
+                <SearchField
+                  label=""
+                  value={selectedYear}
+                  onChange={setSelectedYear}
+                  placeholder="แสดงทุกปี"
+                  type="dropdown"
+                  options={yearOptions}
+                  className="relative z-10"
+                />
+              </div>
+
+              <div className="w-full max-w-[250px] relative z-10">
+                <SearchField
+                  label=""
+                  value={selectedStatus}
+                  onChange={setSelectedStatus}
+                  placeholder="แสดงทั้งหมด"
+                  type="dropdown"
+                  options={statusOptions}
+                  className="relative z-10"
+                />
+              </div>
+
+              {/* ปุ่มค้นหา */}
+              <button
+                onClick={handleSearch}
+                className="bg-[#008A90] hover:bg-[#009198] text-white px-4 py-2 rounded flex items-center gap-2 min-w-[150px] relative z-20"
+              >
+                <Image src="/images/admin/search_icon_button.svg" alt="Search" width={18} height={18} />
+                ค้นหารายการ
+              </button>
+            </div>
+          </div>
+
+          {/* ตารางแสดงรอบรับสมัคร */}
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 px-6">
+            <h2 className="text-lg font-bold text-[#565656] whitespace-nowrap">
+              รอบรับสมัคร <span className="text-[#6B7280] font-bold">{filteredAdmissionRounds.length}</span>
+            </h2>
+
+          {/* ปุ่มรอบรับสมัคร */}
+          <div className="mt-2 md:mt-0 md:self-end">
+            <button
+              className="bg-[#008A90] hover:bg-[#009198] text-white px-4 py-1.5 flex items-center gap-2 md:mr-20 rounded-lg"
+              onClick={() => setIsAddRoundOpen(true)} // เปิด popup
+            >
+              <span className="text-2xl text-white">+</span> เพิ่มรอบรับสมัคร
+            </button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+          <table className="w-full min-w-[1200px] border-collapse">
+            <thead className="bg-[#F3F5F6] text-[#565656]">
+              <tr>
+                <th className="px-6 py-3 whitespace-nowrap text-left">No</th>
+                <th className="px-6 py-3 whitespace-nowrap text-left">หลักสูตร</th>
+                <th className="px-6 py-3 whitespace-nowrap text-left">รอบรับสมัคร</th>
+                <th className="px-6 py-3 whitespace-nowrap text-left">ระยะเวลาการรับสมัคร</th>
+                <th className="px-6 py-3 whitespace-nowrap text-center w-[180px] pr-10">สถานะ</th>
+                <th className="px-6 py-3 whitespace-nowrap">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAdmissionRounds.map((round) => (
+                <tr key={round.id} className="border-b hover:bg-gray-50">
+                  <td className="px-6 py-3 text-[#565656]">{round.id}</td>
+                  <td className="px-6 py-3 text-[#565656]">{round.course}</td>
+                  <td className="px-6 py-3 text-[#565656]">
+                    {round.round.includes("ปีการศึกษา") ? round.round : `${round.round} ปีการศึกษา ${round.year || "ไม่ระบุ"}`}
+                  </td>
+
+
+                  <td className="px-6 py-3 text-[#565656]">{round.period}</td>
+                  <td className="px-6 py-3 text-[#565656] text-center w-[240px]">
+                    <span className={`px-6 py-0.5 rounded-[10px] 
+    ${round.status === "เปิดรับสมัคร" ? "text-[#13522B] bg-[#E2F5E2]"
+                        : round.status === "กำลังจะเปิดรับสมัคร" ? "text-[#DAA520] bg-[#FFF4E2]"
+                          : "text-red-500 bg-red-100"}`}>
+                      {round.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-3 text-center flex justify-center gap-1">
+                    {/* ปุ่มแก้ไข */}
+                    <button onClick={() => handleEdit(round)} className="p-2 rounded-lg hover:bg-gray-200 transition">
+                      <Image src="/images/admin/addRound/edit_icon.svg" alt="Edit" width={15} height={16} />
+                    </button>
+                    {/* ปุ่มลบ */}
+                    <button onClick={() => handleDelete(round)} className="p-2 rounded-lg hover:bg-gray-200 transition">
+                      <Image src="/images/admin/addRound/delete_icon.svg" alt="Delete" width={15} height={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          </div>
+
+          {isAddRoundOpen && (
+            <PopupAdmissionRound
+              isOpen={isAddRoundOpen}
+              onClose={() => setIsAddRoundOpen(false)}
+              onSave={handleSaveAddRound}
+            />
+          )}
+          {isEditRoundOpen && selectedEditRound && (
+            <PopupAdmissionRound
+              isOpen={isEditRoundOpen}
+              onClose={() => setIsEditRoundOpen(false)}
+              onSave={handleSaveEditRound}
+              initialData={{
+                ...selectedEditRound,
+                course: selectedEditRound.course ? { value: selectedEditRound.course, label: selectedEditRound.course } : null,
+                academicYear: selectedEditRound.academicYear ? { value: selectedEditRound.academicYear, label: selectedEditRound.academicYear } : null,
+              }}
+              courseMapping={courseMapping}
+              courseMappingReverse={courseMappingReverse}
+            />
+          )}
+           {isDeleteRoundOpen && selectedDeleteRound && (
+  <PopupAdmissionRound
+    isOpen={isDeleteRoundOpen}
+    onClose={() => setIsDeleteRoundOpen(false)}
+    onDelete={handleDeleteRound}
+    isDeleteMode={true}
+  />
+)}
+
+
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdmissionRoundsPage;

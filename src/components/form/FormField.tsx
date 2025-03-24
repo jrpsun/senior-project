@@ -10,6 +10,7 @@ interface FormFieldProps {
   required?: boolean;
   type?: string;
   placeholder?: string;
+  boldLabel?: boolean;
 }
 
 const FormField: React.FC<FormFieldProps> = ({
@@ -21,9 +22,10 @@ const FormField: React.FC<FormFieldProps> = ({
   required = false,
   type = "text",
   placeholder = "",
+  boldLabel = false,
 }) => (
   <div className="w-full">
-    <label className="block text-[#565656]">
+    <label className={`block text-[#565656] ${boldLabel ? "font-bold" : ""}`}>
       {label} {required && <span className="text-red-500">*</span>}
     </label>
 

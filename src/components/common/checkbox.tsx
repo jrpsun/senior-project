@@ -9,11 +9,20 @@ interface CheckboxDropdownProps {
   options: { value: string; label: string }[];
   selected: string[];
   onChange: (selected: string[], otherValue?: string) => void;
-  placeholder?: string; //เพิ่ม placeholder ที่รับค่าจาก SubscriptionForm
+  placeholder?: string;
   otherPlaceholder?: string;
+  boldLabel?: boolean;
 }
 
-const CheckboxDropdown: React.FC<CheckboxDropdownProps> = ({ label, options, selected, onChange, placeholder, otherPlaceholder }) => {
+const CheckboxDropdown: React.FC<CheckboxDropdownProps> = ({
+  label,
+  options,
+  selected,
+  onChange,
+  placeholder,
+  otherPlaceholder,
+  boldLabel = false, // ค่าเริ่มต้นเป็น false
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [otherInput, setOtherInput] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -44,7 +53,10 @@ const CheckboxDropdown: React.FC<CheckboxDropdownProps> = ({ label, options, sel
   return (
     <div className="relative w-full max-w-7xl" ref={dropdownRef}>
       <div className="relative w-full">
-        <label className="block text-[#565656] mb-2">{label}</label>
+        <label className={`block text-[#565656] mb-2 ${boldLabel ? "font-bold" : ""}`}>
+          {label}
+        </label>
+
         <div className="flex flex-col xl:flex-row xl:items-center gap-3 xl:gap-6">
           <div className="w-full md:w-[625px] relative">
             <button
@@ -79,28 +91,35 @@ const CheckboxDropdown: React.FC<CheckboxDropdownProps> = ({ label, options, sel
             {/* Dropdown Content */}
             {isOpen && (
               <div
-                className="absolute top-full left-0 right-0 w-full min-w-[300px] md:min-w-[625px] 
-               bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-50 
-               max-h-[200px] overflow-y-auto"
+                className="absolute top-full left-0 right-0 w-full min-w-[300px] md:min-w-[400px] 
+      bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-50 
+      max-h-[200px] overflow-y-auto"
               >
                 {options.map((option) => (
                   <label
                     key={option.value}
-                    className="checkbox-label flex items-center w-full p-2 rounded cursor-pointer hover:bg-gray-100 text-[#565656]"
+                    className="flex items-center w-full px-3 py-2 
+          rounded cursor-pointer hover:bg-gray-100 text-[#565656] 
+          overflow-hidden whitespace-nowrap text-ellipsis"
+                    style={{ maxWidth: "100%" }} // ป้องกัน option ล้นออกไป
                   >
                     <input
                       type="checkbox"
                       id={option.value}
                       checked={selected.includes(option.value)}
                       onChange={() => handleCheckboxChange(option.value)}
-                      className="custom-checkbox mr-2"
+                      className="w-4 h-4 mr-2 flex-shrink-0 cursor-pointer appearance-none 
+            border rounded-sm checked:border-transparent 
+            checked:bg-[#008A90] checked:bg-[url('/images/checkbox_icon.svg')] 
+            bg-no-repeat bg-center bg-contain"
                     />
-                    {option.label}
+                    <span className="truncate">{option.label}</span>
                   </label>
                 ))}
               </div>
             )}
           </div>
+          
           {/* Input โปรดระบุ */}
           {selected.includes("other") && (
             <div className="w-full xl:w-[300px] flex-shrink-0 mt-3 xl:mt-0">

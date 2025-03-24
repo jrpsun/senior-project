@@ -43,7 +43,6 @@ export default function RegisterPage() {
     fetch("/data/nationalities.json")
       .then((res) => res.json())
       .then((data) => {
-        console.log("Fetched Nationalities:", data);
 
         // เรียงตาม A-Z (English) ก่อน แล้วค่อย ก-ฮ (Thai)
         const sortedNationalities = data.sort((a, b) => {
@@ -96,27 +95,7 @@ export default function RegisterPage() {
 
 
   const handleConfirmRegistration = () => {
-    setIsPopupOpen(false);
-
-    const isUserExists = false; // เปลี่ยนเป็น false ให้ไปหน้า summary ได้
-    if (isUserExists) {
-      setIsErrorPopupOpen(true);
-    } else {
-      // สร้าง URL parameters
-      const queryParams = new URLSearchParams({
-        nationality: formData.nationality || "",
-        idType: formData.idType || "",
-        idNumber: formData.idNumber || "",
-        title: formData.title || "",
-        firstNameThai: formData.firstNameThai || "",
-        lastNameThai: formData.lastNameThai || "",
-        firstNameEnglish: formData.firstNameEnglish || "",
-        lastNameEnglish: formData.lastNameEnglish || "",
-        email: formData.email || "",
-      }).toString();
-
-      router.push(`/register/summary?${queryParams}`);
-    }
+    console.log("fsdsd", formData)
   };
 
   const titleOptions = {
