@@ -26,8 +26,8 @@ const subMenus = [
         subLinks: [
             { href: '/option4/sub1', label: 'จัดกลุ่มผู้สมัครเพื่อคัดกรองเบื้องต้น' },
             { href: '/option4/sub2', label: 'ติดตามผลการคัดกรองเบื้องต้น' },
-            { href: '/admin/preliminaryResult', label: 'รายชื่อผู้สมัครสำหรับพิจารณา' },
-            { href: '/option4/sub4', label: 'สรุปผลการคัดกรองเบื้องต้น' }
+            { href: '/admin/screening/screening', label: 'รายชื่อผู้สมัครสำหรับพิจารณา' },
+            { href: '/admin/screening/summary', label: 'สรุปผลการคัดกรองเบื้องต้น' }
         ]
     },
     {
@@ -77,7 +77,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         window.menuTimeout = setTimeout(() => setOpenMenu(null), 300);
     };
     const pathname = usePathname();
-    const isPreliminaryPage = pathname.startsWith("/admin/preliminaryResult");
+    const isPreliminaryPage = pathname.startsWith("/admin/screening");
 
     return (
         <div className={`fixed left-0 top-0 h-screen bg-[#008A90] text-white p-4  ${isCollapsed ? 'w-[80px]' : 'w-[300px]'}`}>

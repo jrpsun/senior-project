@@ -86,7 +86,7 @@ const ScreeningResultPage = () => {
 
     // ฟังก์ชันค้นหาข้อมูล
     const handleSearch = () => {
-        const filtered = filteredData.map(group => {
+        const filtered = mockGroupedData.map(group => {
             const filteredApplicants = group.applicants.filter(applicant => {
                 const matchCommittee =
                     searchData.committee === "ทั้งหมด" ||
