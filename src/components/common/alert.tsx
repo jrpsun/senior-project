@@ -24,7 +24,7 @@ const Alert: React.FC<AlertProps> = ({ message, type, onClose }) => {
     >
       {/* ไอคอนแจ้งเตือน */}
       {type === "success" ? (
-        <CheckCircle className="text-green-500" size={25} />
+        <CheckCircle className="text-[#166534" size={25} />
       ) : (
         <img src="/images/error-icon.svg" alt="Error Icon" width={25} height={25} />
       )}

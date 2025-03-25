@@ -11,6 +11,7 @@ interface FormFieldProps {
   type?: string;
   placeholder?: string;
   boldLabel?: boolean;
+  height?: string; 
 }
 
 const FormField: React.FC<FormFieldProps> = ({
@@ -23,6 +24,7 @@ const FormField: React.FC<FormFieldProps> = ({
   type = "text",
   placeholder = "",
   boldLabel = false,
+  height
 }) => (
   <div className="w-full">
     <label className={`block text-[#565656] ${boldLabel ? "font-bold" : ""}`}>
@@ -30,15 +32,16 @@ const FormField: React.FC<FormFieldProps> = ({
     </label>
 
     {type === "textarea" ? (
-      <textarea
-  value={value}
-  onChange={(e) => onChange(e.target.value)}
-  onBlur={onBlur}
-  placeholder={placeholder}
-  className={`w-full px-3 py-2 border-[1px] rounded-lg p-2 focus:outline-none focus:border-[#C4C4C4] 
-    text-[#565656] caret-[#565656] placeholder:text-[#C4C4C4] 
-    ${error ? "border-red-500" : "border-[#C4C4C4]"} h-[100px] resize-none`}
-/>
+     <textarea
+     value={value}
+     onChange={(e) => onChange(e.target.value)}
+     onBlur={onBlur}
+     placeholder={placeholder}
+     className={`w-full px-3 py-2 border-[1px] rounded-lg p-2 focus:outline-none focus:border-[#C4C4C4] 
+       text-[#565656] caret-[#565656] placeholder:text-[#C4C4C4] 
+       ${error ? "border-red-500" : "border-[#C4C4C4]"} ${height ?? "h-[100px]"} resize-none`}
+   />
+   
 
     ) : (
       <input
