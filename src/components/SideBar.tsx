@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 
+
 const menuItemsBeforePayment = [
     { href: '/', icon: 'dashboard_icon.svg', label: 'Dashboard' },
     { href: '/camp', icon: 'manage_applicant_icon.svg', label: 'จัดการใบสมัคร' }
@@ -25,8 +26,8 @@ const subMenus = [
         subLinks: [
             { href: '/option4/sub1', label: 'จัดกลุ่มผู้สมัครเพื่อคัดกรองเบื้องต้น' },
             { href: '/option4/sub2', label: 'ติดตามผลการคัดกรองเบื้องต้น' },
-            { href: '/option4/sub3', label: 'รายชื่อผู้สมัครสำหรับพิจารณา' },
-            { href: '/option4/sub4', label: 'สรุปผลการคัดกรองเบื้องต้น' }
+            { href: '/admin/screening/screening', label: 'รายชื่อผู้สมัครสำหรับพิจารณา' },
+            { href: '/admin/screening/summary', label: 'สรุปผลการคัดกรองเบื้องต้น' }
         ]
     },
     {
@@ -41,6 +42,7 @@ const subMenus = [
         ]
     }
 ];
+
 
 const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
 
@@ -75,6 +77,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         window.menuTimeout = setTimeout(() => setOpenMenu(null), 300);
     };
     const pathname = usePathname();
+    const isPreliminaryPage = pathname.startsWith("/admin/screening");
 
     return (
         <div className={`fixed left-0 top-0 h-screen bg-[#008A90] text-white p-4  ${isCollapsed ? 'w-[80px]' : 'w-[300px]'}`}>
@@ -138,7 +141,11 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                             <button
                                 onClick={() => isCollapsed ? setOpenMenu(openMenu === label ? null : label) : null}
                                 className={`flex justify-between w-full p-1.5 rounded-lg 
-                    ${openMenu === label ? 'font-bold underline' : 'hover:bg-[#00A2A8] transition'}`}
+                                    ${(openMenu === label || (label === 'จัดการการคัดกรองเบื้องต้น' && isPreliminaryPage))
+                                        ? 'font-bold underline bg-[#00767A]'
+                                        : 'hover:bg-[#00A2A8] transition'
+                                    }`}
+
                             >
                                 <div className="flex items-center gap-x-3">
                                     <img src={`/images/admin/Sidebar/${icon}`} alt={label} width={25} height={25} title={label} />
@@ -153,11 +160,22 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                             {openMenu === label && !isCollapsed && (
                                 <div className="absolute left-full top-0 ml-3 min-w-max bg-[#008A90] text-white shadow-lg rounded p-2
                     z-100 overflow-visible">
-                                    {subLinks.map(({ href, label }) => (
-                                        <Link key={label} href={href} className="block px-4 py-2 hover:bg-[#00A2A8] rounded">
-                                            {label}
-                                        </Link>
-                                    ))}
+                                    {subLinks.map(({ href, label }) => {
+                                        const isSubActive = pathname === href || pathname.startsWith(href + "/");
+
+                                        return (
+                                            <Link
+                                                key={label}
+                                                href={href}
+                                                className={`block px-4 py-2 rounded 
+        ${isSubActive ? 'font-bold underline ' : 'hover:bg-[#00A2A8]'}
+      `}
+                                            >
+                                                {label}
+                                            </Link>
+                                        );
+                                    })}
+
                                 </div>
                             )}
 

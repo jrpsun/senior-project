@@ -163,7 +163,7 @@ const AdmissionRoundsPage = () => {
     setSelectedDeleteRound(round); // กำหนดค่ารอบที่ต้องการลบ
     setIsDeleteRoundOpen(true); // เปิด Popup ยืนยันการลบ
   };
-  
+
   const handleDeleteRound = () => {
     if (selectedDeleteRound) {
       setAdmissionRounds((prev) =>
@@ -171,11 +171,11 @@ const AdmissionRoundsPage = () => {
       );
       setIsDeleteRoundOpen(false); // ปิด Popup หลังลบเสร็จ
       setSelectedDeleteRound(null); // รีเซ็ตค่า
-      setAlertMessage("ลบรอบรับสมัครสำเร็จ!"); 
-      
+      setAlertMessage("ลบรอบรับสมัครสำเร็จ!");
+
     }
   };
-  
+
   // ตัวเลือกสำหรับ Dropdown
   const roundOptions = admissionRounds.map((round) => ({
     value: round.round,
@@ -219,8 +219,8 @@ const AdmissionRoundsPage = () => {
       {alertMessage && <AlertAdmin message={alertMessage} onClose={() => setAlertMessage(null)} />}
       <AdminNavbar isCollapsed={isCollapsed} className="relative z-40" />
       <div className="flex flex-row flex-1">
-                {/* Sidebar */}
-                <div className="relative z-50">
+        {/* Sidebar */}
+        <div className="relative z-50">
           <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
         </div>
         <div className={`flex flex-col w-full p-6 mt-[64px] transition-all bg-white ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}>
@@ -285,62 +285,62 @@ const AdmissionRoundsPage = () => {
               รอบรับสมัคร <span className="text-[#6B7280] font-bold">{filteredAdmissionRounds.length}</span>
             </h2>
 
-          {/* ปุ่มรอบรับสมัคร */}
-          <div className="mt-2 md:mt-0 md:self-end">
-            <button
-              className="bg-[#008A90] hover:bg-[#009198] text-white px-4 py-1.5 flex items-center gap-2 md:mr-20 rounded-lg"
-              onClick={() => setIsAddRoundOpen(true)} // เปิด popup
-            >
-              <span className="text-2xl text-white">+</span> เพิ่มรอบรับสมัคร
-            </button>
+            {/* ปุ่มรอบรับสมัคร */}
+            <div className="mt-2 md:mt-0 md:self-end">
+              <button
+                className="bg-[#008A90] hover:bg-[#009198] text-white px-4 py-1.5 flex items-center gap-2 md:mr-20 rounded-lg"
+                onClick={() => setIsAddRoundOpen(true)} // เปิด popup
+              >
+                <span className="text-2xl text-white">+</span> เพิ่มรอบรับสมัคร
+              </button>
             </div>
           </div>
 
           <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
-          <table className="w-full min-w-[1200px] border-collapse">
-            <thead className="bg-[#F3F5F6] text-[#565656]">
-              <tr>
-                <th className="px-6 py-3 whitespace-nowrap text-left">No</th>
-                <th className="px-6 py-3 whitespace-nowrap text-left">หลักสูตร</th>
-                <th className="px-6 py-3 whitespace-nowrap text-left">รอบรับสมัคร</th>
-                <th className="px-6 py-3 whitespace-nowrap text-left">ระยะเวลาการรับสมัคร</th>
-                <th className="px-6 py-3 whitespace-nowrap text-center w-[180px] pr-10">สถานะ</th>
-                <th className="px-6 py-3 whitespace-nowrap">จัดการ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAdmissionRounds.map((round) => (
-                <tr key={round.id} className="border-b hover:bg-gray-50">
-                  <td className="px-6 py-3 text-[#565656]">{round.id}</td>
-                  <td className="px-6 py-3 text-[#565656]">{round.course}</td>
-                  <td className="px-6 py-3 text-[#565656]">
-                    {round.round.includes("ปีการศึกษา") ? round.round : `${round.round} ปีการศึกษา ${round.year || "ไม่ระบุ"}`}
-                  </td>
-
-
-                  <td className="px-6 py-3 text-[#565656]">{round.period}</td>
-                  <td className="px-6 py-3 text-[#565656] text-center w-[240px]">
-                    <span className={`px-6 py-0.5 rounded-[10px] 
-    ${round.status === "เปิดรับสมัคร" ? "text-[#13522B] bg-[#E2F5E2]"
-                        : round.status === "กำลังจะเปิดรับสมัคร" ? "text-[#DAA520] bg-[#FFF4E2]"
-                          : "text-red-500 bg-red-100"}`}>
-                      {round.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3 text-center flex justify-center gap-1">
-                    {/* ปุ่มแก้ไข */}
-                    <button onClick={() => handleEdit(round)} className="p-2 rounded-lg hover:bg-gray-200 transition">
-                      <Image src="/images/admin/addRound/edit_icon.svg" alt="Edit" width={15} height={16} />
-                    </button>
-                    {/* ปุ่มลบ */}
-                    <button onClick={() => handleDelete(round)} className="p-2 rounded-lg hover:bg-gray-200 transition">
-                      <Image src="/images/admin/addRound/delete_icon.svg" alt="Delete" width={15} height={16} />
-                    </button>
-                  </td>
+            <table className="w-full min-w-[1200px] border-collapse">
+              <thead className="bg-[#F3F5F6] text-[#565656]">
+                <tr>
+                  <th className="px-6 py-3 whitespace-nowrap text-left">No</th>
+                  <th className="px-6 py-3 whitespace-nowrap text-left">หลักสูตร</th>
+                  <th className="px-6 py-3 whitespace-nowrap text-left">รอบรับสมัคร</th>
+                  <th className="px-6 py-3 whitespace-nowrap text-left">ระยะเวลาการรับสมัคร</th>
+                  <th className="px-6 py-3 whitespace-nowrap text-center w-[180px] pr-10">สถานะ</th>
+                  <th className="px-6 py-3 whitespace-nowrap">จัดการ</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredAdmissionRounds.map((round) => (
+                  <tr key={round.id} className="border-b hover:bg-gray-50">
+                    <td className="px-6 py-3 text-[#565656]">{round.id}</td>
+                    <td className="px-6 py-3 text-[#565656]">{round.course}</td>
+                    <td className="px-6 py-3 text-[#565656]">
+                      {round.round.includes("ปีการศึกษา") ? round.round : `${round.round} ปีการศึกษา ${round.year || "ไม่ระบุ"}`}
+                    </td>
+
+
+                    <td className="px-6 py-3 text-[#565656]">{round.period}</td>
+                    <td className="px-6 py-3 text-[#565656] text-center w-[240px]">
+                      <span className={`px-6 py-0.5 rounded-[10px] 
+    ${round.status === "เปิดรับสมัคร" ? "text-[#13522B] bg-[#E2F5E2]"
+                          : round.status === "กำลังจะเปิดรับสมัคร" ? "text-[#DAA520] bg-[#FFF4E2]"
+                            : "text-red-500 bg-red-100"}`}>
+                        {round.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 text-center flex justify-center gap-1">
+                      {/* ปุ่มแก้ไข */}
+                      <button onClick={() => handleEdit(round)} className="p-2 rounded-lg hover:bg-gray-200 transition">
+                        <Image src="/images/admin/addRound/edit_icon.svg" alt="Edit" width={15} height={16} />
+                      </button>
+                      {/* ปุ่มลบ */}
+                      <button onClick={() => handleDelete(round)} className="p-2 rounded-lg hover:bg-gray-200 transition">
+                        <Image src="/images/admin/addRound/delete_icon.svg" alt="Delete" width={15} height={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           {isAddRoundOpen && (
@@ -364,16 +364,14 @@ const AdmissionRoundsPage = () => {
               courseMappingReverse={courseMappingReverse}
             />
           )}
-           {isDeleteRoundOpen && selectedDeleteRound && (
-  <PopupAdmissionRound
-    isOpen={isDeleteRoundOpen}
-    onClose={() => setIsDeleteRoundOpen(false)}
-    onDelete={handleDeleteRound}
-    isDeleteMode={true}
-  />
-)}
-
-
+          {isDeleteRoundOpen && selectedDeleteRound && (
+            <PopupAdmissionRound
+              isOpen={isDeleteRoundOpen}
+              onClose={() => setIsDeleteRoundOpen(false)}
+              onDelete={handleDeleteRound}
+              isDeleteMode={true}
+            />
+          )}
         </div>
       </div>
     </div>

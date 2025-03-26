@@ -13,6 +13,7 @@ const pageTitles = {
     "/admin/users": "การจัดการผู้ใช้",
     "/admin/reports": "รายงานระบบ",
     "/admin/settings": "ตั้งค่าระบบ",
+    "/admin/screening/summary": "สรุปผลการคัดกรองเบื้องต้น", 
 };
 
 // รายการเมนูใน Dropdown ของ Admin
@@ -21,18 +22,34 @@ const adminMenuItems = [
     { href: "/logout", label: "ออกจากระบบ", icon: "/images/Navbar/Logout.svg" },
 ];
 
-const AdminNavbar = ({ isCollapsed }: { isCollapsed: boolean }) => {
+interface AdminNavbarProps {
+    isCollapsed: boolean;
+    backToPage?: { href: string; label: string };
+}
+
+const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed, backToPage }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [langDropdownOpen, setLangDropdownOpen] = useState(false);
     const pathname = usePathname();
-    const currentTitle = pageTitles[pathname] || "หน้าผู้ดูแลระบบ";
+    const isKnownPage = pathname in pageTitles;
 
     return (
         <div className="bg-white text-black fixed top-0 z-40 h-[80px] flex items-center transition-all shadow-md"
-    style={{ width: `calc(100% - ${isCollapsed ? "80px" : "300px"})`, left: isCollapsed ? "80px" : "300px" }}>
+            style={{ width: `calc(100% - ${isCollapsed ? "80px" : "300px"})`, left: isCollapsed ? "80px" : "300px" }}>
 
             {/* Title ชิด Sidebar */}
-            <h1 className="text-xl md:text-[25px] font-bold text-[#565656] pl-6">{currentTitle}</h1>
+            {!isKnownPage ? (
+                <Link href="/camp">
+                    <span className="text-[16px] hover:underline cursor-pointer text-[#565656] pl-6 flex items-center gap-2">
+                        <Image src="/images/admin/adminNavbar/back_icon.svg" alt="Back" width={10} height={10} />
+                        กลับสู่หน้ารายการ
+                    </span>
+                </Link>
+            ) : (
+                <h1 className="text-xl md:text-[25px] font-bold text-[#565656] pl-6">
+                    {pageTitles[pathname]}
+                </h1>
+            )}
 
             {/* Username & เปลี่ยนภาษา (อยู่ชิดขวาสุด) */}
             <div className="flex items-center gap-6 ml-auto pr-6">
@@ -63,7 +80,6 @@ const AdminNavbar = ({ isCollapsed }: { isCollapsed: boolean }) => {
                     )}
                 </div>
 
-                {/* เปลี่ยนภาษา (Dropdown แสดงเมื่อ hover) */}
                 {/* เปลี่ยนภาษา (Dropdown แสดงเมื่อ hover) */}
                 <div
                     className="relative flex items-center gap-2 cursor-pointer"
