@@ -3,6 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { format, setMonth, setYear } from "date-fns";
 import { enUS } from "date-fns/locale";
+import Image from "next/image";
 
 interface DateInputProps {
   selected: Date | null;
@@ -95,7 +96,7 @@ const DateInput: React.FC<DateInputProps> = ({ selected, onChange, placeholderTe
 
       {/* ไอคอนปฏิทิน */}
       <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
-        <img src="/images/Calendar.svg" alt="ปฏิทิน" width={16} height={16} />
+        <Image src="/images/Calendar.svg" alt="ปฏิทิน" width={16} height={16} />
       </span>
     </div>
   );

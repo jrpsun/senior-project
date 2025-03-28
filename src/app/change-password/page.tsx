@@ -7,6 +7,7 @@ import { usePasswordForm } from "../../hooks/usePasswordForm";
 import Navbar from "../../components/Navbar";
 import Popup from "../../components/common/popup";
 import { validatePassword, validateConfirmPassword, preventThaiInput } from "../../utils/validation";
+import Image from "next/image";
 
 const PasswordInput = ({
     label,
@@ -48,7 +49,7 @@ const PasswordInput = ({
                 className="absolute right-3 inset-y-0 flex items-center text-gray-500"
                 onClick={() => setShowPassword(!showPassword)}
             >
-                <img
+                <Image
                     src={showPassword ? "/images/Hide_Password.svg" : "/images/Unhide_Password.svg"}
                     alt="Toggle Password Visibility"
                     width={24}
@@ -59,7 +60,7 @@ const PasswordInput = ({
 
         {infoMessage && (
             <p className="text-[#B3B3B3] text-sm mt-1 flex items-center">
-                <img src="/images/Info_Message.svg" alt="Info Icon" width={20} height={20} className="mr-2" />
+                <Image src="/images/Info_Message.svg" alt="Info Icon" width={20} height={20} className="mr-2" />
                 {infoMessage}
             </p>
         )}
@@ -71,7 +72,7 @@ const PasswordInput = ({
 
 export default function ChangePassword() {
     const router = useRouter();
-    const { language, setLanguage } = useLanguage();
+    const { language } = useLanguage();
     const [isPopupOpen, setPopupOpen] = useState(false);
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
@@ -140,7 +141,9 @@ export default function ChangePassword() {
 
     return (
         <div className="bg-white min-h-screen">
-            <Navbar />
+            <div className="z-50 relative">
+                <Navbar />
+            </div>
 
             <div className="pl-20 pt-4 text-sm text-gray-500">
                 <button
@@ -165,6 +168,12 @@ export default function ChangePassword() {
                         label={language === "TH" ? "รหัสผ่านปัจจุบัน" : "Current Password"}
                         value={formData.currentPassword}
                         onChange={(value) => handleChange("currentPassword", value)}
+                        onBlur={() => {
+                            setErrors((prev) => ({
+                                ...prev,
+                                currentPassword: "",
+                            }));
+                        }}
                         error={errors.currentPassword}
                         showPassword={showCurrentPassword}
                         setShowPassword={setShowCurrentPassword}
@@ -182,7 +191,7 @@ export default function ChangePassword() {
                                 password: errorsArray.length > 0 ? errorsArray[0] : "",
                             }));
                         }}
-                        
+
                         error={errors.password}
                         showPassword={showNewPassword}
                         setShowPassword={setShowNewPassword}
@@ -223,10 +232,10 @@ export default function ChangePassword() {
 
             <Popup type="successInfo" isOpen={isPopupOpen} onClose={() => router.push("/login")} />
             <Popup
-    type="errorPasswordInfo"
-    isOpen={isErrorPopupOpen}
-    onClose={() => setErrorPopupOpen(false)}
-/>
+                type="errorPasswordInfo"
+                isOpen={isErrorPopupOpen}
+                onClose={() => setErrorPopupOpen(false)}
+            />
         </div>
     );
 }

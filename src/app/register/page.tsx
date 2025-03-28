@@ -1,5 +1,4 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useForm } from "../../hooks/useForm";
@@ -29,7 +28,6 @@ const initialFormData = {
 };
 
 export default function RegisterPage() {
-  const router = useRouter();
   const { language, setLanguage } = useLanguage(); // ดึง language ก่อน
   const { formData, errors, setErrors, handleChange, validateForm } = useForm(initialFormData, language);
   const [nationalities, setNationalities] = useState([]);
@@ -45,14 +43,14 @@ export default function RegisterPage() {
       .then((data) => {
 
         // เรียงตาม A-Z (English) ก่อน แล้วค่อย ก-ฮ (Thai)
-        const sortedNationalities = data.sort((a, b) => {
+        const sortedNationalities = data.sort((a: { [key: string]: string }, b: { [key: string]: string }) => {
           const langKey = language === "ENG" ? "English" : "Thai";
           return a[langKey].localeCompare(b[langKey], "th");
         });
 
         // แปลงข้อมูลสำหรับ Dropdown
         setNationalities(
-          sortedNationalities.map((nation) => ({
+          sortedNationalities.map((nation: { English: string; Thai: string }) => ({
             value: nation.English, // ใช้ค่า English เป็นค่า value
             label: language === "ENG" ? nation.English : nation.Thai, // แสดงผลตามภาษาที่เลือก
           }))
@@ -62,16 +60,15 @@ export default function RegisterPage() {
   }, [language]);
 
   useEffect(() => {
-    if (formData.nationality === "Thai") {
-      // ถ้าเลือกไทย → บังคับเลือก citizen (บัตรประชาชน)
+    if (formData.nationality === "Thai" && formData.idType !== "citizen") {
       handleChange("idType", "citizen");
-      handleChange("idNumber", ""); // เคลียร์ค่า ID Number
-    } else if (formData.nationality !== null) {
-      // ถ้าเลือกสัญชาติอื่น → บังคับเลือก passport
+      handleChange("idNumber", "");
+    } else if (formData.nationality !== "Thai" && formData.nationality !== null && formData.idType !== "passport") {
       handleChange("idType", "passport");
-      handleChange("idNumber", ""); // เคลียร์ค่า ID Number
+      handleChange("idNumber", "");
     }
-  }, [formData.nationality]);
+  }, [formData.nationality, formData.idType, handleChange]);
+  
 
 
   const handleRegisterClick = (e: { preventDefault: () => void }) => {

@@ -9,9 +9,15 @@ import "react-datepicker/dist/react-datepicker.css";
 interface PopupAdmissionRoundProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: any) => void;
+  onSave: (data: { course: { value: string; label: string } | null; roundName: string; academicYear: { value: string; label: string } | null; startDate: string; endDate: string }) => void;
   onDelete?: () => void;
-  initialData?: any;
+  initialData?: {
+    course?: { value: string; label: string } | null;
+    roundName?: string;
+    academicYear?: { value: string; label: string } | null;
+    startDate?: string;
+    endDate?: string;
+  };
   isDeleteMode?: boolean;
   courseMapping: Record<string, string>;
   courseMappingReverse: Record<string, string>;
@@ -25,7 +31,13 @@ const PopupAdmissionRound: React.FC<PopupAdmissionRoundProps> = ({
   initialData,
   isDeleteMode = false
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    course: { value: string; label: string } | null;
+    roundName: string;
+    academicYear: { value: string; label: string } | null;
+    startDate: string;
+    endDate: string;
+  }>({
     course: null,
     roundName: "",
     academicYear: null,
@@ -38,15 +50,19 @@ const PopupAdmissionRound: React.FC<PopupAdmissionRoundProps> = ({
       setFormData({
         course: initialData.course
           ? {
-            value: initialData.course.value?.value || initialData.course.value || initialData.course,
-            label: initialData.course.label?.label || initialData.course.label || initialData.course
+            value: typeof initialData.course?.value === "object" && "value" in (initialData.course.value as { value: string })
+              ? (initialData.course.value as { value: string }).value
+              : String(initialData.course.value),
+            label: initialData.course.label || String(initialData.course.value)
           }
           : null,
         roundName: initialData.roundName || "",
         academicYear: initialData.academicYear
           ? {
-            value: initialData.academicYear.value?.value || initialData.academicYear.value || initialData.academicYear,
-            label: initialData.academicYear.label?.label || initialData.academicYear.label || initialData.academicYear
+            value: typeof initialData.academicYear?.value === "object" && "value" in (initialData.academicYear.value as { value: string })
+              ? String((initialData.academicYear.value as { value: string }).value)
+              : String(initialData.academicYear?.value || initialData.academicYear),
+            label: String(initialData.academicYear.label || initialData.academicYear)
           }
           : null,
         startDate: initialData.startDate || "",
@@ -67,7 +83,7 @@ const PopupAdmissionRound: React.FC<PopupAdmissionRoundProps> = ({
     console.log("Form Data Updated:", formData);
   }, [formData]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: { value: string; label: string } | string | null) => {
     setFormData((prev) => ({
       ...prev,
       [field]: typeof value === "object" && value !== null ? { value: value.value, label: value.label } : value,
@@ -90,7 +106,7 @@ const PopupAdmissionRound: React.FC<PopupAdmissionRoundProps> = ({
             <>
 
               <Dialog.Title className="text-[18px] text-[#565656] font-bold mb-4 flex items-center">
-                <Image src="/images/Info_Message.svg" alt="Warning" width={24} height={24} className="mr-2" />
+                <Image src="/images/admin/permission/warning_icon.svg" alt="Warning" width={32} height={32} className="mr-2" />
                 คุณแน่ใจหรือไม่ว่าต้องการลบรอบรับสมัครนี้?
               </Dialog.Title>
               <p className="text-[#565656] text-[15px] mb-6">เมื่อดำเนินการลบแล้ว ข้อมูลที่เกี่ยวข้องจะถูกลบถาวร และไม่สามารถกู้คืนได้</p>

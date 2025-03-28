@@ -14,6 +14,8 @@ const pageTitles = {
     "/admin/reports": "รายงานระบบ",
     "/admin/settings": "ตั้งค่าระบบ",
     "/admin/screening/summary": "สรุปผลการคัดกรองเบื้องต้น", 
+    "/admin/applicant": "รายการใบสมัคร",
+    "/admin/interview/schedule" : "กำหนดรายละเอียดการสัมภาษณ์"
 };
 
 // รายการเมนูใน Dropdown ของ Admin
@@ -27,11 +29,12 @@ interface AdminNavbarProps {
     backToPage?: { href: string; label: string };
 }
 
-const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed, backToPage }) => {
+const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [langDropdownOpen, setLangDropdownOpen] = useState(false);
     const pathname = usePathname();
     const isKnownPage = pathname in pageTitles;
+    
 
     return (
         <div className="bg-white text-black fixed top-0 z-40 h-[80px] flex items-center transition-all shadow-md"
@@ -46,8 +49,8 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed, backToPage }) =>
                     </span>
                 </Link>
             ) : (
-                <h1 className="text-xl md:text-[25px] font-bold text-[#565656] pl-6">
-                    {pageTitles[pathname]}
+                <h1 className="text-xl md:text-[24px] font-bold text-[#565656] pl-6">
+                    {isKnownPage ? pageTitles[pathname as keyof typeof pageTitles] : ""}
                 </h1>
             )}
 

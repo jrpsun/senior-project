@@ -2,16 +2,18 @@
 import React from "react";
 
 interface FormFieldProps {
-  label: string;
+  label: React.ReactNode;
   value: string;
   onChange: (value: string) => void;
-  onBlur?: () => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   error?: string;
   required?: boolean;
   type?: string;
   placeholder?: string;
   boldLabel?: boolean;
   height?: string; 
+  className?: string;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 const FormField: React.FC<FormFieldProps> = ({
@@ -48,7 +50,7 @@ const FormField: React.FC<FormFieldProps> = ({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
+        onBlur={(e) => onBlur?.(e)}
         className={`w-full px-3 py-2 border rounded-[10px] text-[#565656] ${
           error ? "border-red-500" : "border-[#C4C4C4]"
         }`}

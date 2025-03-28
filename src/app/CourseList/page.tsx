@@ -6,17 +6,40 @@ import ictGuidance from "../../translation/ictGuidance";
 import dstGuidance from "../../translation/dstGuidance";
 import { useRouter, useSearchParams } from "next/navigation";
 import { NextButton } from "../../components/common/button";
+import Image from "next/image";
+
+// Define the type for document list items
+interface DocumentItem {
+  title: string;
+  details: string[];
+}
+
+// Define the type for texts
+interface GuidanceTexts {
+  title: string;
+  subtitle: string;
+  infoMessage: string;
+  documentHeader: string;
+  documentList: DocumentItem[];
+  uploadGuideHeader: string;
+  uploadGuide: string[];
+  warningHeader: string;
+  warningList: string[];
+  additionalDetailsHeader: string;
+  additionalDetails: string;
+  applicationAnnouncement: string;
+  nextButton: string;
+}
 
 export default function CourseList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const program = searchParams.get("program") || "DST"; // ค่าเริ่มต้นเป็น DST
 
-  const { language } = useLanguage();
+  const { language } = useLanguage() as { language: "TH" | "ENG" };
 
   // เลือก guidanceTexts ตามหลักสูตรที่สมัคร
-  const texts = program === "ICT" ? ictGuidance[language] : dstGuidance[language];
-
+  const texts: GuidanceTexts = program === "ICT" ? ictGuidance[language] : dstGuidance[language];
   return (
     <div className="bg-white min-h-screen">
       <Navbar />
@@ -35,7 +58,7 @@ export default function CourseList() {
             <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl lg:max-w-screen-xl p-2">
               <div className="p-2 rounded-lg flex items-center">
                 <span className="text-[#B3B3B3] flex items-center text-sm">
-                  <img src="/images/info_Message.svg" alt="Information" className="w-5 h-5 mr-2" />
+                <Image src="/images/info_Message.svg" alt="Information" width={20} height={20} className="mr-2" />
                   {texts.infoMessage}
                 </span>
               </div>
@@ -48,7 +71,8 @@ export default function CourseList() {
               <div className="p-5 bg-white rounded-lg w-full max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center mb-4">
-                  <img src="/images/guidance/document_icon.svg" alt="Document" className="w-8 h-8 mr-2" />
+                <Image src="/images/guidance/document_icon.svg" alt="Document" width={32} height={32} className="mr-2" />
+
                   <h2 className="font-bold text-xl text-[#008A90]">{texts.documentHeader}</h2>
                 </div>
 
@@ -76,7 +100,8 @@ export default function CourseList() {
               <div className="p-5 bg-white rounded-lg w-full max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center mb-4">
-                  <img src="/images/guidance/upload_guide_icon.svg" alt="Upload Guide" className="w-8 h-8 mr-3" />
+                <Image src="/images/guidance/upload_guide_icon.svg" alt="Upload Guide" width={32} height={32} className="mr-3" />
+
                   <h2 className="font-bold text-lg sm:text-xl text-[#008A90]">{texts.uploadGuideHeader}</h2>
                 </div>
 
@@ -96,7 +121,7 @@ export default function CourseList() {
               <div className="p-5 bg-white rounded-lg w-full max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center mb-4">
-                  <img src="/images/guidance/warning_icon.svg" alt="Warning" className="w-8 h-8 mr-3" />
+                <Image src="/images/guidance/warning_icon.svg" alt="Warning" width={32} height={32} className="mr-3" />
                   <h2 className="font-bold text-lg sm:text-xl text-[#008A90]">{texts.warningHeader}</h2>
                 </div>
 
@@ -126,7 +151,7 @@ export default function CourseList() {
                     rel="noopener noreferrer"
                     className="ml-2 flex items-center text-[#008A90] font-medium hover:underline"
                   >
-                    <img src="/images/guidance/link_icon.svg" alt="Link" className="w-5 h-5 mr-1" />
+                    <Image src="/images/guidance/link_icon.svg" alt="Link" width={20} height={20} className="mr-1" />
                     {texts.applicationAnnouncement}
                   </a>
                 </div>

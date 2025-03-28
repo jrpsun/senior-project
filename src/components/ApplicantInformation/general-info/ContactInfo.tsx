@@ -4,7 +4,7 @@ import { useState } from "react";
 import FormField from "../../form/FormField";
 import { useLanguage } from "../../../hooks/LanguageContext"; // ใช้ context เพื่อดึงค่าภาษา
 import { generalInfoTexts } from "../../../translation/generalInfo";
-import { formatPhoneNumber, preventNonNumericInput } from "../../../utils/validation";
+import { formatPhoneNumber} from "../../../utils/validation";
 
 const ContactInfo: React.FC = () => {
   const { language } = useLanguage();
@@ -39,7 +39,6 @@ const ContactInfo: React.FC = () => {
               value={formData.phoneNumber}
               onChange={(value) => handleChange("phoneNumber", formatPhoneNumber(value))}
               placeholder={currentTexts.phonePlaceholder}
-              onKeyDown={preventNonNumericInput}
               required
               type="tel"
             />

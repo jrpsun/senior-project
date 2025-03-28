@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { CheckCircle, X } from "lucide-react";
+import Image from "next/image";
 
 interface AlertProps {
   message: string;
@@ -26,7 +27,7 @@ const Alert: React.FC<AlertProps> = ({ message, type, onClose }) => {
       {type === "success" ? (
         <CheckCircle className="text-[#166534" size={25} />
       ) : (
-        <img src="/images/error-icon.svg" alt="Error Icon" width={25} height={25} />
+        <Image src="/images/error-icon.svg" alt="Error Icon" width={25} height={25} />
       )}
 
       {/* ข้อความแจ้งเตือน (กำหนดความกว้าง 600px เมื่อหน้าจอใหญ่) */}

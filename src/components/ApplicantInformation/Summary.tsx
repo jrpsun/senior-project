@@ -14,7 +14,7 @@ import Popup from "../common/popup";
 
 const Summary = () => {
     const router = useRouter();
-    const { language } = useLanguage();
+    const { language } = useLanguage() as { language: "TH" | "EN" };
     const [isConfirmOpen, setConfirmOpen] = useState(false);
     const [isSuccessOpen, setSuccessOpen] = useState(false);
     const [isCancelOpen, setCancelOpen] = useState(false);

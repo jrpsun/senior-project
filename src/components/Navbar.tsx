@@ -1,5 +1,13 @@
 "use client";
 
+// Extend the Window interface to include dropdownTimeout and langDropdownTimeout
+declare global {
+  interface Window {
+    dropdownTimeout?: ReturnType<typeof setTimeout>;
+    langDropdownTimeout?: ReturnType<typeof setTimeout>;
+  }
+}
+
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";

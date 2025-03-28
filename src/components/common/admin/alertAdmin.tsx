@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { X } from "lucide-react";
+import Image from "next/image";
 
 interface AlertProps {
   message: string;
@@ -27,7 +28,7 @@ const AlertAdmin: React.FC<AlertProps> = ({ message, onClose }) => {
 
       <div className="flex items-center gap-3 pr-6">
         {/* ไอคอนแจ้งเตือน */}
-        <img src="/images/alertSuccess_icon.svg" alt="Success Icon" width={30} height={30} />
+        <Image src="/images/alertSuccess_icon.svg" alt="Success Icon" width={30} height={30} />
 
         {/* ข้อความแจ้งเตือน */}
         <span className="text-sm font-medium text-[#166534] break-words">

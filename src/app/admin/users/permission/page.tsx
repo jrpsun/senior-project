@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect,useCallback } from "react";
 import SideBar from "../../../../components/SideBar";
 import AdminNavbar from "../../../../components/adminNavbar";
 import Image from "next/image";
@@ -13,9 +13,18 @@ const PermissionPage = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false);
   const [isEditRoleOpen, setIsEditRoleOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState<{
+    id: number;
+    title: string;
+    username: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    role: string[];
+    lastUsed: string;
+  } | null>(null);
   const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
-  const menuRef = useRef(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -26,39 +35,28 @@ const PermissionPage = () => {
     email: "",
     role: "",
   });
+  const parseThaiDate = React.useCallback((thaiDate: string): Date => {
+    const monthMapping = {
+      "ม.ค.": "01", "ก.พ.": "02", "มี.ค.": "03", "เม.ย.": "04",
+      "พ.ค.": "05", "มิ.ย.": "06", "ก.ค.": "07", "ส.ค.": "08",
+      "ก.ย.": "09", "ต.ค.": "10", "พ.ย.": "11", "ธ.ค.": "12"
+    };
 
-  const handleSearch = () => {
-    const filteredData = permissions.filter(user => {
-      const nameMatch = searchData.username
-        ? user.username?.toLowerCase().includes(searchData.username.toLowerCase())
-        : true;
+    if (!thaiDate) return new Date(0);
+    const parts = thaiDate.split(" ");
+    if (parts.length < 4) return new Date(0);
 
-      const lastNameMatch = searchData.lastName
-        ? user.lastName?.toLowerCase().includes(searchData.lastName.toLowerCase())
-        : true;
+    const [day, thaiMonth, thaiYear, time] = parts;
+    const month = monthMapping[thaiMonth as keyof typeof monthMapping];
+    const year = parseInt(thaiYear, 10) - 543;
+    const [hour, minute] = time.replace("น.", "").trim().split(".");
 
-      const emailMatch = searchData.email
-        ? user.email?.toLowerCase().includes(searchData.email.toLowerCase())
-        : true;
+    return new Date(`${year}-${month}-${day}T${hour}:${minute}:00`);
+  }, []);
+  
 
-      const roleMatch = searchData.role
-        ? user.role.some(role => role.includes(searchData.role))
-        : true;
 
-      return nameMatch && lastNameMatch && emailMatch && roleMatch;
-    });
-
-    const updatedPermissions = filteredData.map(user => ({
-      ...user,
-      lastUsedDate: parseThaiDate(user.lastUsed)
-    }));
-
-    updatedPermissions.sort((a, b) =>
-      sortOrder === "recent" ? b.lastUsedDate - a.lastUsedDate : a.lastUsedDate - b.lastUsedDate
-    );
-
-    setSortedPermissions(updatedPermissions);
-  };
+  // Removed duplicate declaration of sortOrder
   // ข้อมูลสิทธิ์ตัวอย่าง (Mock Data)
   const [permissions, setPermissions] = useState([
     { id: 1, title: "อาจารย์ ดร.", username: "พิสุทธิ์ธร", lastName: "คณาวัฒนาวงศ์", email: "pisutthorn.kana@university.ac.th", phone: "089-123-4567", role: ["กรรมการหลักสูตร", "กรรมการสัมภาษณ์"], lastUsed: "27 ม.ค. 2568 17.25 น." },
@@ -72,13 +70,50 @@ const PermissionPage = () => {
     { id: 9, title: "นาย", username: "เกษมศักดิ์", lastName: "วิริยะกิจ", email: "kasemsak.wiriya@university.ac.th", phone: "084-567-8901", role: ["ฝ่ายการศึกษา"], lastUsed: "18 ม.ค. 2568 17.25 น." },
     { id: 10, title: "นางสาว", username: "นรินทร์พร", lastName: "สุขประเสริฐ", email: "narin.porn@university.ac.th", phone: "083-456-7890", role: ["ฝ่ายการศึกษา"], lastUsed: "14 ม.ค. 2568 17.25 น." },
   ]);
-
   const [sortOrder, setSortOrder] = useState("recent");
+  
+  const handleSearch = useCallback(() => {
+    const filteredData = permissions.filter(user => {
+      const nameMatch = searchData.username
+        ? user.username?.toLowerCase().includes(searchData.username.toLowerCase())
+        : true;
+  
+      const lastNameMatch = searchData.lastName
+        ? user.lastName?.toLowerCase().includes(searchData.lastName.toLowerCase())
+        : true;
+  
+      const emailMatch = searchData.email
+        ? user.email?.toLowerCase().includes(searchData.email.toLowerCase())
+        : true;
+  
+      const roleMatch = searchData.role
+        ? user.role.some(role => role.includes(searchData.role))
+        : true;
+  
+      return nameMatch && lastNameMatch && emailMatch && roleMatch;
+    });
+  
+    const updatedPermissions = filteredData.map(user => ({
+      ...user,
+      lastUsedDate: parseThaiDate(user.lastUsed)
+    }));
+  
+    updatedPermissions.sort((a, b) =>
+      sortOrder === "recent"
+        ? (b.lastUsedDate?.getTime() || 0) - (a.lastUsedDate?.getTime() || 0)
+        : (a.lastUsedDate?.getTime() || 0) - (b.lastUsedDate?.getTime() || 0)
+    );
+  
+    setSortedPermissions(updatedPermissions);
+  }, [permissions, searchData, sortOrder, parseThaiDate]);
+  
+
+
   const toggleSortOrder = () => {
     setSortOrder(prev => prev === "recent" ? "oldest" : "recent");
   };
   // เปิด PopupMenu ตรงตำแหน่งของปุ่ม
-  const handleOpenMenu = (event: React.MouseEvent, user) => {
+  const handleOpenMenu = (event: React.MouseEvent, user: typeof permissions[number]) => {
     event.stopPropagation();
     const rect = event.currentTarget.getBoundingClientRect();
     const menuHeight = 150; // ปรับตามขนาดของเมนูจริง
@@ -106,7 +141,7 @@ const PermissionPage = () => {
     setIsMenuOpen(false);
   };
   // ฟังก์ชันแสดง Alert
-  const handleShowAlert = (message) => {
+  const handleShowAlert = (message: string) => {
     setAlertMessage(message);
     setShowAlert(true);
   };
@@ -117,11 +152,28 @@ const PermissionPage = () => {
   };
 
   // ฟังก์ชันบันทึกข้อมูลเมื่อเพิ่มผู้ใช้ใหม่
-  const handleSaveAddUser = (newUser) => {
+  const handleSaveAddUser = (newUser: {
+    id?: number;
+    title: string;
+    username: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    role: string[];
+    lastUsed?: string;
+  }) => {
     if (!newUser) return;
 
-    setPermissions((prev) => [...prev, { ...newUser, id: prev.length + 1 }]);
-    setSortedPermissions((prev) => [...prev, { ...newUser, id: prev.length + 1 }]);
+    setPermissions((prev) => [...prev, { ...newUser, id: prev.length + 1, lastUsed: newUser.lastUsed || "" }]);
+    setSortedPermissions((prev) => [
+      ...prev,
+      { 
+        ...newUser, 
+        id: prev.length + 1, 
+        lastUsed: newUser.lastUsed || "", 
+        lastUsedDate: parseThaiDate(newUser.lastUsed || "") 
+      },
+    ]);
 
     handleShowAlert(`เพิ่มผู้ใช้ "${newUser.title} ${newUser.username} ${newUser.lastName}" สำเร็จ!`);
 
@@ -136,11 +188,24 @@ const PermissionPage = () => {
   };
 
   // ฟังก์ชันบันทึกข้อมูลเมื่อแก้ไขผู้ใช้
-  const handleSaveEditUser = (updatedUser) => {
+  const handleSaveEditUser = (updatedUser: {
+    id: number;
+    title: string;
+    username: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    role: string[];
+    lastUsed?: string;
+  }) => {
     if (!selectedUser) return;
 
     setPermissions((prev) =>
-      prev.map((user) => (user.id === selectedUser.id ? updatedUser : user))
+      prev.map((user) =>
+        user.id === selectedUser.id
+          ? { ...updatedUser, lastUsed: updatedUser.lastUsed || "" }
+          : user
+      )
     );
 
     handleShowAlert(`ข้อมูล "${updatedUser.title} ${updatedUser.username} ${updatedUser.lastName}" อัปเดตเรียบร้อย`);
@@ -150,7 +215,7 @@ const PermissionPage = () => {
 
 
   // เปิด Popup แก้ไขบทบาท (ลบ handleShowAlert ออก)
-  const handleEditRole = (user) => {
+  const handleEditRole = (user: typeof permissions[number]) => {
     setSelectedUser(user);
     setIsEditRoleOpen(true);
     handleCloseMenu();
@@ -158,7 +223,7 @@ const PermissionPage = () => {
 
 
   // ฟังก์ชันบันทึกข้อมูลเมื่อแก้ไขบทบาท
-  const handleSaveRole = (updatedRoles) => {
+  const handleSaveRole = (updatedRoles: string[]) => {
     if (!selectedUser) return;
 
     setPermissions((prev) =>
@@ -173,7 +238,7 @@ const PermissionPage = () => {
   };
 
   // เปิด Popup ลบผู้ใช้
-  const handleDeleteUser = (user) => {
+  const handleDeleteUser = (user: typeof permissions[number]) => {
     setSelectedUser(user);
     setIsDeletePopupOpen(true);
     handleCloseMenu();
@@ -189,41 +254,32 @@ const PermissionPage = () => {
     setSelectedUser(null);
   };
 
-  const monthMapping = {
-    "ม.ค.": "01", "ก.พ.": "02", "มี.ค.": "03", "เม.ย.": "04",
-    "พ.ค.": "05", "มิ.ย.": "06", "ก.ค.": "07", "ส.ค.": "08",
-    "ก.ย.": "09", "ต.ค.": "10", "พ.ย.": "11", "ธ.ค.": "12"
-  };
-
-  const parseThaiDate = (thaiDate) => {
-    if (!thaiDate) return new Date(0);
-    const parts = thaiDate.split(" ");
-    if (parts.length < 4) return new Date(0);
-
-    const [day, thaiMonth, thaiYear, time] = parts;
-    const month = monthMapping[thaiMonth];
-    const year = parseInt(thaiYear, 10) - 543;
-    const [hour, minute] = time.replace("น.", "").trim().split(".");
-
-    return new Date(`${year}-${month}-${day}T${hour}:${minute}:00`);
-  };
-
-  const [sortedPermissions, setSortedPermissions] = useState([]);
+  const [sortedPermissions, setSortedPermissions] = useState<Array<{
+    lastUsedDate: Date;
+    id: number;
+    title: string;
+    username: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    role: string[];
+    lastUsed: string;
+  }>>([]);
   useEffect(() => {
     const updatedPermissions = permissions.map(user => ({
       ...user,
       lastUsedDate: parseThaiDate(user.lastUsed)
     }));
     updatedPermissions.sort((a, b) =>
-      sortOrder === "recent" ? b.lastUsedDate - a.lastUsedDate : a.lastUsedDate - b.lastUsedDate
+      sortOrder === "recent" ? b.lastUsedDate.getTime() - a.lastUsedDate.getTime() : a.lastUsedDate.getTime() - b.lastUsedDate.getTime()
     );
 
     setSortedPermissions(updatedPermissions);
-  }, [sortOrder])
+  }, [sortOrder, parseThaiDate, permissions])
     ;
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         handleCloseMenu();
       }
     };
@@ -234,15 +290,11 @@ const PermissionPage = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMenuOpen]);
 
-  useEffect(() => {
-    handleSearch();
-  }, [sortOrder]);
-
   return (
     <div className="flex flex-col h-screen bg-white">
       {showAlert && <AlertAdmin message={alertMessage} onClose={handleCloseAlert} />}
       {/* Navbar */}
-      <AdminNavbar isCollapsed={isCollapsed} className="relative z-40" />
+      <AdminNavbar isCollapsed={isCollapsed} />
 
       <div className="flex flex-row flex-1 relative">
         {/* Sidebar */}
@@ -270,31 +322,37 @@ const PermissionPage = () => {
               <SearchField
                 label="ชื่อผู้ใช้งาน"
                 value={searchData.username}
-                onChange={(value) => setSearchData({ ...searchData, username: value })}
+                onChange={(value) => setSearchData({ ...searchData, username: value ? String(value) : "" })}
                 placeholder="กรุณากรอกข้อมูล"
               />
 
               <SearchField
                 label="นามสกุลผู้ใช้งาน"
                 value={searchData.lastName}
-                onChange={(value) => setSearchData({ ...searchData, lastName: value })}
+                onChange={(value) => setSearchData({ ...searchData, lastName: value ? String(value) : "" })}
                 placeholder="กรุณากรอกข้อมูล"
               />
 
               <SearchField
                 label="อีเมล"
                 value={searchData.email}
-                onChange={(value) => setSearchData({ ...searchData, email: value })}
+                onChange={(value) => setSearchData({ ...searchData, email: value ? String(value) : "" })}
                 placeholder="กรุณากรอกข้อมูล"
               />
-
               <SearchField
                 label="บทบาท"
                 type="dropdown"
                 value={searchData.role}
                 onChange={(selectedOption) =>
-                  setSearchData({ ...searchData, role: selectedOption ? selectedOption.value : null })
+                  setSearchData({
+                    ...searchData,
+                    role:
+                      typeof selectedOption === "object" && selectedOption !== null
+                        ? selectedOption.value
+                        : ""
+                  })
                 }
+                
                 options={[
                   { value: "กรรมการหลักสูตร", label: "กรรมการหลักสูตร" },
                   { value: "ประชาสัมพันธ์ (PR)", label: "ประชาสัมพันธ์ (PR)" },
@@ -349,12 +407,13 @@ const PermissionPage = () => {
               isEditRole={false}
               onSave={(formData) => {
                 if (isEditMode) {
-                  handleSaveEditUser(formData); // เซฟข้อมูลที่แก้ไข
+                  handleSaveEditUser({ ...formData, id: selectedUser?.id || 0 }); // เซฟข้อมูลที่แก้ไข
                 } else {
                   handleSaveAddUser(formData); // เซฟผู้ใช้ใหม่
                 }
               }}
-              userData={selectedUser} // ถ้าเป็นโหมดเพิ่ม userData จะเป็น null
+              onDelete={() => {}} // Provide a placeholder or appropriate function
+              userData={selectedUser || undefined} // ถ้าเป็นโหมดเพิ่ม userData จะเป็น undefined
             />
           )}
 
@@ -365,6 +424,7 @@ const PermissionPage = () => {
               isEdit={false}
               isEditRole={true}
               onSave={(formData) => handleSaveRole(formData.role)}
+              onDelete={() => {}} // Add a placeholder or appropriate function for onDelete
               userData={selectedUser} // ใช้ข้อมูลผู้ใช้ที่ถูกเลือก
             />
           )}
@@ -375,11 +435,13 @@ const PermissionPage = () => {
               onClose={() => setIsDeletePopupOpen(false)}
               isDelete={true}
               onDeleteConfirm={confirmDeleteUser}
-              userData={selectedUser}
+              onDelete={() => setIsDeletePopupOpen(false)} // Provide a placeholder or appropriate function
+              userData={selectedUser || undefined}
             />
           )}
 
           {/* ตารางแสดงรายการสิทธิ์ */}
+          
           <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
             <table className="w-full min-w-[1200px] border-collapse">
               <thead className="bg-[#F3F5F6] text-[#565656] text-left">
@@ -449,8 +511,8 @@ const PermissionPage = () => {
               isOpen={isMenuOpen}
               onClose={handleCloseMenu}
               onEdit={handleEditUser}
-              onEditRole={() => handleEditRole(selectedUser)}
-              onDelete={() => handleDeleteUser(selectedUser)}
+              onEditRole={() => selectedUser && handleEditRole(selectedUser)}
+              onDelete={() => selectedUser && handleDeleteUser(selectedUser)}
               position={menuPosition}
             />
           )}

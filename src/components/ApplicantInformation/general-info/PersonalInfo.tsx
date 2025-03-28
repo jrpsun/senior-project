@@ -19,20 +19,38 @@ import DateInput from "../../common/date";
 const fetchData = async (url: string, isLocal: boolean = false) => {
   try {
     const response = isLocal ? await fetch(url) : await axios.get(url);
-    return isLocal ? await response.json() : response.data;
+    if (isLocal && response instanceof Response) {
+      return await response.json();
+    }
+    if (isLocal && response instanceof Response) {
+      return await response.json();
+    }
+    if (!isLocal && 'data' in response) {
+      return response.data;
+    }
+    throw new Error("Unexpected response format");
   } catch (error) {
     console.error(`Error fetching data from ${url}:`, error);
     return [];
   }
 };
 
-const sortByLanguage = (data: any[], lang: string, type: "country" | "nationality") => {
+interface CountryOrNationality {
+  alpha2?: string;
+  English?: string;
+  name?: string;
+  enName?: string;
+  Thai?: string;
+}
+
+const sortByLanguage = (data: CountryOrNationality[], lang: string, type: "country" | "nationality") => {
   return data
     .map((item) => ({
       value: type === "country" ? item.alpha2 : item.English, // ใช้ "alpha2" สำหรับประเทศ และ "English" สำหรับสัญชาติ
       label: lang === "TH" ? (type === "country" ? item.name : item.Thai) : (type === "country" ? item.enName : item.English),
     }))
-    .sort((a, b) => a.label.localeCompare(b.label, lang === "TH" ? "th" : "en"));
+    .filter((item) => item.label !== undefined)
+    .sort((a, b) => a.label!.localeCompare(b.label!, lang === "TH" ? "th" : "en"));
 };
 
 
@@ -42,8 +60,8 @@ const PersonalInfo: React.FC = () => {
   const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
   const [nationalities, setNationalities] = useState<{ value: string; label: string }[]>([]);
   const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]);
-  const [districts, setDistricts] = useState<{ value: string; label: string }[]>([]);
-  const [subDistricts, setSubDistricts] = useState<{ value: string; label: string; postalCode: number }[]>([]);
+  const [districts, setDistricts] = useState<{ value: string; label: string; province_id: string }[]>([]);
+  const [subDistricts, setSubDistricts] = useState<{ value: string; label: string; postalCode: number; amphure_id: string }[]>([]);
   const handleChange = (field: string, value: string | number) => {
     setFormData((prev) => ({
       ...prev,
@@ -132,8 +150,16 @@ const PersonalInfo: React.FC = () => {
           fetchData("/data/nationalities.json", true),
         ]);
 
-        setCountries(sortByLanguage(countriesData, language, "country"));
-        setNationalities(sortByLanguage(nationalitiesData, language, "nationality"));
+        setCountries(
+          sortByLanguage(countriesData, language, "country").filter(
+            (item) => item.value !== undefined && item.label !== undefined
+          ) as { value: string; label: string }[]
+        );
+        setNationalities(
+          sortByLanguage(nationalitiesData, language, "nationality").filter(
+            (item) => item.value !== undefined && item.label !== undefined
+          ) as { value: string; label: string }[]
+        );
 
       } catch (error) {
         console.error("Error loading data:", error);
@@ -371,10 +397,9 @@ const PersonalInfo: React.FC = () => {
                     {currentTexts?.passportExpiry || "วันหมดอายุของหนังสือเดินทาง"} <span className="text-red-500">*</span>
                   </label>
                   <DateInput
-                    selected={passportexpiryDate}
-                    onChange={setpassportExpiryDate}
-                    placeholderText={currentTexts?.SelectPassportExpiry || "เลือกวันหมดอายุของหนังสือเดินทาง"}
-                  />
+                      selected={passportexpiryDate}
+                      onChange={setpassportExpiryDate}
+                      placeholderText={currentTexts?.SelectPassportExpiry || "เลือกวันหมดอายุของหนังสือเดินทาง"} mode={"birthdate"}                  />
                 </div>
 
                 {/* วัน/เดือน/ปีเกิด */}

@@ -6,6 +6,7 @@ import FileUpload from '../../components/form/FileUpload';
 import { BackButton, NextButton } from "../common/button";
 import { useLanguage } from "../../hooks/LanguageContext";
 import { additionalDocumentsTexts } from "../../translation/AdditionalDocsInfo";
+import Image from "next/image";
 
 const AdditionalDocuments = () => {
   const { language } = useLanguage();
@@ -50,7 +51,7 @@ const AdditionalDocuments = () => {
             </label>
             {/* Info message อยู่ด้านบน */}
             <div className="flex items-center text-[#B3B3B3] text-sm mb-2 mt-2">
-              <img
+              <Image
                 src="/images/Info_Message.svg"
                 alt="Info Icon"
                 width={20}

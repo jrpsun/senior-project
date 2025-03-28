@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import Select, { components, StylesConfig } from "react-select";
+import Select, {
+    StylesConfig,
+    SingleValueProps,
+    components,
+    DropdownIndicatorProps,
+  } from "react-select";
+  
 import Image from "next/image";
 
 interface Option {
@@ -56,7 +62,7 @@ const getCustomStyles = (): StylesConfig<Option, false> => ({
     }),
     valueContainer: (provided) => ({
         ...provided,
-        paddingLeft: "15px",
+        paddingLeft: "5px",
         height: "32px",
         display: "flex",
         alignItems: "center",
@@ -96,7 +102,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
 }) => {
     const [menuIsOpen, setMenuIsOpen] = useState(false);
 
-    const CustomIndicator = (props: any) => (
+    const CustomIndicator = (props: DropdownIndicatorProps<Option, false>) => (
         menuIsOpen && value ? (
             <components.ClearIndicator {...props}>
                 <button
@@ -115,9 +121,17 @@ const SearchField: React.FC<SearchFieldProps> = ({
             </components.DropdownIndicator>
         )
     );
-    const CustomSingleValue = (props: any) => (
+    const CustomSingleValue = (props: SingleValueProps<Option>) => (
         <components.SingleValue {...props}>
-            <div style={{ paddingLeft: "20px" }}>{props.children}</div>
+            <div style={{
+                width: "100%",
+                paddingLeft: "20px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+            }}>
+                {props.children}
+            </div>
         </components.SingleValue>
     );
 
@@ -142,7 +156,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
                         instanceId={`select-${label.replace(/\s+/g, "-").toLowerCase()}`}
                         options={options}
                         value={
-                            value && typeof value === "string"
+                            typeof value === "string"
                                 ? options.find((option) => option.value === value) || null
                                 : value
                         }
