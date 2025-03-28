@@ -4,6 +4,7 @@ import { useState } from "react";
 import CheckboxDropdown from "../../common/checkbox";
 import { useLanguage } from "../../../hooks/LanguageContext"; 
 import { generalInfoTexts, offlineOptions, onlineOptions } from "../../../translation/generalInfo"; 
+import Image from "next/image";
 
 const SubscriptionForm: React.FC = () => {
   const { language } = useLanguage();
@@ -22,7 +23,7 @@ const SubscriptionForm: React.FC = () => {
             {currentTexts.titleSubscription}
           </h2>
           <p className="text-[#B3B3B3] text-sm mt-1 flex items-center">
-            <img
+            <Image
               src="/images/Info_Message.svg"
               alt="Info Icon"
               width={20}

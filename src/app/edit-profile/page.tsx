@@ -10,7 +10,7 @@ import Popup from "../../components/common/popup";
 
 export default function EditProfile() {
   const router = useRouter();
-  const { language } = useLanguage();
+  const { language } = useLanguage() as { language: "TH" | "EN" };
   const [isPopupOpen, setPopupOpen] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -92,7 +92,7 @@ export default function EditProfile() {
           <div className="w-[300px] max-w-xs">
             <CustomSelect
               label={language === "TH" ? "คำนำหน้า " : "Title "}
-              options={getTitleOptions()[language] ?? []}
+              options={getTitleOptions()[language as "TH" | "EN"] ?? []}
               value={formData.prefix}
               onChange={(selectedOption) => handleChange("prefix", selectedOption ? selectedOption.value : "")}
               placeholder={language === "TH" ? "เลือกคำนำหน้า" : "Select Title"}

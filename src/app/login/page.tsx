@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@components/hooks/LanguageContext";
 import { loginTexts } from "../../translation/login";
+import Image from "next/image";
 
 export default function LoginPage() {
   const [citizenId, setCitizenId] = useState("");
@@ -52,7 +53,7 @@ export default function LoginPage() {
       {/* Background Image with Logo */}
       <div className="hidden md:block w-1/2 relative">
         {/* โลโก้มหาวิทยาลัยที่มุมบนซ้าย */}
-        <img
+        <Image
           src={language === "ENG" ? "/logo_ict_en.png" : "/logo_ict_th.png"}
           alt="มหาวิทยาลัยมหิดล โลโก้"
           width="200"
@@ -115,7 +116,7 @@ export default function LoginPage() {
                   className="absolute inset-y-0 right-3 flex items-center text-gray-500"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  <img
+                  <Image
                     src={showPassword ? "/images/Hide_Password.svg" : "/images/Unhide_Password.svg"}
                     alt="แสดง/ซ่อนรหัสผ่าน"
                     width={24}

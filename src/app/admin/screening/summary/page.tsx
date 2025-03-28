@@ -3,11 +3,27 @@ import React, { useState, useEffect } from "react";
 import SideBar from "../../../../components/SideBar";
 import AdminNavbar from "../../../../components/adminNavbar";
 import SearchField from "../../../../components/form/searchField";
+import Image from "next/image";
 
-const mockGroupedData = [
+interface GroupedData {
+    committeeName: string;
+    course: string;
+    round: string;
+    applicants: {
+        id: string;
+        name: string;
+        result: string;
+        comment?: string;
+    }[];
+    passed?: number;
+    failed?: number;
+    pending?: number;
+}
+
+const mockGroupedData: GroupedData[] = [
     {
         committeeName: "อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์",
-        course: "ITCS/B",
+        course: "ICT01",
         round: "1/68 - ICT Portfolio",
         applicants: [
             { id: "0000003", name: "พิชญะ วิสุทธิ์", result: "ผ่าน" },
@@ -18,7 +34,7 @@ const mockGroupedData = [
     },
     {
         committeeName: "อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล",
-        course: "ITCS/B",
+        course: "ICT01",
         round: "1/68 - ICT Portfolio",
         applicants: [
             { id: "0000013", name: "ชยุตม์ วัฒนานนท์", result: "ผ่าน" },
@@ -43,7 +59,17 @@ const ScreeningResultPage = () => {
         applicantName: "",
     });
     const [filteredData, setFilteredData] = useState(mockGroupedData);
-    const [summaryData, setSummaryData] = useState({});
+    interface SummaryData {
+        passed: number;
+        failed: number;
+        pending: number;
+    }
+
+    const [summaryData, setSummaryData] = useState<SummaryData>({
+        passed: 0,
+        failed: 0,
+        pending: 0,
+    });
 
     const checkPendingApplicants = () => {
         const hasPending = filteredData.some(group =>
@@ -86,29 +112,36 @@ const ScreeningResultPage = () => {
 
     // ฟังก์ชันค้นหาข้อมูล
     const handleSearch = () => {
-        const filtered = mockGroupedData.map(group => {
-            const filteredApplicants = group.applicants.filter(applicant => {
-                const matchCommittee =
-                    searchData.committee === "ทั้งหมด" ||
-                    group.committeeName.includes(searchData.committee);
-                const matchResult =
-                    searchData.result === "ทั้งหมด" || applicant.result === searchData.result;
-                const matchId =
-                    searchData.applicantId === "" || applicant.id.includes(searchData.applicantId);
-                const matchName =
-                    searchData.applicantName === "" || applicant.name.includes(searchData.applicantName);
+        const filtered = mockGroupedData
+            .filter(group => {
+                const matchCourse =
+                    searchData.course === "" || group.course === searchData.course;
+                return matchCourse;
+            })
+            .map(group => {
+                const filteredApplicants = group.applicants.filter(applicant => {
+                    const matchCommittee =
+                        searchData.committee === "ทั้งหมด" ||
+                        group.committeeName.includes(searchData.committee);
+                    const matchResult =
+                        searchData.result === "ทั้งหมด" || applicant.result === searchData.result;
+                    const matchId =
+                        searchData.applicantId === "" || applicant.id.includes(searchData.applicantId);
+                    const matchName =
+                        searchData.applicantName === "" || applicant.name.includes(searchData.applicantName);
 
-                return matchCommittee && matchResult && matchId && matchName;
-            });
+                    return matchCommittee && matchResult && matchId && matchName;
+                });
 
-            return {
-                ...group,
-                applicants: filteredApplicants,
-                passed: filteredApplicants.filter(a => a.result === "ผ่าน").length,
-                failed: filteredApplicants.filter(a => a.result === "ไม่ผ่าน").length,
-                pending: filteredApplicants.filter(a => a.result === "รอ").length
-            };
-        }).filter(group => group.applicants.length > 0);
+                return {
+                    ...group,
+                    applicants: filteredApplicants,
+                    passed: filteredApplicants.filter(a => a.result === "ผ่าน").length,
+                    failed: filteredApplicants.filter(a => a.result === "ไม่ผ่าน").length,
+                    pending: filteredApplicants.filter(a => a.result === "รอ").length
+                };
+            })
+            .filter(group => group.applicants.length > 0);
 
         setFilteredData(filtered); // อัปเดตข้อมูลที่กรองแล้ว
     };
@@ -119,7 +152,7 @@ const ScreeningResultPage = () => {
                 <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center z-50 bg-black/20">
                     <div className="bg-white p-6 rounded-lg shadow-xl max-w-[600px] w-full min-h-[175px] text-[#565656]">
                         <div className="flex items-center justify-start mb-4">
-                            <img
+                            <Image
                                 src="/images/admin/preliminaryResult/warning_export_icon.svg"
                                 alt="warning"
                                 className="w-8 h-8"
@@ -145,7 +178,7 @@ const ScreeningResultPage = () => {
                                     // ฟังก์ชัน export
                                 }}
                             >
-                                <img
+                                <Image
                                     src="/images/admin/preliminaryResult/download_icon.svg"
                                     alt="download"
                                     className="w-4 h-4"
@@ -183,18 +216,28 @@ const ScreeningResultPage = () => {
                                     type="dropdown"
                                     value={searchData.course}
                                     onChange={(option) =>
-                                        setSearchData({ ...searchData, course: option?.value || "" })
+                                        setSearchData({
+                                            ...searchData,
+                                            course: typeof option === "object" && option !== null ? option.value : ""
+                                        })
                                     }
-                                    options={[{ value: "ITCS/B", label: "ITCS/B" }]}
+                                    options={[
+                                        { value: "ICT01", label: "ICT01" },
+                                        { value: "DST01", label: "DST01" },
+                                    ]}
                                     placeholder="เลือกหลักสูตร"
                                 />
                             </div>
+
                             <div className="w-[300px] z-50 relative">
                                 <SearchField
                                     label="รอบรับสมัคร"
                                     type="dropdown"
                                     value={searchData.round}
-                                    onChange={(option) => setSearchData({ ...searchData, round: option?.value || "" })}
+                                    onChange={(option) => setSearchData({
+                                        ...searchData,
+                                        round: typeof option === "object" && option !== null ? option.value : ""
+                                    })}
                                     options={[{ value: "1/68 - ICT Portfolio", label: "1/68 - ICT Portfolio" }]}
                                     placeholder="เลือกรอบรับสมัคร"
                                 />
@@ -204,7 +247,10 @@ const ScreeningResultPage = () => {
                                     label="กรรมการหลักสูตร"
                                     type="dropdown"
                                     value={searchData.committee}
-                                    onChange={(option) => setSearchData({ ...searchData, committee: option?.value || "" })}
+                                    onChange={(option) => setSearchData({
+                                        ...searchData,
+                                        committee: typeof option === "object" && option !== null && "value" in option ? option.value : ""
+                                    })}
                                     options={[
                                         { value: "ทั้งหมด", label: "แสดงทั้งหมด" },
                                         { value: "พิสุทธิ์ธร", label: "อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์" },
@@ -218,7 +264,10 @@ const ScreeningResultPage = () => {
                                     label="ผลการคัดกรองเบื้องต้น"
                                     type="dropdown"
                                     value={searchData.result}
-                                    onChange={(option) => setSearchData({ ...searchData, result: option?.value || "" })}
+                                    onChange={(option) => setSearchData({
+                                        ...searchData,
+                                        result: typeof option === "object" && option !== null && "value" in option ? option.value : ""
+                                    })}
                                     options={[
                                         { value: "ทั้งหมด", label: "แสดงทั้งหมด" },
                                         { value: "ผ่าน", label: "ผ่านการพิจารณาเบื้องต้น" },
@@ -235,15 +284,17 @@ const ScreeningResultPage = () => {
                                     onClick={() => setIsExpanded(!isExpanded)}
                                     className="w-[40px] h-[40px] flex items-center justify-center border border-[#565656] rounded-md"
                                 >
-                                    <img
+                                    <Image
                                         src={
                                             isExpanded
                                                 ? "/images/admin/searchBar/show_less_icon.svg"
                                                 : "/images/admin/searchBar/show_more_icon.svg"
                                         }
                                         alt={isExpanded ? "แสดงน้อยลง" : "แสดงเพิ่มเติม"}
-                                        className="w-37 h-37"
+                                        width={37}
+                                        height={37}
                                     />
+
                                 </button>
 
                                 {/* ปุ่มล้างค่า */}
@@ -262,7 +313,8 @@ const ScreeningResultPage = () => {
 
                                     className="px-4 h-[40px] border border-gray-400 rounded-md text-[#565656] bg-white flex items-center gap-1"
                                 >
-                                    <img src="/images/admin/searchBar/clear_icon.svg" alt="reset" className="w-4 h-4" />
+                                    <Image src="/images/admin/searchBar/clear_icon.svg" alt="reset" width={16} height={16} />
+
                                     ล้างค่า
                                 </button>
 
@@ -272,12 +324,12 @@ const ScreeningResultPage = () => {
 
                                     className="px-4 h-[40px] rounded-md bg-[#008A90] hover:bg-[#007178] text-white flex items-center gap-2"
                                 >
-                                    <img src="/images/admin/searchBar/search_icon.svg" alt="search" className="w-4 h-4" />
+                                    <Image src="/images/admin/searchBar/search_icon.svg" alt="search" width={16} height={16} />
+
                                     ค้นหารายการ
                                 </button>
                             </div>
                         </div>
-
 
                         {isExpanded && (
                             <div className="flex flex-wrap gap-2 mb-4">
@@ -285,7 +337,7 @@ const ScreeningResultPage = () => {
                                     <SearchField
                                         label="เลขที่สมัคร"
                                         value={searchData.applicantId}
-                                        onChange={(value) => setSearchData({ ...searchData, applicantId: value })}
+                                        onChange={(value) => setSearchData({ ...searchData, applicantId: typeof value === "string" ? value : "" })}
                                         placeholder="กรุณากรอกข้อมูล"
                                     />
                                 </div>
@@ -294,7 +346,7 @@ const ScreeningResultPage = () => {
                                     <SearchField
                                         label="ชื่อ – นามสกุล ผู้สมัคร"
                                         value={searchData.applicantName}
-                                        onChange={(value) => setSearchData({ ...searchData, applicantName: value })}
+                                        onChange={(value) => setSearchData({ ...searchData, applicantName: typeof value === "string" ? value : "" })}
                                         placeholder="กรุณากรอกข้อมูล"
                                     />
                                 </div>
@@ -307,10 +359,11 @@ const ScreeningResultPage = () => {
                             onClick={checkPendingApplicants}  // ตรวจสอบสถานะผู้สมัครก่อน export
                             className="bg-[#00796B] hover:bg-[#028273] text-white px-4 py-2 rounded-md flex items-center gap-2"
                         >
-                            <img
+                            <Image
                                 src="/images/admin/searchBar/download_icon.svg"
                                 alt="Download Excel"
-                                className="w-4 h-4"
+                                width={16}
+                                height={16}
                             />
                             Export to Excel
                         </button>
@@ -323,7 +376,7 @@ const ScreeningResultPage = () => {
                         <div className="flex flex-wrap md:flex-nowrap gap-4 md:gap-10 items-start px-6 py-3 border-b border-gray-200 font-semibold">
                             {/* ผ่าน */}
                             <div className="flex items-center gap-2 w-full md:w-auto">
-                                <img src="/images/admin/preliminaryResult/pass_icon.svg" alt="ผ่าน" className="w-6 h-6" />
+                                <Image src="/images/admin/preliminaryResult/pass_icon.svg" alt="ผ่าน" width={24} height={24} />
                                 <span className="text-[#565656] text-lg">
                                     ผ่านการพิจารณาเบื้องต้น <span className="text-[#388E3C]">{summaryData.passed || 0} คน</span>
                                 </span>
@@ -331,7 +384,7 @@ const ScreeningResultPage = () => {
 
                             {/* ไม่ผ่าน */}
                             <div className="flex items-center gap-2 w-full md:w-auto">
-                                <img src="/images/admin/preliminaryResult/fail_icon.svg" alt="ไม่ผ่าน" className="w-6 h-6" />
+                                <Image src="/images/admin/preliminaryResult/fail_icon.svg" alt="ไม่ผ่าน" width={24} height={24} />
                                 <span className="text-[#565656] text-lg">
                                     ไม่ผ่านการพิจารณาเบื้องต้น <span className="text-[#D92D20]">{summaryData.failed || 0} คน</span>
                                 </span>
@@ -339,7 +392,7 @@ const ScreeningResultPage = () => {
 
                             {/* รอพิจารณา */}
                             <div className="flex items-center gap-2 w-full md:w-auto">
-                                <img src="/images/admin/preliminaryResult/pending_icon.svg" alt="รอพิจารณา" className="w-6 h-6" />
+                                <Image src="/images/admin/preliminaryResult/pending_icon.svg" alt="รอพิจารณา" width={24} height={24} />
                                 <span className="text-[#565656] text-lg">
                                     รอพิจารณาเพิ่มเติม <span className="text-[#DAA520]">{summaryData.pending || 0} คน</span>
                                 </span>
@@ -367,7 +420,7 @@ const ScreeningResultPage = () => {
                                 </div>
 
                                 <div className="overflow-x-auto">
-                                <table className="min-w-[700px] w-full text-[#333] border-t border-gray-200 table-fixed">
+                                    <table className="min-w-[700px] w-full text-[#333] border-t border-gray-200 table-fixed">
 
                                         <thead className="bg-[#F5F5F5] text-[#565656] text-left">
                                             <tr>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect,useMemo } from "react";
 import FormField from "../../form/FormField";
 import CustomSelect from "../../form/CustomSelect";
 import { useLanguage } from "../../../hooks/LanguageContext";
@@ -11,10 +11,13 @@ const EmergencyContact: React.FC = () => {
   const { language } = useLanguage();
   const currentTexts = generalInfoTexts[language] || generalInfoTexts["ENG"];
 
-  const errorMessages: Record<string, { invalidEmail: string }> = {
-    ENG: { invalidEmail: "Invalid email address" },
-    TH: { invalidEmail: "รูปแบบอีเมลไม่ถูกต้อง" },
-  };
+  const errorMessages = useMemo(
+    () => ({
+      ENG: { invalidEmail: "Invalid email address" },
+      TH: { invalidEmail: "รูปแบบอีเมลไม่ถูกต้อง" },
+    }),
+    []
+  );
 
   const [formData, setFormData] = useState({
     title: "",
@@ -35,13 +38,13 @@ const EmergencyContact: React.FC = () => {
     if (emailError && formData.email !== "") {
       setEmailError(errorMessages[language]?.invalidEmail || "Invalid email");
     }
-  }, [language, formData.email]);
+  }, [language, formData.email, emailError, errorMessages]);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleEmailBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleEmailBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const emailValid = validateEmail(e.target.value);
     if (!emailValid && e.target.value !== "") {
       setEmailError(errorMessages[language]?.invalidEmail || "Invalid email");

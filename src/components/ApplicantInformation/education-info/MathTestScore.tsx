@@ -18,10 +18,15 @@ const MathTestScore = () => {
 
     const [program, setProgram] = useState(programParam || "ICT");
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        testType: string | null;
+        score: string;
+        testDate: string | Date | null;
+        document: File | null;
+    }>({
         testType: "",
         score: "",
-        testDate: "",
+        testDate: null,
         document: null,
     });
 
@@ -34,11 +39,11 @@ const MathTestScore = () => {
 
     if (program !== "ICT") return null;
 
-    const handleChange = (field, value) => {
+    const handleChange = (field: string, value: string | File | null | Date) => {
         setFormData((prev) => {
             if (field === "testType") {
                 return {
-                    testType: value,
+                    testType: typeof value === "string" ? value : null,
                     score: "", // รีเซ็ตคะแนนเมื่อเปลี่ยนประเภทการสอบ
                     testDate: prev.testDate,
                     document: prev.document
@@ -92,7 +97,7 @@ const MathTestScore = () => {
 
                     <div className="grid grid-cols-1 lg:grid-cols-[400px_400px] lg:gap-x-[50px] gap-y-1 mb-1">
                         <div className="w-full max-w-[400px] mb-4">
-                            {["IGCSE_Math"].includes(formData.testType) ? (
+                            {["IGCSE_Math"].includes(formData.testType || "") ? (
                                 <CustomSelect
                                     label={currentTexts.score}
                                     options={ScoreOptions}
@@ -117,10 +122,10 @@ const MathTestScore = () => {
                         <div className="w-full sm:w-[400px] max-w-[400px]">
                             <label className="block text-[#565656]">{currentTexts.testDate}</label>
                             <DateInput
-                                selected={formData.testDate}
+                                selected={formData.testDate instanceof Date ? formData.testDate : null}
                                 onChange={(date) => handleChange("testDate", date)}
                                 placeholderText={currentTexts.selecttestDate}
-                                required
+                                mode="birthdate" // Set an appropriate mode value
                             />
                             <div className="flex items-start text-sm text-[#B3B3B3] mt-2">
                                 <svg

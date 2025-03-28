@@ -43,7 +43,7 @@ export const statuses = {
 };
 
 // ฟังก์ชันสำหรับดึงสถานะตาม category และ id
-export const getStatusById = (category, id) => {
+export const getStatusById = (category: keyof typeof statuses, id: string) => {
   if (!statuses[category]) return null; 
   return statuses[category].find(status => status.id === id) || null;
 };

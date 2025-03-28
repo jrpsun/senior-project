@@ -24,8 +24,6 @@ const EnglishTestScore = () => {
     }
   }, [programParam]);
 
-  if (program !== "ICT") return null;
-
   const [formData, setFormData] = useState({
     testType: "",
     score: "",
@@ -44,15 +42,17 @@ const EnglishTestScore = () => {
     readingComprehensionScore: ""
   });
 
-  const [errors, setErrors] = useState({}); // เก็บข้อผิดพลาด
+  const [errors, setErrors] = useState<Record<string, string>>({}); // เก็บข้อผิดพลาด
+
+  if (program !== "ICT") return null;
 
 
-  const handleChange = (field, value) => {
+  const handleChange = (field: string, value: string | number | File | null | undefined) => {
     setFormData((prev) => {
       // หากเปลี่ยน testType -> รีเซ็ตค่าทั้งหมด
       if (field === "testType") {
         return {
-          testType: value,
+          testType: typeof value === "string" ? value : "",
           score: "",
           testDate: "",
           document: null,
@@ -85,7 +85,7 @@ const EnglishTestScore = () => {
     }));
   };
 
-  const renderScoreField = (key, label, placeholder = "", info) => (
+  const renderScoreField = (key: string, label: string, placeholder = "", info: string) => (
     <div key={key} className="flex flex-col w-full sm:w-[400px]">
       <FormField
         label={label}
@@ -97,7 +97,7 @@ const EnglishTestScore = () => {
         onKeyDown={(event) => preventInvalidTestScoreInput(event, formData[key], formData.testType)}
       />
       {/* แสดง Error Message เฉพาะเมื่อมันเป็นข้อความ (ไม่ใช่ตัวเลข) */}
-      {errors[key] && isNaN(errors[key]) && <p className="text-red-500 text-sm mt-1">{errors[key]}</p>}
+      {errors[key] && isNaN(Number(errors[key])) && <p className="text-red-500 text-sm mt-1">{errors[key]}</p>}
       <p className="text-sm text-[#B3B3B3] mt-1">{info}</p>
     </div>
   );

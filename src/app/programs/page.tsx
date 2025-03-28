@@ -1,19 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter} from "next/navigation";
 import Navbar from "../../components/Navbar";
 import { useLanguage } from "../../hooks/LanguageContext";
 import programTexts from "../../translation/programs";
 import courseDataRaw from "../../data/courseData";
+import Image from "next/image";
 
 export default function CourseList() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [program, setProgram] = useState("DST"); // ค่า default เป็น DST
-  const { language } = useLanguage();
-  const [courseData, setCourseData] = useState([]);
-  const [filter, setFilter] = useState("all");
+  const [program] = useState("DST"); // ค่า default เป็น DST
+  const { language } = useLanguage() as { language: "TH" | "EN" };
+  interface Course {
+    name: string;
+    status: string;
+    timeLeft: string;
+    period: string;
+    round: string;
+    statusColor: string;
+    canApply: boolean;
+    shadow: string;
+  }
+  
+  const [courseData, setCourseData] = useState<Course[]>([]);
+  const [filter, setFilter] = useState<keyof typeof texts.filterOptions>("all");
 
   const texts = programTexts[language] ?? programTexts["TH"];
 
@@ -24,7 +35,7 @@ export default function CourseList() {
 
     const updatedCourses = courseDataRaw.map((course) => ({
       ...course,
-      name: course.name?.[language] ?? course.name, // ป้องกัน undefined
+      name: course.name?.[language as keyof typeof course.name] ?? course.name, // ป้องกัน undefined
       status: course.status?.[language] ?? "", // ป้องกัน undefined
       timeLeft: course.timeLeft?.[language] ?? "",
       period: course.period?.[language] ?? "",
@@ -91,7 +102,7 @@ export default function CourseList() {
               name="filter"
               id="filter"
               value={filter} // ใช้ key ของ filter
-              onChange={(e) => setFilter(e.target.value)} // setFilter ตรงๆ เป็น key
+              onChange={(e) => setFilter(e.target.value as keyof typeof texts.filterOptions)} // setFilter ตรงๆ เป็น key
               className="text-left px-2 py-[3px] bg-white border-none focus:outline-none appearance-none w-[165px]"
             >
               {Object.entries(texts.filterOptions).map(([key, value]) => (
@@ -140,7 +151,7 @@ export default function CourseList() {
 
               {/* ปฏิทิน & ช่วงเวลาสมัคร */}
               <div className="flex items-center gap-1">
-                <img src="/images/applicant-info/calendar.svg" alt="Calendar Icon" width={13} height={14} />
+                <Image src="/images/applicant-info/calendar.svg" alt="Calendar Icon" width={13} height={14} />
                 <span className="text-[14px] text-[#6B7280]">{course.period}</span>
               </div>
 
@@ -155,14 +166,14 @@ export default function CourseList() {
                       ["Closed", "ปิด"].includes(course.status) ? "bg-[#D1D5DB] text-[#6B7280] cursor-not-allowed" : "bg-[#008A91] text-white"
                     }`}
                   >
-                    <img src="/images/applicant-info/apply_icon.svg" alt="Apply Icon" width={20} height={16} />
+                    <Image src="/images/applicant-info/apply_icon.svg" alt="Apply Icon" width={20} height={16} />
                     {texts.apply}
                   </button>
 
 
                 {/* ปุ่มดูรายละเอียด */}
                 <button className="flex items-center gap-2">
-                  <img src="/images/applicant-info/more_info_icon.svg" alt="More Info Icon" width={20} height={16} />
+                  <Image src="/images/applicant-info/more_info_icon.svg" alt="More Info Icon" width={20} height={16} />
                   <span className="text-[16px] text-[#565656]">{texts.details}</span>
                 </button>
               </div>

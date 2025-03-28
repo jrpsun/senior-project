@@ -17,7 +17,7 @@ const Award = () => {
   const { language } = useLanguage();
   const currentTexts = awardTexts[language] || awardTexts["ENG"];
   const [isPopupOpen, setPopupOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   //const [alertMessage, setAlertMessage] = useState("");
 
   const [containers, setContainers] = useState([{
@@ -44,7 +44,7 @@ const Award = () => {
   };
 
   // Function to open the popup before deleting
-  const confirmDelete = (id) => {
+  const confirmDelete = (id: number) => {
     setSelectedId(id);
     setPopupOpen(true);
   };
@@ -57,7 +57,7 @@ const Award = () => {
     }
   };
 
-  const handleChange = (id, field, value) => {
+  const handleChange = (id: number, field: string, value: string | File) => {
     setContainers(containers.map(container =>
       container.id === id ? { ...container, formData: { ...container.formData, [field]: value } } : container
     ));
@@ -103,7 +103,9 @@ const Award = () => {
                 <FileUpload
                   label={currentTexts.uploadCertificate}
                   onChange={(file) => {
-                    handleChange(container.id, "document", file);
+                    if (file) {
+                      handleChange(container.id, "document", file);
+                    }
                     // จำลองการ OCR (สมมติว่า OCR อ่านได้ชื่อ "John Doe")
                     //const ocrName = "John Doe";
                     //checkOCRData(container.id, ocrName);

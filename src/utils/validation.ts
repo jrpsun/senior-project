@@ -125,7 +125,7 @@ export const formatGPAValue = (value: string) => {
     return cleanedValue; // คืนค่าเดี่ยวที่กรอกมา เช่น "0", "1", "2"
   }
 
-  let formattedValue =
+  const formattedValue =
     cleanedValue.length > 1
       ? `${cleanedValue.slice(0, 1)}.${cleanedValue.slice(1, 3)}`
       : cleanedValue;
@@ -147,20 +147,20 @@ export const validateCreditInput = (value: string) => {
 
   return sanitizedValue;
 };
-export const validateTestScore = (value, testType) => {
+export const validateTestScore = (value: string, testType: keyof typeof testScoreLimits) => {
   const limits = testScoreLimits[testType];
   if (!limits) return "";
 
   let sanitized = value.replace(/[^0-9.]/g, ""); 
   if (!sanitized) return ""; 
 
-  const { min, max, step, integerOnly } = limits;
+  const { max, step, integerOnly } = limits;
 
   sanitized = sanitized.startsWith(".") ? "0" + sanitized : sanitized;
   if (!integerOnly && sanitized.split(".").length > 2) return value.slice(0, -1);
   if (sanitized === "0.") return sanitized;
 
-  let score = parseFloat(sanitized);
+  const score = parseFloat(sanitized);
   if (isNaN(score)) return "";
   
   return score > max ? value.slice(0, -1) 
@@ -170,7 +170,7 @@ export const validateTestScore = (value, testType) => {
        : sanitized;
 };
 
-export const preventInvalidTestScoreInput = (event, value, testType) => {
+export const preventInvalidTestScoreInput = (event: KeyboardEvent | React.KeyboardEvent<HTMLInputElement>, value: string, testType: keyof typeof testScoreLimits) => {
   const limits = testScoreLimits[testType];
   if (!limits) return;
 

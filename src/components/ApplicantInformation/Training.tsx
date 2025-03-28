@@ -17,7 +17,7 @@ const Training = () => {
   const { language } = useLanguage();
   const currentTexts = trainingTexts[language] || trainingTexts["ENG"];
   const [isPopupOpen, setPopupOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [countries, setCountries] = useState([]); //
 
   const [containers, setContainers] = useState([{
@@ -43,7 +43,7 @@ const Training = () => {
     }]);
   };
   // Function to open the popup before deleting
-  const confirmDelete = (id) => {
+  const confirmDelete = (id: number) => {
     setSelectedId(id);
     setPopupOpen(true);
   };
@@ -56,31 +56,37 @@ const Training = () => {
     }
   };
 
-  const handleChange = (id, field, value) => {
+  const handleChange = (id: number, field: string, value: string | File | null) => {
     setContainers(containers.map(container =>
       container.id === id ? { ...container, formData: { ...container.formData, [field]: value } } : container
     ));
   };
 
-    useEffect(() => {
-      const fetchCountries = async () => {
-        try {
-          const response = await axios.get("/data/country-list.json"); // ใช้ path ที่ถูกต้อง
-          let countryData = response.data.map((country: any) => ({
-            value: country.alpha2,
-            label: language === "TH" ? country.name : country.enName
-          }));
-  
-          countryData.sort((a, b) => a.label.localeCompare(b.label, language === "TH" ? "th" : "en"));
-  
-          setCountries(countryData);
-        } catch (error) {
-          console.error("Error fetching country data:", error);
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const response = await axios.get("/data/country-list.json"); // ใช้ path ที่ถูกต้อง
+        interface Country {
+          alpha2: string;
+          name: string;
+          enName: string;
         }
-      };
-  
-      fetchCountries();
-    }, [language]);
+
+        const countryData = response.data.map((country: Country) => ({
+          value: country.alpha2,
+          label: language === "TH" ? country.name : country.enName
+        }));
+
+        countryData.sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label, language === "TH" ? "th" : "en"));
+
+        setCountries(countryData);
+      } catch (error) {
+        console.error("Error fetching country data:", error);
+      }
+    };
+
+    fetchCountries();
+  }, [language]);
 
   return (
     <div>
@@ -153,12 +159,12 @@ const Training = () => {
                       required={false}
                     />
                   </div>
-                  {/* ✅ แสดงช่องเลือกประเทศเมื่อเลือก Offline */}
+                  {/* แสดงช่องเลือกประเทศเมื่อเลือก Offline */}
                   <div className="w-full">
                     {container.formData.trainingMode === "offline" && (
                       <CustomSelect
                         label={currentTexts.country}
-                        options={countries} // ✅ ใช้ข้อมูลประเทศจาก JSON
+                        options={countries} // aใช้ข้อมูลประเทศจาก JSON
                         value={container.formData.country}
                         onChange={(selectedOption) => handleChange(container.id, "country", selectedOption ? selectedOption.value : "")}
                         placeholder={currentTexts.selectCountry}

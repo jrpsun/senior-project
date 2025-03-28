@@ -5,7 +5,7 @@ import FormField from "../form/FormField";
 import Image from "next/image";
 
 interface CheckboxDropdownProps {
-  label: string;
+  label: React.ReactNode;
   options: { value: string; label: string }[];
   selected: string[];
   onChange: (selected: string[], otherValue?: string) => void;
@@ -124,6 +124,7 @@ const CheckboxDropdown: React.FC<CheckboxDropdownProps> = ({
           {selected.includes("other") && (
             <div className="w-full xl:w-[300px] flex-shrink-0 mt-3 xl:mt-0">
               <FormField
+                label=" "
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 placeholder={otherInput ? otherInput : otherPlaceholder || "กรุณาระบุช่องทาง"}
                 value={otherInput}

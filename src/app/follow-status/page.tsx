@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "../../hooks/LanguageContext";
 import Navbar from "../../components/Navbar";
-import { ViewDetailButton, PaymentButton, InterviewInfoButton } from "../../components/common/button";
+import { ViewDetailButton, PaymentButton } from "../../components/common/button";
+import { InterviewInfoButton } from "../../components/common/button";
 import useStatusData from "../../components/common/statusList";
 
 export default function ApplicationStatus() {
@@ -180,7 +180,7 @@ export default function ApplicationStatus() {
                       </PaymentButton>
                     )}
                     {appStatus?.id === "06" && (
-                      <InterviewInfoButton className="text-lg" onClick={() => router.push(`/interview/${app.id}`)}>
+                      <InterviewInfoButton onClick={() => router.push(`/interview/${app.id}`)}>
                         {language === "TH" ? "ดูข้อมูลสัมภาษณ์" : "Interview Info"}
                       </InterviewInfoButton>
                     )}

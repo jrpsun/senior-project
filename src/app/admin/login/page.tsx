@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@components/hooks/LanguageContext";
+import Image from "next/image";
 
 export default function AdminLoginPage() {
     const [username, setUsername] = useState("");
@@ -49,11 +50,12 @@ export default function AdminLoginPage() {
             {/* Background Image */}
             <div className="hidden md:block w-1/2 relative">
                 {/* โลโก้มหาวิทยาลัยที่มุมบนซ้าย */}
-                <img
+                
+                <Image
                     src="/logo_ict_th.png"
                     alt="มหาวิทยาลัยมหิดล โลโก้"
-                    width="200"
-                    height="60"
+                    width={200}
+                    height={60}
                     className="absolute top-6 left-6 z-50"
                 />
 
@@ -70,7 +72,7 @@ export default function AdminLoginPage() {
 
                     {/* โลโก้แอดมินหรือไอคอน */}
                     <div className="flex justify-center mb-4">
-                        <img src="/images/admin/admission_logo.png" alt="Admin Logo" width="180" height="200" />
+                        <Image src="/images/admin/admission_logo.png" alt="Admin Logo" width={180} height={200} />
                     </div>
 
                     <h2 className="text-2xl font-semibold text-center text-gray-900">
@@ -118,7 +120,7 @@ export default function AdminLoginPage() {
                                     className="absolute inset-y-0 right-3 flex items-center text-gray-500"
                                     onClick={() => setShowPassword(!showPassword)}
                                 >
-                                    <img
+                                    <Image
                                         src={showPassword ? "/images/Hide_Password.svg" : "/images/Unhide_Password.svg"}
                                         alt="แสดง/ซ่อนรหัสผ่าน"
                                         width={24}

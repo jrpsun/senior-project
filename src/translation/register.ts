@@ -2,6 +2,7 @@ export const texts = {
     TH: {
       registerTitle: "ลงทะเบียนบัญชีผู้ใช้ใหม่",
       nationality: "สัญชาติ",
+      confirmRegister: "ยืนยันการลงทะเบียน",
       selectNationality: "เลือกสัญชาติ",
       idDocument: "เอกสารยืนยันตัวตน",
       idCard: "หมายเลขบัตรประชาชน",
@@ -36,6 +37,7 @@ export const texts = {
     ENG: {
       registerTitle: "Register",
       nationality: "Nationality",
+      confirmRegister: "Confirm Register",
       selectNationality: "Select Nationality",
       idDocument: "ID Document",
       idCard: "ID Number",

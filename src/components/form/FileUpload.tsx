@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useCallback } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, FileRejection } from "react-dropzone";
 import { Upload } from "lucide-react";
 import { useLanguage } from "../../hooks/LanguageContext";
 
@@ -20,7 +20,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
   onChange,
   fileType = "PDF",
   maxSize = "5 MB",
-  recommendedSize = "",
   accept = ".pdf",
   infoMessage,
   required = true,
@@ -33,7 +32,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   // ตรวจสอบว่าภาษาที่เลือกมีอยู่ใน `translations` หรือไม่
   const selectedLanguage = ["TH", "ENG"].includes(language) ? language : "ENG";
 
-  const translations = {
+  const translations = React.useMemo(() => ({
     TH: {
       selectFile: "เลือกไฟล์อัปโหลด หรือ ลากวาง",
       fileType: "ไฟล์ประเภท",
@@ -50,7 +49,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
       errorFileType: "Invalid file type! Please upload a valid file.",
       errorFileSize: "File must not exceed 5 MB.",
     },
-  };
+  }), []);
 
   const allowedExtensions = accept.replace(/\./g, "").split(", ");
   const maxFileSize = 5 * 1024 * 1024; // 5 MB
@@ -64,15 +63,17 @@ const FileUpload: React.FC<FileUploadProps> = ({
   // แปลง `accept` ให้เป็น Object ที่รองรับ `useDropzone`
   const acceptedMimeTypes = accept.split(", ").reduce((acc, ext) => {
     const cleanExt = ext.replace(".", "").toLowerCase();
-    if (mimeTypes[cleanExt]) {
-      acc[mimeTypes[cleanExt]] = [`.${cleanExt}`];
+    if (cleanExt in mimeTypes) {
+      if (cleanExt in mimeTypes) {
+        acc[mimeTypes[cleanExt as keyof typeof mimeTypes]] = [`.${cleanExt}`];
+      }
     }
     return acc;
   }, {} as { [key: string]: string[] });
 
 
 
-  const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
+  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
     if (rejectedFiles.length > 0) {
       setError(translations[selectedLanguage].errorFileType);
       return;
@@ -95,7 +96,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
     onChange(selectedFile);
     setFileUrl(URL.createObjectURL(selectedFile));
     setError("");
-  }, [onChange, accept, selectedLanguage]);
+  }, [onChange, selectedLanguage, allowedExtensions, maxFileSize, translations]);
 
 
   const { getRootProps, getInputProps } = useDropzone({

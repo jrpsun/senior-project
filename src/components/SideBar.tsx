@@ -1,14 +1,22 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+// Extend the Window interface to include menuTimeout
+declare global {
+    interface Window {
+        menuTimeout: ReturnType<typeof setTimeout>;
+    }
+}
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 
 
 const menuItemsBeforePayment = [
-    { href: '/', icon: 'dashboard_icon.svg', label: 'Dashboard' },
-    { href: '/camp', icon: 'manage_applicant_icon.svg', label: 'จัดการใบสมัคร' }
+    { href: '/', icon: 'dashboard_icon.svg', label: 'Dashboard', disabled: false },
+    { href: '/admin/applicant', icon: 'manage_applicant_icon.svg', label: 'จัดการใบสมัคร', disabled: false }
 ];
 
 const menuItemsAfterPayment = [
@@ -34,7 +42,7 @@ const subMenus = [
         label: 'จัดการการสัมภาษณ์',
         icon: 'interview_icon.svg',
         subLinks: [
-            { href: '/option5/sub1', label: 'กำหนดรายละเอียดการสัมภาษณ์' },
+            { href: '/admin/interview/schedule', label: 'กำหนดรายละเอียดการสัมภาษณ์' },
             { href: '/option5/sub2', label: 'จัดกลุ่มผู้สมัครเพื่อสัมภาษณ์' },
             { href: '/option5/sub3', label: 'ติดตามผลการสัมภาษณ์' },
             { href: '/option5/sub4', label: 'รายชื่อผู้สมัครเข้ารับการสัมภาษณ์' },
@@ -44,7 +52,12 @@ const subMenus = [
 ];
 
 
-const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
+interface SidebarProps {
+    isCollapsed: boolean;
+    setIsCollapsed: (value: boolean) => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
 
     const [isMobile, setIsMobile] = useState(false);
     // ตรวจสอบขนาดหน้าจอ ถ้าเล็กให้ล็อก Sidebar เป็น collapsed
@@ -63,11 +76,11 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         if (isMobile) {
             setIsCollapsed(true); // บังคับ Sidebar ให้ย่อเมื่อจอเล็ก
         }
-    }, [isMobile]);
+    }, [isMobile, setIsCollapsed]);
 
-    const [openMenu, setOpenMenu] = useState(null);
+    const [openMenu, setOpenMenu] = useState<string | null>(null);
 
-    const handleMouseEnter = (menu) => {
+    const handleMouseEnter = (menu: string | null) => {
         clearTimeout(window.menuTimeout);
         window.menuTimeout = setTimeout(() => setOpenMenu(menu), 200);
     };
@@ -78,27 +91,29 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     };
     const pathname = usePathname();
     const isPreliminaryPage = pathname.startsWith("/admin/screening");
+    const isInterviewPage = pathname.startsWith("/admin/interview") ;
+
 
     return (
         <div className={`fixed left-0 top-0 h-screen bg-[#008A90] text-white p-4  ${isCollapsed ? 'w-[80px]' : 'w-[300px]'}`}>
             {/* ปุ่ม Toggle (แยกออกมาให้อยู่ด้านบนเมื่อ Sidebar ย่อ) */}
             {isCollapsed && (
                 <button onClick={() => setIsCollapsed(false)} className="p-2 mb-4 self-center">
-                    <img src="/images/admin/Sidebar/Hamburger_icon.svg" alt="Expand Sidebar" width={22} height={22} />
+                    <Image src="/images/admin/Sidebar/Hamburger_icon.svg" alt="Expand Sidebar" width={22} height={22} />
                 </button>
             )}
 
             {/* ส่วนของโลโก้ (รวมปุ่ม Toggle ถ้า Sidebar ไม่ย่อ) */}
             <div className={`flex items-center mb-4 ${isCollapsed ? "justify-start" : "justify-between"}`}>
                 <div className='flex items-center gap-4'>
-                    <img src="/ict.png" alt="ict-logo" className="w-10" />
-                    {!isCollapsed && <img src="/images/admin/Sidebar/admin_logo.svg" alt="Dashboard Icon" width={130} height={40} />}
+                    <Image src="/ict.png" alt="ict-logo" width={40} height={40} className="w-10" />
+                    {!isCollapsed && <Image src="/images/admin/Sidebar/admin_logo.svg" alt="Dashboard Icon" width={130} height={40} />}
                 </div>
 
                 {/* ปุ่ม Toggle อยู่ด้านขวาเมื่อ Sidebar ไม่ถูกย่อ */}
                 {!isCollapsed && (
                     <button onClick={() => setIsCollapsed(true)} className="p-2">
-                        <img src="/images/admin/Sidebar/isCollapsed_close.svg" alt="Collapse Sidebar" width={28} height={28} />
+                        <Image src="/images/admin/Sidebar/isCollapsed_close.svg" alt="Collapse Sidebar" width={28} height={28} />
                     </button>
                 )}
 
@@ -115,7 +130,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                             className={`flex items-center gap-x-3 p-1.5 rounded-lg  
                             ${isActive ? 'font-bold underline bg-[#00767A]' : 'hover:bg-[#00A2A8] transition'}  
                             ${disabled ? 'text-[#565656] cursor-not-allowed' : ''}`}>
-                            <img src={`/images/admin/Sidebar/${icon}`} alt={label} width={25} height={25} title={label} />
+                            <Image src={`/images/admin/Sidebar/${icon}`} alt={label} width={25} height={25} title={label} />
                             {!isCollapsed && <span>{label}</span>}
                         </Link>
                     );
@@ -128,7 +143,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                         href={disabled ? '#' : href}
                         className={`flex items-center gap-x-3 p-1.5 rounded-lg ${disabled ? 'text-[#565656] cursor-not-allowed' : 'hover:bg-[#00A2A8] transition'}`}
                     >
-                        <img src={`/images/admin/Sidebar/${icon}`} alt={label} width={25} height={25} title={label} />
+                        <Image src={`/images/admin/Sidebar/${icon}`} alt={label} width={25} height={25} title={label} />
                         {!isCollapsed && <span>{label}</span>}
                     </Link>
                 ))}
@@ -141,18 +156,21 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                             <button
                                 onClick={() => isCollapsed ? setOpenMenu(openMenu === label ? null : label) : null}
                                 className={`flex justify-between w-full p-1.5 rounded-lg 
-                                    ${(openMenu === label || (label === 'จัดการการคัดกรองเบื้องต้น' && isPreliminaryPage))
+                                    ${(openMenu === label || 
+                                        (label === 'จัดการการคัดกรองเบื้องต้น' && isPreliminaryPage) ||
+                                        (label === 'จัดการการสัมภาษณ์' && isInterviewPage))
+                                       
                                         ? 'font-bold underline bg-[#00767A]'
                                         : 'hover:bg-[#00A2A8] transition'
                                     }`}
 
                             >
                                 <div className="flex items-center gap-x-3">
-                                    <img src={`/images/admin/Sidebar/${icon}`} alt={label} width={25} height={25} title={label} />
+                                    <Image src={`/images/admin/Sidebar/${icon}`} alt={label} width={25} height={25} title={label} />
                                     {!isCollapsed && <span>{label}</span>}
                                 </div>
                                 {!isCollapsed && (
-                                    <img src="/images/admin/Sidebar/navigation_icon.svg" alt="Arrow" width={25} height={16} />
+                                    <Image src="/images/admin/Sidebar/navigation_icon.svg" alt="Arrow" width={25} height={16} />
                                 )}
                             </button>
 
@@ -202,7 +220,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                             className={`flex items-center gap-x-3 p-1.5 rounded-lg  
                             ${isActive ? 'font-bold underline bg-[#00767A]' : 'hover:bg-[#00A2A8] transition'}  
                             ${disabled ? 'text-[#565656] cursor-not-allowed' : ''}`}>
-                            <img src={`/images/admin/Sidebar/${icon}`} alt={label} width={25} height={25} title={label} />
+                            <Image src={`/images/admin/Sidebar/${icon}`} alt={label} width={25} height={25} title={label} />
                             {!isCollapsed && <span>{label}</span>}
                         </Link>
                     );

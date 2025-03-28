@@ -16,7 +16,7 @@ const Talent = () => {
   const currentTalentOptions = talentTypeOptions[language] || talentTypeOptions["ENG"];
   const currentYearOptions = YearOptions[language] || YearOptions["ENG"];
   const [isPopupOpen, setPopupOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const [containers, setContainers] = useState([{
     id: Date.now(),
@@ -26,7 +26,8 @@ const Talent = () => {
       workYear: "",
       awardsReceived: "",
       talentUrl: "",
-      remark: ""
+      remark: "",
+      document: null
     }
   }]);
 
@@ -39,13 +40,14 @@ const Talent = () => {
         workYear: "",
         awardsReceived: "",
         talentUrl: "",
-        remark: ""
+        remark: "",
+        document: null
       }
     }]);
   };
 
-   // Function to open the popup before deleting
-   const confirmDelete = (id) => {
+  // Function to open the popup before deleting
+  const confirmDelete = (id: number) => {
     setSelectedId(id);
     setPopupOpen(true);
   };
@@ -58,7 +60,7 @@ const Talent = () => {
     }
   };
 
-  const handleChange = (id, field, value) => {
+  const handleChange = (id: number, field: keyof typeof containers[0]["formData"], value: string | File | null) => {
     setContainers(containers.map(container =>
       container.id === id ? { ...container, formData: { ...container.formData, [field]: value } } : container
     ));
@@ -168,8 +170,8 @@ const Talent = () => {
           </div>
         </button>
       </div>
-            {/* Popup Confirmation */}
-            <Popup
+      {/* Popup Confirmation */}
+      <Popup
         type="deleteConfirmation"
         isOpen={isPopupOpen}
         onClose={() => setPopupOpen(false)}

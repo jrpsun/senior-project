@@ -13,7 +13,19 @@ interface PopupAdminProps {
   isEdit?: boolean;
   isEditRole?: boolean;
   isDelete?: boolean;
-  onSave?: (formData: any) => void;
+  onSave?: (formData: {
+    title: string;
+    username: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    role: string[];
+    course?: string;
+    roundName?: string;
+    academicYear?: string;
+    startDate?: string;
+    endDate?: string;
+  }) => void;
   onDeleteConfirm?: () => void;
   onDelete: () => void;
   userData?: {
@@ -24,6 +36,15 @@ interface PopupAdminProps {
     phone: string;
     role?: string[];
   };
+}
+
+interface PopupMenuProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onEdit: () => void;
+  onEditRole: () => void;
+  onDelete: () => void;
+  position: { top: number; left: number };
 }
 
 const PopupMenu: React.FC<PopupMenuProps> = ({ isOpen, onClose, onEdit, onEditRole, onDelete, position }) => {
@@ -81,6 +102,11 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
         email: userData.email || "",
         phone: userData.phone || "",
         role: userData.role || [],
+        course: "",
+        roundName: "",
+        academicYear: "",
+        startDate: "",
+        endDate: "",
       });
     } else {
       setFormData({
@@ -90,18 +116,23 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
         email: "",
         phone: "",
         role: [],
+        course: "",
+        roundName: "",
+        academicYear: "",
+        startDate: "",
+        endDate: "",
       });
     }
   }, [isEdit, isEditRole, userData]);
 
 
 
-  const handleChange = (field: string, value: string) => {
-    if (field === "phone") {
-      value = formatPhoneNumber(value);
-    }
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const handleChange = (field: string, value: string | string[]) => {
+      if (field === "phone" && typeof value === "string") {
+        value = formatPhoneNumber(value);
+      }
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    };
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
@@ -123,11 +154,11 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
           {/* Popup ยืนยันการลบผู้ใช้งาน */}
           {isDelete ? (
             <>
-              <Dialog.Title className="text-[18px] text-[#565656] font-bold mb-4 flex items-center">
-                <Image src="/images/Info_Message.svg" alt="Warning" width={24} height={24} className="mr-2" />
+              <Dialog.Title className="text-[20px] text-[#565656] font-bold mb-4 flex items-center">
+                <Image src="/images/admin/permission/warning_icon.svg" alt="Warning" width={32} height={32} className="mr-2" />
                 คุณแน่ใจหรือไม่ว่าต้องการลบผู้ใช้งานนี้?
               </Dialog.Title>
-              <p className="text-[#565656] text-[15px] mb-6">การลบผู้ใช้งานจะทำให้ข้อมูลของผู้ใช้งานนี้ไม่สามารถกู้คืนได้</p>
+              <p className="text-[#565656] mb-6">การลบผู้ใช้งานจะทำให้ข้อมูลของผู้ใช้งานนี้ไม่สามารถกู้คืนได้</p>
 
               {/* ปุ่มยืนยันการลบ */}
               <div className="flex justify-end space-x-2 w-full">

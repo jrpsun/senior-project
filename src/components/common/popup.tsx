@@ -104,7 +104,9 @@ export default function Popup({ type, isOpen, onClose, onConfirm }: PopupProps) 
               className="bg-red-500 text-white px-4 py-2 rounded-md"
               onClick={() => {
                 console.log("ยืนยันการยกเลิกสมัคร", { reason, details });
-                onConfirm && onConfirm();
+                if (onConfirm) {
+                  onConfirm();
+                }
               }}
               disabled={!reason || !details}
             >

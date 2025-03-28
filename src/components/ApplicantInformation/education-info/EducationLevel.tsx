@@ -54,6 +54,7 @@ const EducationLevel: React.FC = () => {
         gpaScience: "",
         computerTotalCredit: "",
         computerSubject: "",
+        ComputerScienceSubject: "",
         mathTotalCredit: "",
         mathSubject: "",
         scienceTotalCredit: "",
@@ -65,7 +66,7 @@ const EducationLevel: React.FC = () => {
     });
     const { language } = useLanguage();
     const isDST = formData.degree === "Mathayom6" && formData.program === "DST";
-    const isICT = formData.degree === "Mathayom6" && formData.program === "ICT";
+   //const isICT = formData.degree === "Mathayom6" && formData.program === "ICT";
     const currentLanguage = language || "ENG";
     const currentTexts = educationInfoTexts[currentLanguage] || educationInfoTexts["ENG"];
     const [provinceOptions, setProvinceOptions] = useState([]);
@@ -75,7 +76,7 @@ const EducationLevel: React.FC = () => {
     const shouldShowGraduationDate = ["Mathayom6", "VocCert"].includes(formData.degree) && formData.currentStatus === "graduated";
     const shouldShowSubjectFields = formData.degree === "Grade12/13";
     const shouldShowGPAX = ["Mathayom6", "VocCert"].includes(formData.degree);
-    const safeLanguage = (language === "EN" ? "ENG" : language) as keyof typeof majorOptions;
+    const safeLanguage = (language === "ENG" ? "ENG" : language) as keyof typeof majorOptions;
     const majorType = formData.degree === "VocCert" ? "vocational" : "highSchool";
     const majorList = majorOptions[safeLanguage]?.[majorType] || [];
     const isVocCert = formData.degree === "VocCert";
@@ -129,17 +130,16 @@ const EducationLevel: React.FC = () => {
         }
         return null;
     };
-    const renderSubjectField = (subjectKey: string, totalCreditKey: string, infoKey: string) => (
+    const renderSubjectField = (subjectKey: keyof typeof formData, totalCreditKey: keyof typeof formData, infoKey: string) => (
         <div className="mb-3 w-full">
-            <label className="block text-[#565656] mb-1">{currentTexts?.[subjectKey]}</label>
+            <label className="block text-[#565656] mb-1">{currentTexts?.[subjectKey as keyof typeof currentTexts]}</label>
             <div className="grid grid-cols-1 lg:grid-cols-[350px_350px] lg:gap-x-[100px] gap-y-1 mb-1">
                 {/* หน่วยกิตรวม (350px) */}
                 <div>
                     <FormField
                         label={currentTexts?.totalCredit}
-                        value={formData[totalCreditKey] || ""}
+                        value={String(formData[totalCreditKey as keyof typeof formData] || "")}
                         onChange={(value) => handleChange(totalCreditKey, validateCreditInput(value))}
-                        onKeyDown={(event) => restrictInvalidCreditInput(event, formData[totalCreditKey] || "")}
                         type="text"
                         placeholder={currentTexts?.totalCreditPlaceholder}
                         required
@@ -149,14 +149,14 @@ const EducationLevel: React.FC = () => {
                 <div>
                     <FormField
                         label={currentTexts?.subject}
-                        value={formData[subjectKey] || ""}
+                        value={formData[subjectKey] as string || ""}
                         onChange={(value) => handleChange(subjectKey, value)}
                         type="text"
                         placeholder={currentTexts?.subjectPlaceholder}
                     />
                 </div>
             </div>
-            <p className="text-sm text-[#B3B3B3] mt-1">{currentTexts?.[infoKey]}</p>
+            <p className="text-sm text-[#B3B3B3] mt-1">{currentTexts?.[infoKey as keyof typeof currentTexts]}</p>
         </div>
     );
     // กรองตัวเลือกระดับการศึกษา ตามโปรแกรมที่เลือก
@@ -216,13 +216,13 @@ const EducationLevel: React.FC = () => {
         const fetchCountries = async () => {
             try {
                 const response = await axios.get("/data/country-list.json"); // เปลี่ยนเป็น API ที่ใช้จริง
-                let countryData = response.data.map((country: any) => ({
+                const countryData: { value: string; label: string }[] = response.data.map((country: { alpha2: string; name: string; enName: string }) => ({
                     value: country.alpha2,
                     label: language === "TH" ? country.name : country.enName
                 }));
 
                 // เรียงลำดับประเทศตามภาษาไทย (ก-ฮ) หรืออังกฤษ (A-Z)
-                countryData.sort((a, b) => a.label.localeCompare(b.label, language === "TH" ? "th" : "en"));
+                countryData.sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label, language === "TH" ? "th" : "en"));
 
                 setCountries(countryData);
             } catch (error) {
@@ -237,15 +237,15 @@ const EducationLevel: React.FC = () => {
         const fetchProvinces = async () => {
             try {
                 const response = await axios.get("https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province.json");
-                const provincesData = response.data.map((province: any) => ({
+                const provincesData = response.data.map((province: { id: number; name_th: string; name_en: string }) => ({
                     value: province.id.toString(),
                     labelTH: province.name_th,
                     labelEN: province.name_en,
                 }));
 
-                setProvinceOptions(provincesData.map(p => ({
-                    value: p.value,
-                    label: language === "TH" ? p.labelTH : p.labelEN,
+                setProvinceOptions(provincesData.map((p: { id: number; name_th: string; name_en: string }) => ({
+                    value: p.id.toString(),
+                    label: language === "TH" ? p.name_th : p.name_en,
                 })));
             } catch (error) {
                 console.error("Error fetching provinces:", error);
@@ -342,7 +342,6 @@ const EducationLevel: React.FC = () => {
                                             value={formData.country}
                                             onChange={(selectedOption) => handleChange("country", selectedOption?.value || "")}
                                             placeholder={currentTexts.countryPlaceholder}
-                                            className="w-full"
                                         />
                                     </div>
                                 )}
@@ -356,7 +355,6 @@ const EducationLevel: React.FC = () => {
                                             value={formData.province}
                                             onChange={(selectedOption) => handleChange("province", selectedOption ? selectedOption.value : "")}
                                             placeholder={currentTexts.provincePlaceholder}
-                                            className="w-full"
                                         />
                                     </div>
                                 )}
@@ -367,7 +365,7 @@ const EducationLevel: React.FC = () => {
                                         <label className="block text-[#565656] mb-1">{currentTexts.graduationDate} <span className="text-red-500">*</span></label>
                                         <DateInput
                                             selected={formData.graduationDate}
-                                            onChange={(date) => handleChange("graduationDate", date)}
+                                            onChange={(date) => handleChange("graduationDate", date ? date.toISOString() : "")}
                                             placeholderText={currentTexts.graduationDatePlaceholder}
                                             mode="expiry"
                                         />

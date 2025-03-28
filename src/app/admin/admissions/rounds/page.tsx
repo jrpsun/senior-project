@@ -12,18 +12,29 @@ import AlertAdmin from "../../../../components/common/admin/alertAdmin";
 
 const AdmissionRoundsPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [selectedRound, setSelectedRound] = useState(null);
-  const [selectedYear, setSelectedYear] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [selectedRound, setSelectedRound] = useState<{ value: string; label: string } | null>(null);
+  const [selectedYear, setSelectedYear] = useState<{ value: string; label: string } | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<{ value: string; label: string } | null>(null);
   const [isAddRoundOpen, setIsAddRoundOpen] = useState(false);
   const [isEditRoundOpen, setIsEditRoundOpen] = useState(false);
   const [isDeleteRoundOpen, setIsDeleteRoundOpen] = useState(false);
-  const [selectedEditRound, setSelectedEditRound] = useState(null);
-  const [selectedDeleteRound, setSelectedDeleteRound] = useState(null);
+  const [selectedEditRound, setSelectedEditRound] = useState<{
+    id: number;
+    course: { value: string; label: string } | null;
+    roundName: string;
+    academicYear: { value: string; label: string } | null;
+    startDate: string;
+    endDate: string;
+  } | null>(null);
+  const [selectedDeleteRound, setSelectedDeleteRound] = useState<AdmissionRound | null>(null);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
 
-  const formatDateToDisplay = (dateString) => {
+  interface FormatDateToDisplay {
+    (dateString: string): string;
+  }
+
+  const formatDateToDisplay: FormatDateToDisplay = (dateString) => {
     if (!dateString) return "";
 
     const date = parse(dateString, "yyyy-MM-dd", new Date());
@@ -40,7 +51,11 @@ const AdmissionRoundsPage = () => {
     "หลักสูตร DST (ไทย)": "หลักสูตร DST (ไทย)",
     "หลักสูตร ICT (นานาชาติ)": "หลักสูตร ICT (นานาชาติ)"
   };
-  const determineAdmissionStatus = (startDate, endDate) => {
+  interface DetermineAdmissionStatus {
+    (startDate: string, endDate: string): string;
+  }
+
+  const determineAdmissionStatus: DetermineAdmissionStatus = (startDate, endDate) => {
     const today = new Date();
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -54,8 +69,25 @@ const AdmissionRoundsPage = () => {
     }
   };
 
-  const handleSaveAddRound = (newRound) => {
-    setAdmissionRounds((prev) => {
+  interface NewRound {
+    course: { value: string; label: string } | null;
+    roundName: string;
+    academicYear: { value: string; label: string } | null;
+    startDate: string;
+    endDate: string;
+  }
+
+  interface AdmissionRound {
+    id: number;
+    course: string;
+    round: string;
+    year: string;
+    period: string;
+    status: string;
+  }
+
+  const handleSaveAddRound = (newRound: NewRound): void => {
+    setAdmissionRounds((prev: AdmissionRound[]) => {
       const newId = prev.length > 0 ? Math.max(...prev.map(r => r.id)) + 1 : 1;
       const startDateFormatted = formatDateToDisplay(newRound.startDate);
       const endDateFormatted = formatDateToDisplay(newRound.endDate);
@@ -92,10 +124,12 @@ const AdmissionRoundsPage = () => {
     },
   ]);
   const currentYear = new Date().getFullYear() + 543;
-  const yearOptions = [{ value: "ทั้งหมด", label: "แสดงทุกปี" }, ...Array.from({ length: 5 }, (_, i) => {
-    const year = currentYear - 2 + i;
-    return { value: String(year), label: String(year) };
-  })];
+  const yearOptions = React.useMemo(() => {
+    return [{ value: "ทั้งหมด", label: "แสดงทุกปี" }, ...Array.from({ length: 5 }, (_, i) => {
+      const year = currentYear - 2 + i;
+      return { value: String(year), label: String(year) };
+    })];
+  }, [currentYear]);
 
   const [filteredAdmissionRounds, setFilteredAdmissionRounds] = useState(admissionRounds);
   const thaiMonths = {
@@ -104,11 +138,15 @@ const AdmissionRoundsPage = () => {
     "ก.ย.": "Sep", "ต.ค.": "Oct", "พ.ย.": "Nov", "ธ.ค.": "Dec"
   };
 
-  const convertThaiDateToEnglish = (thaiDate) => {
+  interface ConvertThaiDateToEnglish {
+    (thaiDate: string): string | null;
+  }
+
+  const convertThaiDateToEnglish: ConvertThaiDateToEnglish = (thaiDate) => {
     const parts = thaiDate.split(" ");
     if (parts.length !== 3) return null;
     const day = parts[0];
-    const month = thaiMonths[parts[1]];
+    const month = thaiMonths[parts[1] as keyof typeof thaiMonths] || null;
     const year = "20" + parts[2]; // เปลี่ยน 25 → 2025
     return month ? `${day} ${month} ${year}` : null;
   };
@@ -118,7 +156,7 @@ const AdmissionRoundsPage = () => {
     setFilteredAdmissionRounds(admissionRounds);
   }, [admissionRounds]);
 
-  const handleEdit = (round) => {
+  const handleEdit = (round: AdmissionRound) => {
     if (!round.period) return;
 
     // แปลง period เป็น yyyy-MM-dd
@@ -137,10 +175,10 @@ const AdmissionRoundsPage = () => {
 
     setIsEditRoundOpen(true);
   };
-  const handleSaveEditRound = (updatedRound) => {
+  const handleSaveEditRound = (updatedRound: NewRound) => {
     setAdmissionRounds((prev) =>
       prev.map((round) =>
-        round.id === selectedEditRound.id
+        selectedEditRound && round.id === selectedEditRound.id
           ? {
             ...round,
             course: updatedRound.course?.value || "หลักสูตรไม่ระบุ",
@@ -159,7 +197,7 @@ const AdmissionRoundsPage = () => {
     setAlertMessage("แก้ไขรอบรับสมัครสำเร็จ!");
   };
 
-  const handleDelete = (round) => {
+  const handleDelete = (round: AdmissionRound) => {
     setSelectedDeleteRound(round); // กำหนดค่ารอบที่ต้องการลบ
     setIsDeleteRoundOpen(true); // เปิด Popup ยืนยันการลบ
   };
@@ -182,12 +220,12 @@ const AdmissionRoundsPage = () => {
     label: round.round,
   }));
 
-  const statusOptions = [
+  const statusOptions = React.useMemo(() => [
     { value: "ทั้งหมด", label: "แสดงทั้งหมด" },
     { value: "เปิดรับสมัคร", label: "เปิดรับสมัคร" },
     { value: "กำลังจะเปิดรับสมัคร", label: "กำลังจะเปิดรับสมัคร" },
     { value: "ปิดรับสมัคร", label: "ปิดรับสมัคร" },
-  ];
+  ], []);
 
   // ทำให้ค่าที่เลือกแสดงใน dropdown
   useEffect(() => {
@@ -200,7 +238,7 @@ const AdmissionRoundsPage = () => {
     if (selectedStatus && typeof selectedStatus === "string") {
       setSelectedStatus(statusOptions.find(option => option.value === selectedStatus) || null);
     }
-  }, [selectedRound, selectedYear, selectedStatus]);
+  }, [selectedRound, selectedYear, selectedStatus, roundOptions, statusOptions, yearOptions]);
 
   const handleSearch = () => {
     const filteredRounds = admissionRounds.filter((round) => {
@@ -217,7 +255,7 @@ const AdmissionRoundsPage = () => {
   return (
     <div className="flex flex-col h-screen bg-white">
       {alertMessage && <AlertAdmin message={alertMessage} onClose={() => setAlertMessage(null)} />}
-      <AdminNavbar isCollapsed={isCollapsed} className="relative z-40" />
+      <AdminNavbar isCollapsed={isCollapsed} />
       <div className="flex flex-row flex-1">
         {/* Sidebar */}
         <div className="relative z-50">
@@ -226,7 +264,7 @@ const AdmissionRoundsPage = () => {
         <div className={`flex flex-col w-full p-6 mt-[64px] transition-all bg-white ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}>
 
           {/* ส่วนค้นหารอบรับสมัคร */}
-          <div className="relative max-w-[1600px] w-full mx-auto p-5 rounded-lg shadow-md mb-6 px-4 md:px-8 z-10">
+          <div className="relative max-w-[1600px] w-full mx-auto p-5 rounded-lg shadow-md mt-6 mb-6 px-4 md:px-8 z-10 ">
             <h1 className="text-2xl font-bold text-[#565656] mb-5">ค้นหารอบรับสมัคร</h1>
             <hr className="mb-4 border-gray-300" />
 
@@ -234,37 +272,52 @@ const AdmissionRoundsPage = () => {
               <div className="flex-1 min-w-[300px] max-w-[750px] relative z-10">
                 <SearchField
                   label=""
-                  value={selectedRound}
-                  onChange={setSelectedRound}
+                  value={selectedRound?.value || null}
+                  onChange={(selectedOption) => {
+                    if (selectedOption && typeof selectedOption !== "string") {
+                      setSelectedRound(selectedOption);
+                    } else {
+                      setSelectedRound(null);
+                    }
+                  }}
                   placeholder="ค้นหารอบรับสมัครหรือปี"
                   type="dropdown"
                   options={roundOptions}
                   customWidth="100%"
-                  className="relative z-10"
                 />
               </div>
 
               <div className="w-full max-w-[200px] relative z-10">
                 <SearchField
                   label=""
-                  value={selectedYear}
-                  onChange={setSelectedYear}
+                  value={selectedYear?.value || null}
+                  onChange={(selectedOption) => {
+                    if (selectedOption && typeof selectedOption !== "string") {
+                      setSelectedYear(selectedOption);
+                    } else {
+                      setSelectedYear(null);
+                    }
+                  }}
                   placeholder="แสดงทุกปี"
                   type="dropdown"
                   options={yearOptions}
-                  className="relative z-10"
                 />
               </div>
 
               <div className="w-full max-w-[250px] relative z-10">
                 <SearchField
                   label=""
-                  value={selectedStatus}
-                  onChange={setSelectedStatus}
+                  value={selectedStatus?.value || null}
+                  onChange={(selectedOption) => {
+                    if (selectedOption && typeof selectedOption !== "string") {
+                      setSelectedStatus(selectedOption);
+                    } else {
+                      setSelectedStatus(null);
+                    }
+                  }}
                   placeholder="แสดงทั้งหมด"
                   type="dropdown"
                   options={statusOptions}
-                  className="relative z-10"
                 />
               </div>
 
@@ -348,6 +401,8 @@ const AdmissionRoundsPage = () => {
               isOpen={isAddRoundOpen}
               onClose={() => setIsAddRoundOpen(false)}
               onSave={handleSaveAddRound}
+              courseMapping={courseMapping}
+              courseMappingReverse={courseMappingReverse}
             />
           )}
           {isEditRoundOpen && selectedEditRound && (
@@ -357,8 +412,8 @@ const AdmissionRoundsPage = () => {
               onSave={handleSaveEditRound}
               initialData={{
                 ...selectedEditRound,
-                course: selectedEditRound.course ? { value: selectedEditRound.course, label: selectedEditRound.course } : null,
-                academicYear: selectedEditRound.academicYear ? { value: selectedEditRound.academicYear, label: selectedEditRound.academicYear } : null,
+                course: selectedEditRound.course,
+                academicYear: selectedEditRound.academicYear,
               }}
               courseMapping={courseMapping}
               courseMappingReverse={courseMappingReverse}
@@ -370,6 +425,9 @@ const AdmissionRoundsPage = () => {
               onClose={() => setIsDeleteRoundOpen(false)}
               onDelete={handleDeleteRound}
               isDeleteMode={true}
+              onSave={() => {}} // Provide a dummy function or appropriate logic
+              courseMapping={courseMapping}
+              courseMappingReverse={courseMappingReverse}
             />
           )}
         </div>

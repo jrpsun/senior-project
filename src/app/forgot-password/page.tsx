@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { CheckCircle, X } from "lucide-react";
 import forgotPasswordTexts from "../../translation/forgotPassword";
 import Alert from "../../components/common/alert"; // นำเข้า Alert Component
 
@@ -12,7 +11,7 @@ export default function ForgetPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [language, setLanguage] = useState<"TH" | "ENG">("TH");
-  const [isEmailSubmitted, setIsEmailSubmitted] = useState(false);
+  const [isEmailSubmitted] = useState(false);
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const [alertType, setAlertType] = useState<"success" | "error">("success");
 
