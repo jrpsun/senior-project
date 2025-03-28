@@ -4,11 +4,11 @@ import { useLanguage } from "../../hooks/LanguageContext";
 const useStatusData = () => {
   const { language } = useLanguage(); // ดึงค่าภาษา
 
-  const getSafeStatusById = (category: string, id: string) => {
-    const status = getStatusById(category, id) ?? {};
+  const getSafeStatusById = (category: "application" | "documents" | "payment" | "interview", id: string) => {
+    const status = getStatusById(category, id) ?? { type: "default" };
     return {
       ...status,
-      style: statusStyles[status.type || "default"], 
+      style: statusStyles[status.type], 
     };
   };
 

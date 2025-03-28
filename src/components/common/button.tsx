@@ -52,7 +52,7 @@ const Button: React.FC<ButtonProps> = ({ variant = "primary", icon, children, ..
 };
 
 // ปุ่มต่าง ๆ ที่ใช้ในระบบ
-const BackButton: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const BackButton: React.FC<{ children: React.ReactNode; onClick?: () => void }>= ({ children }) => {
   return <Button variant="back" icon="/images/back_arrow.svg">{children}</Button>;
 };
 
@@ -61,29 +61,29 @@ const NextButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> 
 };
 
 
-const ViewDetailButton: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ViewDetailButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children }) => {
   return <Button variant="viewDetail">{children}</Button>;
 };
 
-const PaymentButton: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const PaymentButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children }) => {
   return <Button variant="payment">{children}</Button>;
 };
 
-const InterviewInfoButton: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const InterviewInfoButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children }) => {
   return <Button variant="interviewInfo">{children}</Button>;
 };
 
-const ConfirmApplicationButton: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ConfirmApplicationButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children }) => {
   return <Button variant="confirmApplication">{children}</Button>;
 };
 
 // ปุ่มพิมพ์เอกสาร
-const PrintDocumentButton: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const PrintDocumentButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children }) => {
   return <Button variant="printDocument">{children}</Button>;
 };
 
 // ปุ่มยกเลิกการสมัคร
-const CancelApplicationButton: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const CancelApplicationButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children }) => {
   return <Button variant="cancelApplication">{children}</Button>;
 };
 
