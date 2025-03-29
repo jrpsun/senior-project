@@ -1,18 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CheckboxDropdown from "../../common/checkbox";
 import { useLanguage } from "../../../hooks/LanguageContext"; 
 import { generalInfoTexts, offlineOptions, onlineOptions } from "../../../translation/generalInfo"; 
 import Image from "next/image";
+import { AdmissionChannelInterface } from "@components/types/generalInfoType";
 
-const SubscriptionForm: React.FC = () => {
+interface AdmissionChannelProps {
+  data: AdmissionChannelInterface;
+  onChange: (data: any) => void;
+}
+
+const SubscriptionForm: React.FC<AdmissionChannelProps> = ({ data, onChange }) => {
   const { language } = useLanguage();
   const currentLanguage = language || "ENG"; 
   const currentTexts = generalInfoTexts[currentLanguage] || generalInfoTexts["ENG"]; 
 
   const [onlineSources, setOnlineSources] = useState<string[]>([]);
   const [offlineSources, setOfflineSources] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (data) {
+      // setOnlineSources(data?.onlineChannel)
+      // setOfflineSources(data?.offlineChannel)
+    }
+  },[data])
 
   return (
     <div className="flex justify-center py-5 bg-[white]">

@@ -1,27 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FormField from "../../form/FormField";
 import { useLanguage } from "../../../hooks/LanguageContext"; // ใช้ context เพื่อดึงค่าภาษา
 import { generalInfoTexts } from "../../../translation/generalInfo";
 import { formatPhoneNumber} from "../../../utils/validation";
+import { ContactInfoInterface } from "@components/types/generalInfoType";
 
-const ContactInfo: React.FC = () => {
+interface ContractInfoProps {
+  data: ContactInfoInterface;
+  onChange: (data: any) => void;
+}
+
+const ContactInfo: React.FC<ContractInfoProps> = ({ data, onChange }) => {
   const { language } = useLanguage();
-  const currentLanguage = language || "ENG"; // ป้องกัน undefined
-  const currentTexts = generalInfoTexts[currentLanguage] || generalInfoTexts["ENG"]; // ใช้ ENG เป็น default
+  const currentLanguage = language || "ENG";
+  const currentTexts = generalInfoTexts[currentLanguage] || generalInfoTexts["ENG"];
 
   const [formData, setFormData] = useState({
-    phoneNumber: "",
-    email: "test.raboobsamak@gmail.com",
+    applicantPhone: "",
+    applicantEmail: "",
     line: "",
     facebook: "",
     instagram: "",
   });
 
+  const [changedData, setChangedData] = useState({});
+
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    const newChangedData = { ...changedData, [field]: value };
+    setChangedData(newChangedData);
+    onChange(newChangedData);
   };
+
+  useEffect(() => {
+    if (data) {
+      setFormData({
+        applicantPhone: data.applicantPhone || "",
+        applicantEmail: data.applicantEmail || "",
+        line: data.line || "",
+        facebook: data.facebook || "",
+        instagram: data.instagram || "",
+      });
+      setChangedData({});
+    }
+  }, [data]);
 
   return (
     <div className="flex justify-center py-5 bg-[white]">
@@ -36,8 +60,8 @@ const ContactInfo: React.FC = () => {
             {/* หมายเลขโทรศัพท์ */}
             <FormField
               label={currentTexts.phone}
-              value={formData.phoneNumber}
-              onChange={(value) => handleChange("phoneNumber", formatPhoneNumber(value))}
+              value={formData.applicantPhone || ""}
+              onChange={(value) => handleChange("applicantPhone", formatPhoneNumber(value))}
               placeholder={currentTexts.phonePlaceholder}
               required
               type="tel"
@@ -49,7 +73,7 @@ const ContactInfo: React.FC = () => {
                 {currentTexts.email} <span className="text-red-500">*</span>
               </label>
               <p className="text-[#565656] font-medium bg-[#F5F5F5] border border-gray-300 rounded-[10px] px-3 py-2">
-                {formData.email}
+                {formData.applicantEmail}
               </p>
             </div>
           </div>
@@ -58,21 +82,21 @@ const ContactInfo: React.FC = () => {
             {/* Line ID */}
             <FormField
               label={currentTexts.line || "Line"}
-              value={formData.line}
+              value={formData.line || ""}
               onChange={(value) => handleChange("line", (value))}
               placeholder={currentTexts.line}
             />
 
             <FormField
               label={currentTexts.facebook || "Facebook"}
-              value={formData.facebook}
+              value={formData.facebook || ""}
               onChange={(value) => handleChange("facebook", (value))}
               placeholder={currentTexts.facebook}
             />
             {/* Instagram */}
             <FormField
               label={currentTexts.instagram || "Instagram"}
-              value={formData.instagram}
+              value={formData.instagram || ""}
               onChange={(value) => handleChange("instagram", (value))}
               placeholder={currentTexts.instagram}
             />

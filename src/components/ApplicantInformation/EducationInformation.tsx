@@ -1,4 +1,5 @@
-import React from "react";
+"use client"
+import React, { useEffect } from "react";
 import EducationLevel from "./education-info/EducationLevel";
 import { useLanguage } from "../../hooks/LanguageContext";
 import { educationInfoTexts } from "../../translation/educationInfo";
@@ -10,6 +11,10 @@ import MathTestScore from "./education-info/MathTestScore";
 const EducationInformation: React.FC = () => {
   const { language } = useLanguage();
   const currentTexts = educationInfoTexts[language as keyof typeof educationInfoTexts] || educationInfoTexts["ENG"];
+
+  useEffect(() => {
+      console.log("Fetch 2")
+    }, []);
 
   return (
   <div className="flex flex-col gap-4 pb-10">
