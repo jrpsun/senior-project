@@ -6,8 +6,14 @@ import CustomSelect from "../../form/CustomSelect";
 import { useLanguage } from "../../../hooks/LanguageContext";
 import { generalInfoTexts, relationshipOptions } from "../../../translation/generalInfo";
 import { validateThaiCharacters, validateEnglishCharacters, validateEmail, formatPhoneNumber, preventNonNumericInput, allowEnglishAndSpecialCharactersOnly } from "../../../utils/validation";
+import { EmergencyContactInterface } from "@components/types/generalInfoType";
 
-const EmergencyContact: React.FC = () => {
+interface EmergencyContactProps {
+  data: EmergencyContactInterface;
+  onChange: (data: any) => void;
+}
+
+const EmergencyContact: React.FC<EmergencyContactProps> = ({ data, onChange }) => {
   const { language } = useLanguage();
   const currentTexts = generalInfoTexts[language] || generalInfoTexts["ENG"];
 
@@ -20,28 +26,46 @@ const EmergencyContact: React.FC = () => {
   );
 
   const [formData, setFormData] = useState({
-    title: "",
-    firstName: "",
-    lastName: "",
-    middleName: "",
-    firstNameEng: "",
-    middleNameEng: "",
-    lastNameEng: "",
+    contactFirstNameTH: "",
+    contactLastNameTH: "",
+    contactMiddleNameTH: "",
+    contactFirstNameEN: "",
+    contactMiddleNameEN: "",
+    contactLastNameEN: "",
     relationship: "",
-    phoneNumber: "",
-    email: "",
+    contactPhone: "",
+    contactEmail: "",
   });
 
   const [emailError, setEmailError] = useState<string>("");
 
   useEffect(() => {
-    if (emailError && formData.email !== "") {
+    if (data) {
+      setFormData({
+        contactFirstNameTH: data?.contactFirstNameTH || "",
+        contactLastNameTH: data?.contactLastNameTH || "",
+        contactMiddleNameTH: data?.contactMiddleNameTH || "",
+        contactFirstNameEN: data?.contactFirstNameEN || "",
+        contactMiddleNameEN: data?.contactMiddleNameEN || "",
+        contactLastNameEN: data?.contactLastNameEN || "",
+        relationship: data?.relationship || "",
+        contactPhone: data?.contactPhone || "",
+        contactEmail: data?.contactEmail || "",
+      })
+      setChangedData({});
+    }
+    if (emailError && formData.contactEmail !== "") {
       setEmailError(errorMessages[language]?.invalidEmail || "Invalid email");
     }
-  }, [language, formData.email, emailError, errorMessages]);
+  }, [language, formData.contactEmail, emailError, errorMessages, data]);
+
+  const [changedData, setChangedData] = useState({});
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    const newChangedData = { ...changedData, [field]: value };
+    setChangedData(newChangedData);
+    onChange(newChangedData);
   };
 
   const handleEmailBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -65,20 +89,20 @@ const EmergencyContact: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <FormField
               label={currentTexts.firstName}
-              value={formData.firstName}
-              onChange={(value) => handleChange("firstName", validateThaiCharacters(value))}
+              value={formData.contactFirstNameTH || ""}
+              onChange={(value) => handleChange("contactFirstNameTH", validateThaiCharacters(value))}
               placeholder={currentTexts.enterFirstName}
             />
             <FormField
               label={currentTexts.middleName}
-              value={formData.middleName}
-              onChange={(value) => handleChange("middleName", validateThaiCharacters(value))}
+              value={formData.contactMiddleNameTH || ""}
+              onChange={(value) => handleChange("contactMiddleNameTH", validateThaiCharacters(value))}
               placeholder={currentTexts.enterMiddleName}
             />
             <FormField
               label={currentTexts.lastName}
-              value={formData.lastName}
-              onChange={(value) => handleChange("lastName", validateThaiCharacters(value))}
+              value={formData.contactLastNameTH || ""}
+              onChange={(value) => handleChange("contactLastNameTH", validateThaiCharacters(value))}
               placeholder={currentTexts.enterLastName}
             />
           </div>
@@ -87,21 +111,21 @@ const EmergencyContact: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             <FormField
               label={currentTexts.firstNameEng}
-              value={formData.firstNameEng}
-              onChange={(value) => handleChange("firstNameEng", validateEnglishCharacters(value))}
+              value={formData.contactFirstNameEN || ""}
+              onChange={(value) => handleChange("contactFirstNameEN", validateEnglishCharacters(value))}
               placeholder={currentTexts.enterFirstNameEng}
               required
             />
             <FormField
               label={currentTexts.middleNameEng}
-              value={formData.middleNameEng}
-              onChange={(value) => handleChange("middleNameEng", validateEnglishCharacters(value))}
+              value={formData.contactMiddleNameEN || ""}
+              onChange={(value) => handleChange("contactMiddleNameEN", validateEnglishCharacters(value))}
               placeholder={currentTexts.enterMiddleNameEng}
             />
             <FormField
               label={currentTexts.lastNameEng}
-              value={formData.lastNameEng}
-              onChange={(value) => handleChange("lastNameEng", validateEnglishCharacters(value))}
+              value={formData.contactLastNameEN || ""}
+              onChange={(value) => handleChange("contactLastNameEN", validateEnglishCharacters(value))}
               placeholder={currentTexts.enterLastNameEng}
               required
             />
@@ -112,7 +136,7 @@ const EmergencyContact: React.FC = () => {
             <CustomSelect
               label={currentTexts.relationship}
               options={relationshipOptions[language] || relationshipOptions["ENG"]}
-              value={formData.relationship}
+              value={formData.relationship || ""}
               onChange={(selectedOption) =>
                 handleChange("relationship", selectedOption ? selectedOption.value : "")
               }
@@ -121,8 +145,8 @@ const EmergencyContact: React.FC = () => {
             />
             <FormField
               label={currentTexts.phone}
-              value={formData.phoneNumber}
-              onChange={(value) => handleChange("phoneNumber", formatPhoneNumber(value))}
+              value={formData.contactPhone || ""}
+              onChange={(value) => handleChange("contactPhone", formatPhoneNumber(value))}
               placeholder={currentTexts.phonePlaceholder}
               onKeyDown={preventNonNumericInput}
               required
@@ -131,8 +155,8 @@ const EmergencyContact: React.FC = () => {
             <FormField
               key={language} // Force re-render เมื่อเปลี่ยนภาษา
               label={currentTexts.email}
-              value={formData.email}
-              onChange={(value) => handleChange("email", allowEnglishAndSpecialCharactersOnly(value))}
+              value={formData.contactEmail || ""}
+              onChange={(value) => handleChange("contactEmail", allowEnglishAndSpecialCharactersOnly(value))}
               placeholder={currentTexts.enterEmail}
               onBlur={handleEmailBlur}
               error={emailError}

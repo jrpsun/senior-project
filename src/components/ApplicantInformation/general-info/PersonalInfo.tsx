@@ -14,6 +14,7 @@ import FileUpload from "../../form/FileUpload";
 import { generalInfoTexts, genderOptions } from "../../../translation/generalInfo";
 import { validateThaiCharacters, preventThaiInput, validateEnglishCharacters, preventEnglishInput, allowHouseNumber, allowOnlyNumbers, preventNonHouseNumberInput, preventNonNumericInput } from "../../../utils/validation";
 import DateInput from "../../common/date";
+import { GeneralInfoInterface } from "@components/types/generalInfoType";
 
 
 const fetchData = async (url: string, isLocal: boolean = false) => {
@@ -53,8 +54,12 @@ const sortByLanguage = (data: CountryOrNationality[], lang: string, type: "count
     .sort((a, b) => a.label!.localeCompare(b.label!, lang === "TH" ? "th" : "en"));
 };
 
+interface PersonalInfoProps {
+  data: GeneralInfoInterface;
+  onChange: (data: any) => void;
+}
 
-const PersonalInfo: React.FC = () => {
+const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
   const { language } = useLanguage();
   const currentTexts = generalInfoTexts[language as keyof typeof generalInfoTexts] || generalInfoTexts["ENG"];
   const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
@@ -62,11 +67,13 @@ const PersonalInfo: React.FC = () => {
   const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]);
   const [districts, setDistricts] = useState<{ value: string; label: string; province_id: string }[]>([]);
   const [subDistricts, setSubDistricts] = useState<{ value: string; label: string; postalCode: number; amphure_id: string }[]>([]);
-  const handleChange = (field: string, value: string | number) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value
-    }));
+  const [changedData, setChangedData] = useState({});
+
+  const handleChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    const newChangedData = { ...changedData, [field]: value };
+    setChangedData(newChangedData);
+    onChange(newChangedData);
   };
 
   const [expiryDate, setExpiryDate] = useState<Date | null>(null);
@@ -81,36 +88,71 @@ const PersonalInfo: React.FC = () => {
     postalCode: "",
     profileImage: "",
     title: "",
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    firstNameEng: "",
-    middleNameEng: "",
-    lastNameEng: "",
-    nickname: "",
-    nicknameEng: "",
-    nationality: "Thai",//ดึงมาจาก API ภายหลัง
+    firstnameTH: "",
+    middlenameTH: "",
+    lastnameTH: "",
+    firstnameEN: "",
+    middlenameEN: "",
+    lastnameEN: "",
+    nicknameTH: "",
+    nicknameEN: "",
+    nationality: "",
     idCardNumber: "",
     idCardExpiry: "",
     birthDate: "",
-    age: "",
+    age:"",
     gender: "",
     houseNumber: "",
     moo: "",
     village: "",
-    alley: "",
+    soi: "",
     street: "",
     subDistrict: "",
     district: "",
     province: "",
     city: "",
-    country: "TH",
-    addressLine1: "",
-    addressLine2: "",
+    country: "",
+    addr1: "",
+    addr2: "",
   });
 
   // โหลดข้อมูลจังหวัด อำเภอ ตำบล และประเทศ/สัญชาติ
   useEffect(() => {
+    console.log("formData", formData)
+    if (data) {
+      setFormData({
+        postalCode: data?.nationality || "",
+        profileImage: "",
+        title: "",
+        firstnameTH: data?.firstnameTH || "",
+        middlenameTH: data?.middlenameTH || "",
+        lastnameTH: data?.lastnameTH || "",
+        firstnameEN: data?.firstnameEN || "",
+        middlenameEN: data?.middlenameEN || "",
+        lastnameEN: data?.lastnameEN || "",
+        nicknameTH: data?.nicknameTH || "",
+        nicknameEN: data?.nicknameEN || "",
+        nationality: data?.nationality || "", //
+        idCardNumber: data?.idCardNumber || "", //
+        idCardExpiry: "",
+        birthDate: "",
+        age:"",
+        gender: data?.gender || "",
+        houseNumber: data?.houseNumber || "",
+        moo: data?.moo || "",
+        village: data?.village || "",
+        soi: data?.soi || "",
+        street: data?.street || "",
+        subDistrict: data?.subDistrict || "",
+        district: data?.district || "",
+        province: data?.province || "",
+        city: data?.city || "",
+        country: data?.country || "",
+        addr1: data?.addr1 || "",
+        addr2: data?.addr2 || "",
+      })
+      setChangedData({});
+    }
     const loadData = async () => {
       try {
         // โหลดจังหวัด อำเภอ ตำบล
@@ -167,7 +209,7 @@ const PersonalInfo: React.FC = () => {
     };
 
     loadData();
-  }, [language]);
+  }, [language, data]);
 
 
   // ฟังก์ชันเปลี่ยนค่า จังหวัด-อำเภอ-ตำบล
@@ -244,13 +286,13 @@ const PersonalInfo: React.FC = () => {
               <label className="block text-[#565656] mb-1">
                 {currentTexts.firstName} {formData.nationality === "Thai" && <span className="text-red-500">*</span>}
               </label>
-              <p className="text-[#565656] indent-5">ทดลอง</p>
+              <p className="text-[#565656] indent-5">{formData.firstnameTH}</p>
             </div>
 
             <FormField
               label={currentTexts.middleName}
-              value={formData.middleName}
-              onChange={(value) => handleChange("middleName", validateThaiCharacters(value))}
+              value={formData.middlenameTH || ""}
+              onChange={(value) => handleChange("middlenameTH", validateThaiCharacters(value))}
               placeholder={currentTexts.enterMiddleName}
               onKeyDown={(e) => preventThaiInput(e)}
             />
@@ -259,38 +301,37 @@ const PersonalInfo: React.FC = () => {
               <label className="block text-[#565656] mb-1">
                 {currentTexts.lastName} {formData.nationality === "Thai" && <span className="text-red-500">*</span>}
               </label>
-              <p className="text-[#565656] indent-5">ระบบสมัคร</p>
+              <p className="text-[#565656] indent-5">{formData.lastnameTH}</p>
             </div>
 
             <FormField
               label={currentTexts.nickname}
-              value={formData.nickname}
-              onChange={(value) => handleChange("nickname", validateThaiCharacters(value))}
+              value={formData.nicknameTH || ""}
+              onChange={(value) => handleChange("nicknameTH", validateThaiCharacters(value))}
               placeholder={currentTexts.enterNickname}
               onKeyDown={(e) => preventThaiInput(e)}
             />
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div>
               <label className="block text-[#565656] mb-1">{currentTexts.firstNameEng} <span className="text-red-500">*</span></label>
-              <p className="text-[#565656]  indent-5">Test</p>
+              <p className="text-[#565656]  indent-5">{formData.firstnameEN}</p>
             </div>
             <FormField
               label={currentTexts.middleNameEng}
-              value={formData.middleNameEng}
-              onChange={(value) => handleChange("middleNameEng", validateEnglishCharacters(value))}
+              value={formData.middlenameEN || ""}
+              onChange={(value) => handleChange("middlenameEN", validateEnglishCharacters(value))}
               placeholder={currentTexts.enterMiddleNameEng}
               onKeyDown={(e) => preventEnglishInput(e)} // ป้องกันภาษาไทย
             />
             <div>
               <label className="block text-[#565656] mb-1">{currentTexts.lastNameEng} <span className="text-red-500">*</span></label>
-              <p className="text-[#565656]  indent-5">Raboobsamak</p>
+              <p className="text-[#565656]  indent-5">{formData.lastnameEN}</p>
             </div>
             <FormField
               label={currentTexts.nicknameEng}
-              value={formData.nicknameEng}
-              onChange={(value) => handleChange("nicknameEng", validateEnglishCharacters(value))}
+              value={formData.nicknameEN || ""}
+              onChange={(value) => handleChange("nicknameEN", validateEnglishCharacters(value))}
               placeholder={currentTexts.enterNicknameEng}
               onKeyDown={(e) => preventEnglishInput(e)} // ป้องกันภาษาไทย
             />
@@ -300,7 +341,7 @@ const PersonalInfo: React.FC = () => {
             <CustomSelect
               label={currentTexts.nationality}
               options={nationalities}
-              value={formData.nationality}
+              value={formData.nationality || ""}
               onChange={(selectedOption) => handleChange("nationality", selectedOption ? selectedOption.value : "TH")}
               placeholder={currentTexts.selectNationality}
             />
@@ -334,7 +375,7 @@ const PersonalInfo: React.FC = () => {
                   <label className="block text-[#565656] mb-1">
                     {currentTexts?.idCardNumber || "หมายเลขบัตรประชาชน"} <span className="text-red-500">*</span>
                   </label>
-                  <p className="text-[#565656] font-medium indent-2">1 9057 42603 312</p>
+                  <p className="text-[#565656] font-medium indent-2">{formData.idCardNumber}</p>
                 </div>
 
                 {/* วันหมดอายุของบัตรประชาชน */}
@@ -431,7 +472,7 @@ const PersonalInfo: React.FC = () => {
               <CustomSelect
                 label={currentTexts?.gender || "เพศ"}
                 options={genderOptions[language as keyof typeof genderOptions] || genderOptions["ENG"]}
-                value={formData.gender}
+                value={formData.gender || ""}
                 onChange={(selectedOption) =>
                   handleChange("gender", selectedOption ? selectedOption.value : "")
                 }
@@ -462,7 +503,7 @@ const PersonalInfo: React.FC = () => {
             <CustomSelect
               label={currentTexts.country}
               options={countries}
-              value={formData.country}
+              value={formData.country || ""}
               onChange={(selectedOption) => handleChange("country", selectedOption ? selectedOption.value : "")}
               placeholder={currentTexts.selectCountry}
               width="100%"
@@ -476,24 +517,24 @@ const PersonalInfo: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                 <FormField
                   label={currentTexts.houseNumber}
-                  value={formData.houseNumber}
+                  value={formData.houseNumber || ""}
                   onChange={(value) => handleChange("houseNumber", allowHouseNumber(value))}
                   placeholder={currentTexts.houseNumberPlaceholder}
                   onKeyDown={preventNonHouseNumberInput}
                 />
                 <FormField
                   label={currentTexts.moo}
-                  value={formData.moo}
+                  value={formData.moo || ""}
                   onChange={(value) => handleChange("moo", allowOnlyNumbers(value))}
                   placeholder={currentTexts.mooPlceholder}
                   onKeyDown={preventNonNumericInput}
                 />
-                <FormField label={currentTexts.village} value={formData.village} onChange={(value) => handleChange("village", value)} placeholder={currentTexts.villagePlaceholder} />
+                <FormField label={currentTexts.village} value={formData.village || ""} onChange={(value) => handleChange("village", value)} placeholder={currentTexts.villagePlaceholder} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                <FormField label={currentTexts.alley} value={formData.alley} onChange={(value) => handleChange("alley", value)} placeholder={currentTexts.alleyPlaceholder} />
-                <FormField label={currentTexts.street} value={formData.street} onChange={(value) => handleChange("street", value)} placeholder={currentTexts.streetPlaceholder} />
+                <FormField label={currentTexts.alley} value={formData.soi || ""} onChange={(value) => handleChange("soi", value)} placeholder={currentTexts.alleyPlaceholder} />
+                <FormField label={currentTexts.street} value={formData.street || ""} onChange={(value) => handleChange("street", value)} placeholder={currentTexts.streetPlaceholder} />
               </div>
 
               {/* จังหวัด - อำเภอ - ตำบล - รหัสไปรษณีย์ */}
@@ -543,14 +584,14 @@ const PersonalInfo: React.FC = () => {
             <>
               {/* ฟอร์มที่อยู่แบบต่างประเทศ */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <FormField label={language === "TH" ? "ที่อยู่บรรทัดที่ 1" : "Address Line 1"} value={formData.addressLine1} onChange={(value) => handleChange("addressLine1", value)} placeholder={language === "TH" ? "ระบุที่อยู่บรรทัดที่ 1" : "Enter Address Line 1"} />
-                <FormField label={language === "TH" ? "ที่อยู่บรรทัดที่ 2" : "Address Line 2"} value={formData.addressLine2} onChange={(value) => handleChange("addressLine2", value)} placeholder={language === "TH" ? "ระบุที่อยู่บรรทัดที่ 2" : "Enter Address Line 2"} />
+                <FormField label={language === "TH" ? "ที่อยู่บรรทัดที่ 1" : "Address Line 1"} value={formData.addr1 || ""} onChange={(value) => handleChange("addr1", value)} placeholder={language === "TH" ? "ระบุที่อยู่บรรทัดที่ 1" : "Enter Address Line 1"} />
+                <FormField label={language === "TH" ? "ที่อยู่บรรทัดที่ 2" : "Address Line 2"} value={formData.addr2 || ""} onChange={(value) => handleChange("addr2", value)} placeholder={language === "TH" ? "ระบุที่อยู่บรรทัดที่ 2" : "Enter Address Line 2"} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                <FormField label={language === "TH" ? "รัฐ/จังหวัด/ภูมิภาค" : "State/Province/Region"} value={formData.province} onChange={(value) => handleChange("province", value)} placeholder={language === "TH" ? "เลือกจังหวัด" : "Select State/Province/Region"} />
-                <FormField label={language === "TH" ? "เมือง" : "City"} value={formData.city} onChange={(value) => handleChange("city", value)} placeholder={language === "TH" ? "ระบุเมือง" : "Enter City"} />
-                <FormField label={language === "TH" ? "รหัสไปรษณีย์" : "Postal Code"} value={formData.postalCode} onChange={(value) => handleChange("postalCode", value)} placeholder={language === "TH" ? "ระบุรหัสไปรษณีย์" : "Enter Postal Code"} />
+                <FormField label={language === "TH" ? "รัฐ/จังหวัด/ภูมิภาค" : "State/Province/Region"} value={formData.province || ""} onChange={(value) => handleChange("province", value)} placeholder={language === "TH" ? "เลือกจังหวัด" : "Select State/Province/Region"} />
+                <FormField label={language === "TH" ? "เมือง" : "City"} value={formData.city || ""} onChange={(value) => handleChange("city", value)} placeholder={language === "TH" ? "ระบุเมือง" : "Enter City"} />
+                <FormField label={language === "TH" ? "รหัสไปรษณีย์" : "Postal Code"} value={formData.postalCode || ""} onChange={(value) => handleChange("postalCode", value)} placeholder={language === "TH" ? "ระบุรหัสไปรษณีย์" : "Enter Postal Code"} />
               </div>
             </>
           )}
