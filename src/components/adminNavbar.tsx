@@ -13,9 +13,15 @@ const pageTitles = {
     "/admin/users": "การจัดการผู้ใช้",
     "/admin/reports": "รายงานระบบ",
     "/admin/settings": "ตั้งค่าระบบ",
+    "/admin/screening/grouping": "จัดกลุ่มผู้สมัครสำหรับการคัดกรองเบื้องต้น", 
+    "/admin/screening/tracking": "ติดตามความคืบหน้าการคัดกรองเบื้องต้น", 
     "/admin/screening/summary": "สรุปผลการคัดกรองเบื้องต้น", 
     "/admin/applicant": "รายการใบสมัคร",
-    "/admin/interview/schedule" : "กำหนดรายละเอียดการสัมภาษณ์"
+    "/admin/interview/schedule" : "กำหนดรายละเอียดการสัมภาษณ์",
+    "/admin/interview/grouping" : "จัดกลุ่มผู้สมัครสัมภาษณ์",
+    "/admin/interview/tracking" : "ติดตามผลการสัมภาษณ์",
+    "/admin/interview/summary" : "สรุปผลการสัมภาษณ์",
+
 };
 
 // รายการเมนูใน Dropdown ของ Admin
@@ -49,7 +55,7 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed }) => {
                     </span>
                 </Link>
             ) : (
-                <h1 className="text-xl md:text-[24px] font-bold text-[#565656] pl-6">
+                <h1 className="text-xl md:text-[22px] font-bold text-[#565656] pl-6">
                     {isKnownPage ? pageTitles[pathname as keyof typeof pageTitles] : ""}
                 </h1>
             )}

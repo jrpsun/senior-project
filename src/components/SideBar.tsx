@@ -32,8 +32,8 @@ const subMenus = [
         label: 'จัดการการคัดกรองเบื้องต้น',
         icon: 'preliminary_icon.svg',
         subLinks: [
-            { href: '/option4/sub1', label: 'จัดกลุ่มผู้สมัครเพื่อคัดกรองเบื้องต้น' },
-            { href: '/option4/sub2', label: 'ติดตามผลการคัดกรองเบื้องต้น' },
+            { href: '/admin/screening/grouping', label: 'จัดกลุ่มผู้สมัครเพื่อคัดกรองเบื้องต้น' },
+            { href: '/admin/screening/tracking', label: 'ติดตามผลการคัดกรองเบื้องต้น' },
             { href: '/admin/screening/screening', label: 'รายชื่อผู้สมัครสำหรับพิจารณา' },
             { href: '/admin/screening/summary', label: 'สรุปผลการคัดกรองเบื้องต้น' }
         ]
@@ -43,10 +43,10 @@ const subMenus = [
         icon: 'interview_icon.svg',
         subLinks: [
             { href: '/admin/interview/schedule', label: 'กำหนดรายละเอียดการสัมภาษณ์' },
-            { href: '/option5/sub2', label: 'จัดกลุ่มผู้สมัครเพื่อสัมภาษณ์' },
-            { href: '/option5/sub3', label: 'ติดตามผลการสัมภาษณ์' },
+            { href: '/admin/interview/grouping', label: 'จัดกลุ่มผู้สมัครเพื่อสัมภาษณ์' },
+            { href: '/admin/interview/tracking', label: 'ติดตามผลการสัมภาษณ์' },
             { href: '/option5/sub4', label: 'รายชื่อผู้สมัครเข้ารับการสัมภาษณ์' },
-            { href: '/option5/sub5', label: 'สรุปผลการสัมภาษณ์' }
+            { href: '/admin/interview/summary', label: 'สรุปผลการสัมภาษณ์' }
         ]
     }
 ];
@@ -193,7 +193,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
                                             </Link>
                                         );
                                     })}
-
                                 </div>
                             )}
 

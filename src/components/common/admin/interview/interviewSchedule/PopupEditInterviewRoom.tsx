@@ -50,7 +50,7 @@ const PopupEditInterviewRoom = ({
             interviewers: interviewers.join(", "),
         });
     };
-    
+
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-center items-center p-4">
@@ -141,66 +141,66 @@ const PopupEditInterviewRoom = ({
                 </div>
 
                 <div className="mt-4 w-full relative">
-  <label className="block font-medium text-[#565656] mb-1">ผู้สัมภาษณ์</label>
-  <div
-    className="w-full min-h-[44px] border border-gray-300 rounded-[8px] px-3 py-0.5 pr-10 flex items-center flex-wrap gap-2 relative cursor-pointer"
-    onClick={() => setShowDropdown(!showDropdown)}
-  >
-    {interviewers.length === 0 ? (
-      <span className="text-[#C4C4C4]">กรุณาเลือกผู้สัมภาษณ์</span>
-    ) : (
-      interviewers.map((name) => (
-        <div
-          key={name}
-          className="flex items-center bg-gray-100 text-[#565656] rounded-xl px-3 py-0.5"
-        >
-          {name}
-          <button
-            className="ml-2 text-[#565656] hover:text-gray-700 text-2xl"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleInterviewer(name);
-            }}
-          >
-            ×
-          </button>
-        </div>
-      ))
-    )}
+                    <label className="block font-medium text-[#565656] mb-1">ผู้สัมภาษณ์</label>
+                    <div
+                        className="w-full min-h-[44px] border border-gray-300 rounded-[8px] px-3 py-0.5 pr-10 flex items-center flex-wrap gap-2 relative cursor-pointer"
+                        onClick={() => setShowDropdown(!showDropdown)}
+                    >
+                        {interviewers.length === 0 ? (
+                            <span className="text-[#C4C4C4]">กรุณาเลือกผู้สัมภาษณ์</span>
+                        ) : (
+                            interviewers.map((name) => (
+                                <div
+                                    key={name}
+                                    className="flex items-center bg-gray-100 text-[#565656] rounded-xl px-3 py-0.5"
+                                >
+                                    {name}
+                                    <button
+                                        className="ml-2 text-[#565656] hover:text-gray-700 text-2xl"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleInterviewer(name);
+                                        }}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))
+                        )}
 
-    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-      {showDropdown && interviewers.length > 0 ? (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setInterviewers([]);
-          }}
-        >
-          <Image src="/images/clear_icon.svg" alt="Clear" width={18} height={18} />
-        </button>
-      ) : (
-        <Image src="/images/dropdown_button.svg" alt="Dropdown" width={16} height={16} />
-      )}
-    </div>
-  </div>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            {showDropdown && interviewers.length > 0 ? (
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setInterviewers([]);
+                                    }}
+                                >
+                                    <Image src="/images/clear_icon.svg" alt="Clear" width={18} height={18} />
+                                </button>
+                            ) : (
+                                <Image src="/images/dropdown_button.svg" alt="Dropdown" width={16} height={16} />
+                            )}
+                        </div>
+                    </div>
 
-  {showDropdown && (
-    <div className="absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-[200px] overflow-y-auto shadow-md">
-      {allInterviewers
-        .filter((name) => !interviewers.includes(name))
-        .map((name) => (
-          <div
-            key={name}
-            className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-[#565656]"
-            onClick={() => toggleInterviewer(name)}
-          >
-            {name}
-          </div>
-        ))}
-    </div>
-  )}
-</div>
+                    {showDropdown && (
+                        <div className="absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-[200px] overflow-y-auto shadow-md">
+                            {allInterviewers
+                                .filter((name) => !interviewers.includes(name))
+                                .map((name) => (
+                                    <div
+                                        key={name}
+                                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-[#565656]"
+                                        onClick={() => toggleInterviewer(name)}
+                                    >
+                                        {name}
+                                    </div>
+                                ))}
+                        </div>
+                    )}
+                </div>
 
                 <div className="flex justify-end gap-3 mt-6">
                     <button

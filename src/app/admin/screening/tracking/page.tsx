@@ -8,38 +8,38 @@ import SearchField from "@components/components/form/searchField";
 import Image from 'next/image';
 
 const applicant = [
-    { round: 'DST01', applicantId: '0000001', name: 'อาทิตย์ แสงจันทร์', course: 'ITDS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Arthit.Saengchan@gmail.com', phoneNumber: '088-898-8888' },
-    { round: 'ICT01', applicantId: '0000001', name: 'กนกวรรณ ทองสุข', course: 'ITCS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Kanokwan.Thongsuk@gmail.com', phoneNumber: '089-123-4567' },
-    { round: 'DST01', applicantId: '0000002', name: 'พิชญะ วิสุทธิ์', course: 'ITDS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '02 - รอตรวจสอบเอกสาร', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Pitchaya.Visut@gmail.com', phoneNumber: '081-987-6543' },
-    { round: 'ICT01', applicantId: '0000002', name: 'วราภรณ์ เจริญสุข', course: 'ITCS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Waraporn.Jaroen@gmail.com', phoneNumber: '082-567-8901' },
-    { round: 'ICT01', applicantId: '0000003', name: 'อนันต์ โชติกุล', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '02 - รอตรวจสอบเอกสาร', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Chayapon.Rattanakun@gmail.com', phoneNumber: '089-555-1122' },
-    { round: 'ICT01', applicantId: '0000004', name: 'ปรียาภรณ์ สุทธิวัฒน์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Preeyaporn.Sutti@gmail.com', phoneNumber: '081-333-4444' },
-    { round: 'ICT01', applicantId: '0000005', name: 'ธนากร ศรีสวัสดิ์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Thanakorn.Srisawat@gmail.com', phoneNumber: '088-444-5555' },
-    { round: 'ICT01', applicantId: '0000006', name: 'ณัฐมน มณีวงศ์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Nattamon.Manee@gmail.com', phoneNumber: '089-123-4567' },
-    { round: 'DST01', applicantId: '0000003', name: 'วิศรุต พิทักษ์ธรรม', course: 'ITDS/B', admitStatus: '09 - ยกเลิกการสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Wisarut.Pitak@gmail.com', phoneNumber: '081-789-1234' },
-    { round: 'ICT01', applicantId: '0000007', name: 'อภิรักษ์ ธีรพัฒนเกียรติ', course: 'ITCS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Apirak.Thee@gmail.com', phoneNumber: '089-237-4859' },
-    { round: 'DST01', applicantId: '0000008', name: 'กนกวรรณ วัฒนปัญญากุล', course: 'ITDS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Kanokwan.wat@gmail.com', phoneNumber: '081-649-7283' },
-    { round: 'ICT01', applicantId: '0000009', name: 'พิชญา นาคสุข', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Pichaya.nak@gmail.com', phoneNumber: '092-105-3967' },
-    { round: 'ICT01', applicantId: '0000010', name: 'ชลธิชา นันทวโรภาส', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '02 - รอตรวจสอบเอกสาร', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Chonticha.nut@gmail.com', phoneNumber: '094-954-6031' },
-    { round: 'ICT01', applicantId: '0000012', name: 'พัชรีย์ เกษมสุขเจริญ', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Pacharee.kasem@gmail.com', phoneNumber: '086-576-9302' },
-    { round: 'ICT01', applicantId: '0000013', name: 'จารุวรรณ รัตนศิลป์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Jaruwan.wat@gmail.com', phoneNumber: '081-821-6403' },
-    { round: 'DST01', applicantId: '0000005', name: 'วารินทร์ รัตนประเสริฐกุล', course: 'ITDS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Warin.rat@gmail.com', phoneNumber: '095-733-2184 ' },
-    { round: 'ICT01', applicantId: '0000014', name: 'ศุภชัย จิตตเมธากานต์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Suphachail.jitt@gmail.com', phoneNumber: ' 090-142-7956' },
-    { round: 'DST01', applicantId: '0000006', name: 'มนัสนันท์ อัครพงศ์วณิช', course: 'ITDS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Manasanan.asawa@gmail.com', phoneNumber: '093-468-5217' },
-    { round: 'ICT01', applicantId: '0000015', name: 'ปรเมศวร์ อินทร์สถิตธรรม', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Porametch.instat@gmail.com', phoneNumber: '089-677-3140' },
-    { round: 'ICT01', applicantId: '0000016', name: 'ธัญญ์วาริน บุญฤทธิ์วรา', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '02 - รอตรวจสอบเอกสาร', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Tanwarin.boon@gmail.com', phoneNumber: '082-158-9042' },
-    { round: 'ICT01', applicantId: '0000017', name: 'วรเมธ รัตนากรไพบูลย์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Worameth.rat@gmail.com', phoneNumber: '091-345-7821' },
-    { round: 'ICT01', applicantId: '0000018', name: 'ณัฐณิชา พิพัฒน์เวชกิจ', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'natthanicha.pit@gmail.com', phoneNumber: '096-781-2056' },
-    { round: 'ICT01', applicantId: '0000019', name: 'วีรยุทธ พิพัฒน์ผล', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'werayut.piput@gmail.com', phoneNumber: '087-519-6348' },
-    { round: 'DST01', applicantId: '0000007', name: 'อนวัช ธนเศรษฐกุลภักดี', course: 'ITDS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'annawitch.tha@hotmail.com', phoneNumber: '085-437-1920' },
-    { round: 'ICT01', applicantId: '0000020', name: 'ชยุตม์ ภูมิวรางกูร', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'chayut.mun@gmail.com', phoneNumber: '090-304-8751' },
-    { round: 'DST01', applicantId: '0000008', name: 'ขวัญฤดี บุญเรือง', course: 'ITDS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'kwanruedee.boon@gmail.com', phoneNumber: '081-903-7485' },
-    { round: 'ICT01', applicantId: '0000021', name: 'ภูริชญ์ วัฒนศิริธรรมรัตน์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'poorin.watthana@gmail.com', phoneNumber: '092-601-2375' },
-    { round: 'ICT01', applicantId: '0000022', name: 'ศักดิ์สิทธิ์ จันทร์เพ็ญ', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '02 - รอตรวจสอบเอกสาร', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'saksith.jan@gmail.com', phoneNumber: '086-205-3947' },
-    { round: 'ICT01', applicantId: '0000023', name: 'ปรเมศวร์ ชัยมงคล', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'porameth.chai@gmail.com', phoneNumber: '082-470-5198' },
-    { round: 'ICT01', applicantId: '0000024', name: 'นลินี โชติวัฒน์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'nalinee.chot@gmail.com', phoneNumber: '091-395-8402' },
-    { round: 'ICT01', applicantId: '0000025', name: 'ธเนศ วงศ์มณฑลพัฒนา', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'tanet.wongmonthon@gmail.com', phoneNumber: '087-813-2907' },
-    { round: 'ICT01', applicantId: '0000025', name: 'ธนบดี มิ่งมงคลทรัพย์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'tanabodee.mingmong@gmail.com', phoneNumber: '062-467-9312' }
+    { round: 'DST01', applicantId: '0000001', name: 'อาทิตย์ แสงจันทร์', course: 'ITDS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 09.04 น.' },
+    { round: 'ICT01', applicantId: '0000001', name: 'กนกวรรณ ทองสุข', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 09.10 น.' },
+    { round: 'DST01', applicantId: '0000002', name: 'พิชญะ วิสุทธิ์', course: 'ITDS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '31 มี.ค. 2568 09.15 น.' },
+    { round: 'ICT01', applicantId: '0000002', name: 'วราภรณ์ เจริญสุข', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '31 มี.ค. 2568 09.23 น.' },
+    { round: 'ICT01', applicantId: '0000003', name: 'อนันต์ โชติกุล', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 09.45 น.' },
+    { round: 'ICT01', applicantId: '0000004', name: 'ปรียาภรณ์ สุทธิวัฒน์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 11.02 น.' },
+    { round: 'ICT01', applicantId: '0000005', name: 'ธนากร ศรีสวัสดิ์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 11.03 น.' },
+    { round: 'ICT01', applicantId: '0000006', name: 'ณัฐมน มณีวงศ์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 11.07 น.' },
+    { round: 'DST01', applicantId: '0000003', name: 'วิศรุต พิทักษ์ธรรม', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '' },
+    { round: 'ICT01', applicantId: '0000007', name: 'อภิรักษ์ ธีรพัฒนเกียรติ', course: 'ITCS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: ' ' },
+    { round: 'DST01', applicantId: '0000008', name: 'กนกวรรณ วัฒนปัญญากุล', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: ' ' },
+    { round: 'ICT01', applicantId: '0000009', name: 'พิชญา นาคสุข', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 13.10 น.' },
+    { round: 'ICT01', applicantId: '0000010', name: 'ชลธิชา นันทวโรภาส', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 13.12 น.' },
+    { round: 'ICT01', applicantId: '0000012', name: 'พัชรีย์ เกษมสุขเจริญ', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 13.23 น.' },
+    { round: 'ICT01', applicantId: '0000013', name: 'จารุวรรณ รัตนศิลป์', course: 'ITCS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 13.56 น.' },
+    { round: 'DST01', applicantId: '0000005', name: 'วารินทร์ รัตนประเสริฐกุล', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
+    { round: 'ICT01', applicantId: '0000014', name: 'ศุภชัย จิตตเมธากานต์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 15.34 น.' },
+    { round: 'DST01', applicantId: '0000006', name: 'มนัสนันท์ อัครพงศ์วณิช', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
+    { round: 'ICT01', applicantId: '0000015', name: 'ปรเมศวร์ อินทร์สถิตธรรม', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 15.40 น.' },
+    { round: 'ICT01', applicantId: '0000016', name: 'ธัญญ์วาริน บุญฤทธิ์วรา', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 15.43 น.' },
+    { round: 'ICT01', applicantId: '0000017', name: 'วรเมธ รัตนากรไพบูลย์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 15.47 น.' },
+    { round: 'ICT01', applicantId: '0000018', name: 'ณัฐณิชา พิพัฒน์เวชกิจ', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 15.53 น.' },
+    { round: 'ICT01', applicantId: '0000019', name: 'วีรยุทธ พิพัฒน์ผล', course: 'ITCS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.02 น.' },
+    { round: 'DST01', applicantId: '0000007', name: 'อนวัช ธนเศรษฐกุลภักดี', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
+    { round: 'ICT01', applicantId: '0000020', name: 'ชยุตม์ ภูมิวรางกูร', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.02 น.' },
+    { round: 'DST01', applicantId: '0000008', name: 'ขวัญฤดี บุญเรือง', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
+    { round: 'ICT01', applicantId: '0000021', name: 'ภูริชญ์ วัฒนศิริธรรมรัตน์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.08 น.' },
+    { round: 'ICT01', applicantId: '0000022', name: 'ศักดิ์สิทธิ์ จันทร์เพ็ญ', course: 'ITCS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.10 น.' },
+    { round: 'ICT01', applicantId: '0000023', name: 'ปรเมศวร์ ชัยมงคล', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.15 น.' },
+    { round: 'ICT01', applicantId: '0000024', name: 'นลินี โชติวัฒน์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.18 น.' },
+    { round: 'ICT01', applicantId: '0000025', name: 'ธเนศ วงศ์มณฑลพัฒนา', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.20 น.' },
+    { round: 'ICT01', applicantId: '0000025', name: 'ธนบดี มิ่งมงคลทรัพย์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.24 น.' }
 ]
 
 const courseOptions = ["ITDS/B", "ITCS/B"];
@@ -48,9 +48,20 @@ const roundOptions = [
     { label: "1/68 - ICT Portfolio", value: "ICT01" },
 ];
 
-const admitStatusOptions = ["01 - ยังไม่ยื่นใบสมัคร", "02 - ยื่นใบสมัครแล้ว", "03 - รอพิจารณา", "04 - ผ่านการพิจารณา", "05 - ไม่ผ่านการพิจารณา", "06 - รอสัมภาษณ์", "07-ผ่านการสัมภาษณ์", "08-ไม่ผ่านการสัมภาษณ์", "09 - ยกเลิกการสมัคร"];
-const docStatusOptions = ["01 - ยังไม่มีเอกสาร", "02 - รอตรวจสอบเอกสาร", "03 - เอกสารครบถ้วน", "04 - เอกสารไม่ครบถ้วน"];
-const paymentStatusOptions = ["01 - ยังไม่ได้ชำระเงิน", "02 - รอตรวจสอบการชำระเงิน", "03 - ชำระเงินเรียบร้อย", "04 - ชำระเงินไม่สำเร็จ"];
+const committeeOptions = [
+    { label: "อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์", value: "อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์" },
+    { label: "อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล", value: "อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล" },
+    { label: "อาจารย์ ดร. พรรณวดี ชัยวัฒนมงคล", value: "อาจารย์ ดร. พรรณวดี ชัยวัฒนมงคล" },
+];
+
+
+const admitStatusOptions = [
+    { label: "ผ่านการพิจารณา", value: "04 - ผ่านการพิจารณา" },
+    { label: "ไม่ผ่านการพิจารณา", value: "05 - ไม่ผ่านการพิจารณา" },
+    { label: "รอพิจารณา", value: "03 - รอพิจารณา" }
+];
+
+
 
 const Page = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -62,23 +73,12 @@ const Page = () => {
         paymentStatus?: string;
         applicantId?: string;
         name?: string;
+        committee?: string;
     }
 
     const [filters, setFilters] = useState<FilterState>({});
     const [filterValues, setFilterValues] = useState<FilterState>({});
     const [isExpanded, setIsExpanded] = useState(false);
-
-    /* used for immediately filter
-    const [filters, setFilters] = useState({
-      course: "",
-      round: "",
-      admitStatus: "",
-      docStatus: "",
-      paymentStatus: "",
-      indexNum: "",
-      name: ""
-    });
-    */
 
     const handleSearch = () => {
         setFilters(filterValues);
@@ -88,23 +88,13 @@ const Page = () => {
         setFilterValues({});
         setFilters({});
     };
-    /*
-    const filteredApplicants = applicant.filter(app =>
-      (filters.course === "" || app.course.includes(filters.course)) &&
-      (filters.round === "" || app.round.includes(filters.round)) &&
-      (filters.admitStatus === "" || app.admitStatus.includes(filters.admitStatus)) &&
-      (filters.docStatus === "" || app.docStatus.includes(filters.docStatus)) &&
-      (filters.paymentStatus === "" || app.paymentStatus.includes(filters.paymentStatus)) &&
-      (filters.indexNum === "" || app.indexNum.includes(filters.indexNum)) &&
-      (filters.name === "" || app.name.includes(filters.name))
-    );
-    */
+
     const filteredApplicants = applicant.filter(app =>
         (!filters.course || app.course === filters.course) &&
         (!filters.round || app.round === filters.round) &&
         (!filters.admitStatus || app.admitStatus === filters.admitStatus) &&
         (!filters.docStatus || app.docStatus === filters.docStatus) &&
-        (!filters.paymentStatus || app.paymentStatus === filters.paymentStatus) &&
+        (!filters.committee || app.committee === filters.committee) && 
         (!filters.applicantId || app.applicantId.includes(filters.applicantId)) &&
         (!filters.name || app.name.includes(filters.name))
     );
@@ -172,7 +162,7 @@ const Page = () => {
                                     />
                                 </div>
 
-                                <div className="w-[280px] z-50 relative">
+                                <div className="w-[320px] z-50 relative">
                                     <SearchField
                                         label="รอบรับสมัคร"
                                         type="dropdown"
@@ -189,9 +179,26 @@ const Page = () => {
                                     />
                                 </div>
 
-                                <div className="w-[240px]">
+                                <div className="w-[375px]">
                                     <SearchField
-                                        label="สถานะการสมัคร"
+                                        label="กรรมการหลักสูตร"
+                                        type="dropdown"
+                                        value={filterValues.committee || ""}
+                                        onChange={(option) => {
+                                            if (typeof option === "object" && option !== null && "value" in option) {
+                                                setFilterValues({ ...filterValues, committee: option.value });
+                                            } else {
+                                                setFilterValues({ ...filterValues, committee: "" });
+                                            }
+                                        }}
+                                        options={committeeOptions}
+                                        placeholder="เลือกกรรมการหลักสูตร"
+                                    />
+                                </div>
+
+                                <div className="w-[275px]">
+                                    <SearchField
+                                        label="ผลการคัดกรองเบื้องต้น"
                                         type="dropdown"
                                         value={filterValues.admitStatus || ""}
                                         onChange={(option) => {
@@ -201,42 +208,8 @@ const Page = () => {
                                                 setFilterValues({ ...filterValues, admitStatus: "" });
                                             }
                                         }}
-                                        options={admitStatusOptions.map(value => ({ label: value, value }))}
-                                        placeholder="เลือกสถานะการสมัคร"
-                                    />
-                                </div>
-
-                                <div className="w-[240px]">
-                                    <SearchField
-                                        label="สถานะเอกสาร"
-                                        type="dropdown"
-                                        value={filterValues.docStatus || ""}
-                                        onChange={(option) => {
-                                            if (typeof option === "object" && option !== null && "value" in option) {
-                                                setFilterValues({ ...filterValues, docStatus: option.value });
-                                            } else {
-                                                setFilterValues({ ...filterValues, docStatus: "" });
-                                            }
-                                        }}
-                                        options={docStatusOptions.map(value => ({ label: value, value }))}
-                                        placeholder="เลือกสถานะเอกสาร"
-                                    />
-                                </div>
-
-                                <div className="w-[270px]">
-                                    <SearchField
-                                        label="สถานะการชำระเงิน"
-                                        type="dropdown"
-                                        value={filterValues.paymentStatus || ""}
-                                        onChange={(option) => {
-                                            if (typeof option === "object" && option !== null && "value" in option) {
-                                                setFilterValues({ ...filterValues, paymentStatus: option.value });
-                                            } else {
-                                                setFilterValues({ ...filterValues, paymentStatus: "" });
-                                            }
-                                        }}
-                                        options={paymentStatusOptions.map(value => ({ label: value, value }))}
-                                        placeholder="เลือกสถานะการชำระเงิน"
+                                        options={admitStatusOptions}
+                                        placeholder="เลือกผลการคัดกรอง"
                                     />
                                 </div>
 
@@ -315,56 +288,24 @@ const Page = () => {
                                 <h2 className="text-xl font-bold text-[#565656] whitespace-nowrap">
                                     รายการใบสมัคร  <span className="text-[#6B7280] font-bold">{filteredApplicants.length}</span>
                                 </h2>
-                                <div className="flex gap-2 ml-auto mr-15">
-                                    <button>
-                                        <div className="bg-[#008A90] hover:bg-[#009198] text-white px-3 py-2 rounded-md flex items-center gap-2">
-                                            <div>
-                                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <g clipPath="url(#clip0_911_32737)">
-                                                        <path d="M3.33366 6.66732C2.41283 6.66732 1.66699 7.41315 1.66699 8.33398V16.6673C1.66699 17.584 2.41699 18.334 3.33366 18.334H15.0003C15.9212 18.334 16.667 17.5882 16.667 16.6673H3.33366V6.66732ZM16.667 15.0007H6.66699C5.74616 15.0007 5.00033 14.2548 5.00033 13.334V5.00065C5.00033 4.07982 5.74616 3.33398 6.66699 3.33398H9.16699C10.0878 3.33398 10.8337 4.07982 10.8337 5.00065H16.667C17.5878 5.00065 18.3337 5.74648 18.3337 6.66732V13.334C18.3337 14.2548 17.5878 15.0007 16.667 15.0007Z" fill="white" />
-                                                    </g>
-                                                    <defs>
-                                                        <clipPath id="clip0_911_32737">
-                                                            <rect width="20" height="20" fill="white" />
-                                                        </clipPath>
-                                                    </defs>
-                                                </svg>
-                                            </div>
-                                            <div>ดาวน์โหลดเอกสาร</div>
-                                        </div>
-                                    </button>
-                                    <button >
-                                        <div className="bg-[#00796B] hover:bg-[#028273] text-white px-3 py-2 rounded-md flex items-center gap-2">
-                                            <Image
-                                                src="/images/admin/searchBar/download_icon.svg"
-                                                alt="Download Excel"
-                                                width={16}
-                                                height={16}
-                                                className="w-4 h-4"
-                                            />
-                                            <div>Export to Excel</div>
-                                        </div>
-
-                                    </button>
-                                </div>
                             </div>
                             <div className="overflow-x-auto w-full">
                                 <table className="w-full table-auto border-collapse">
                                     <thead>
-                                        <tr className="bg-[#F3F5F6] text-center; text-[#565656]">
-                                            <th className="px-2 py-4 whitespace-nowrap">No</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">รอบ</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">เลขที่สมัคร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">ชื่อ - นามสกุล ผู้สมัคร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">หลักสูตร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">สถานะการสมัคร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">สถานะเอกสาร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">สถานะการชำระเงิน</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">อีเมล</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">โทรศัพท์</th>
-                                            <th className="px-2 py-4 whitespace-nowrap "></th>
+                                        <tr className="bg-[#F3F5F6] text-center text-[#565656]">
+                                            <th className="px-2 py-4 whitespace-nowrap w-[50px]">No</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[60px]">รอบ</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[100px]">เลขที่สมัคร</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[200px]">ชื่อ - นามสกุล ผู้สมัคร</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[100px]">หลักสูตร</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[170px]">สถานะการสมัคร</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[170px]">สถานะเอกสาร</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[200px]">กรรมการหลักสูตร</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[180px]">วันที่ประเมิน</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[130px]"></th>
                                         </tr>
                                     </thead>
+
                                     <tbody>
                                         {paginatedApplicants.map((app, index) => (
                                             <tr
@@ -382,13 +323,13 @@ const Page = () => {
                                                 <td className="text-center whitespace-nowrap">{app.course}</td>
                                                 <td>
                                                     <div className={`mr-4 whitespace-nowrap
-          ${app.admitStatus === "02 - ยื่นใบสมัครแล้ว" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+          ${app.admitStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
           ${app.admitStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : "py-2"}
           ${app.admitStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-          ${app.admitStatus === "05 - ไม่ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600 " : "py-2"}
+          ${app.admitStatus === "05 - ไม่ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
           ${app.admitStatus === "06 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520] " : "py-2"}
           ${app.admitStatus === "07 - ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-          ${app.admitStatus === "08 - ไม่ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600 " : "py-2"}
+          ${app.admitStatus === "08 - ไม่ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
           ${app.admitStatus === "09 - ยกเลิกการสมัคร" ? "h-[30px] pt-[2px] rounded-xl text-red-600 " : "py-2"}
         `}>
                                                         {app.admitStatus}
@@ -409,24 +350,33 @@ const Page = () => {
                                                         </div>
                                                     )}
                                                 </td>
-                                                <td>
-                                                    {app.admitStatus === "09 - ยกเลิกการสมัคร" ? (
-                                                        <div>ยกเลิกการชำระเงิน</div>
+                                                <td className="py-2 whitespace-nowrap">{app.committee}</td>
+                                                <td className="py-2 whitespace-nowrap text-center">
+                                                    {app.evaluationDate.trim() ? (
+                                                        app.evaluationDate
                                                     ) : (
-                                                        <div className={`mr-4 whitespace-nowrap
-      ${app.paymentStatus === "02 - รอตรวจสอบการชำระเงิน" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
-      ${app.paymentStatus === "03 - ชำระเงินเรียบร้อย" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
-      ${app.paymentStatus === "04 - ชำระเงินไม่สำเร็จ" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600" : ""}
-    `}>
-                                                            {app.paymentStatus}
+                                                        <div className="flex justify-center items-center text-[#DAA520] gap-1">
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                className="h-4 w-4"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                                strokeWidth={2}
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M12 6v6l4 2m4-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                />
+                                                            </svg>
+                                                            <span >รอผลการประเมิน</span>
                                                         </div>
                                                     )}
                                                 </td>
 
-                                                <td className="py-2 whitespace-nowrap">{app.email}</td>
-                                                <td className="py-2 whitespace-nowrap ">{app.phoneNumber}</td>
                                                 <td className="py-2 text-center whitespace-nowrap">
-                                                    {app.admitStatus === "02 - ยื่นใบสมัครแล้ว" && (
+                                                    {(app.admitStatus === "04 - ผ่านการพิจารณา" || app.admitStatus === "05 - ไม่ผ่านการพิจารณา" || app.admitStatus === "03 - รอพิจารณา") && (
                                                         <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] ">
                                                             <div className="flex flex-row gap-1">
                                                                 <div className="pt-1">
@@ -438,6 +388,7 @@ const Page = () => {
                                                             </div>
                                                         </button>
                                                     )}
+
                                                     {app.admitStatus === "09 - ยกเลิกการสมัคร" && (
                                                         <button className="bg-red px-1 py-1 my-2 rounded-lg border border-red-500 text-red-500 text-[14px] font-bold w-[130px]">
                                                             <div className="flex flex-row gap-1">

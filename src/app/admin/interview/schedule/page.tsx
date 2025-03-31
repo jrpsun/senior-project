@@ -4,11 +4,11 @@ import React, { useState, useRef, useEffect } from "react";
 import SideBar from "../../../../components/SideBar";
 import AdminNavbar from "../../../../components/adminNavbar";
 import SearchField from "../../../../components/form/searchField";
-import PopupInterview from "@components/components/common/admin/interviewSchedule/popupInterview";
-import PopupAddRoom from "@components/components/common/admin/interviewSchedule/PopupAddRoom";
-import PopupInterviewMenu from "@components/components/common/admin/interviewSchedule/PopupInterviewMenu";
-import PopupEditInterviewRoom from "@components/components/common/admin/interviewSchedule/PopupEditInterviewRoom";
-import PopupDeleteConfirm from "@components/components/common/admin/interviewSchedule/PopupDeleteConfirm";
+import PopupInterview from "@components/components/common/admin/interview/interviewSchedule/popupInterview";
+import PopupAddRoom from "@components/components/common/admin/interview/interviewSchedule/PopupAddRoom";
+import PopupInterviewMenu from "@components/components/common/admin/interview/interviewSchedule/PopupInterviewMenu";
+import PopupEditInterviewRoom from "@components/components/common/admin/interview/interviewSchedule/PopupEditInterviewRoom";
+import PopupDeleteConfirm from "@components/components/common/admin/interview/interviewSchedule/PopupDeleteConfirm";
 import AlertAdmin from "@components/components/common/admin/alertAdmin";
 import Image from "next/image";
 
@@ -400,7 +400,7 @@ const InterviewSchedulePage = () => {
                         <td className="p-2 w-[300px]">
                           <div className="flex flex-col md:flex-row gap-2 md:gap-4">
                             <button
-                              className="text-[#DAA520] border border-[#DAA520] rounded-[8px] px-5 py-1 flex items-center gap-2 whitespace-nowrap"
+                              className="text-[#F59E0B] border border-[#FCD34D] hover:bg-[#FFF7E6] rounded-[8px] px-5 py-1 flex items-center gap-2 whitespace-nowrap"
                               onClick={() => handleEdit(item, index)}
                             >
                               <Image src="/images/admin/interview/edit_icon.svg" alt="edit" width={25} height={25} />
