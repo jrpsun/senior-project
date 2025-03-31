@@ -5,9 +5,14 @@ import Image from "next/image";
 interface AlertProps {
   message: string;
   onClose: () => void;
+  type?: "success" | "warning" | "document";
 }
 
-const AlertAdmin: React.FC<AlertProps> = ({ message, onClose }) => {
+const AlertAdmin: React.FC<AlertProps> = ({
+  message,
+  onClose,
+  type = "success",
+}) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -16,8 +21,34 @@ const AlertAdmin: React.FC<AlertProps> = ({ message, onClose }) => {
     return () => clearTimeout(timer);
   }, [onClose]);
 
+  const styleMap = {
+    success: {
+      border: "#166534",
+      text: "#166534",
+      icon: "/images/alertSuccess_icon.svg",
+      alt: "Success Icon",
+    },
+    warning: {
+      border: "#DAA520",
+      text: "#DAA520",
+      icon: "/images/alertWarning_icon.svg",
+      alt: "Warning Icon",
+    },
+    document: {
+      border: "F57C00",
+      text: "#F57C00",
+      icon: "/images/alertDocument_icon.svg",
+      alt: "Warning Icon",
+    },
+  };
+
+  const { border, text, icon, alt } = styleMap[type];
+
   return (
-    <div className="fixed top-4 right-4 z-50 bg-white border border-[#166534] px-4 py-3 rounded-lg shadow-lg w-full max-w-[450px] md:right-8 md:top-6">
+    <div
+      className="fixed top-4 right-4 z-50 bg-white px-4 py-3 rounded-lg shadow-lg w-full max-w-[450px] md:right-8 md:top-6"
+      style={{ border: `1px solid ${border}` }}
+    >
       {/* ปุ่มปิดที่มุมขวาบน */}
       <button
         onClick={onClose}
@@ -28,10 +59,13 @@ const AlertAdmin: React.FC<AlertProps> = ({ message, onClose }) => {
 
       <div className="flex items-center gap-3 pr-6">
         {/* ไอคอนแจ้งเตือน */}
-        <Image src="/images/alertSuccess_icon.svg" alt="Success Icon" width={30} height={30} />
+        <Image src={icon} alt={alt} width={30} height={30} />
 
         {/* ข้อความแจ้งเตือน */}
-        <span className="text-sm font-medium text-[#166534] break-words">
+        <span
+          className="text-sm font-medium break-words whitespace-pre-line"
+          style={{ color: text }}
+        >
           {message}
         </span>
       </div>

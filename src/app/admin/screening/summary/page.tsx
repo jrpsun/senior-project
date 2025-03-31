@@ -199,7 +199,7 @@ const ScreeningResultPage = () => {
 
             <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
                 <div className="relative z-20">
-                    <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+                    <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin"/>
                 </div>
 
                 <main

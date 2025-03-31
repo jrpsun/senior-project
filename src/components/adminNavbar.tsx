@@ -13,15 +13,16 @@ const pageTitles = {
     "/admin/users": "การจัดการผู้ใช้",
     "/admin/reports": "รายงานระบบ",
     "/admin/settings": "ตั้งค่าระบบ",
-    "/admin/screening/grouping": "จัดกลุ่มผู้สมัครสำหรับการคัดกรองเบื้องต้น", 
-    "/admin/screening/tracking": "ติดตามความคืบหน้าการคัดกรองเบื้องต้น", 
-    "/admin/screening/summary": "สรุปผลการคัดกรองเบื้องต้น", 
     "/admin/applicant": "รายการใบสมัคร",
-    "/admin/interview/schedule" : "กำหนดรายละเอียดการสัมภาษณ์",
-    "/admin/interview/grouping" : "จัดกลุ่มผู้สมัครสัมภาษณ์",
-    "/admin/interview/tracking" : "ติดตามผลการสัมภาษณ์",
-    "/admin/interview/summary" : "สรุปผลการสัมภาษณ์",
-
+    "/admin/screening/grouping": "จัดกลุ่มผู้สมัครสำหรับการคัดกรองเบื้องต้น",
+    "/admin/screening/tracking": "ติดตามความคืบหน้าการคัดกรองเบื้องต้น",
+    "/admin/screening/candidates": "รายการผู้สมัครสำหรับพิจารณาคัดกรองเบื้องต้น",
+    "/admin/screening/summary": "สรุปผลการคัดกรองเบื้องต้น",
+    "/admin/interview/schedule": "กำหนดรายละเอียดการสัมภาษณ์",
+    "/admin/interview/grouping": "จัดกลุ่มผู้สมัครสัมภาษณ์",
+    "/admin/interview/candidates": "รายชื่อผู้สมัครสัมภาษณ์",
+    "/admin/interview/tracking": "ติดตามผลการสัมภาษณ์",
+    "/admin/interview/summary": "สรุปผลการสัมภาษณ์",
 };
 
 // รายการเมนูใน Dropdown ของ Admin
@@ -40,7 +41,7 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed }) => {
     const [langDropdownOpen, setLangDropdownOpen] = useState(false);
     const pathname = usePathname();
     const isKnownPage = pathname in pageTitles;
-    
+
 
     return (
         <div className="bg-white text-black fixed top-0 z-40 h-[80px] flex items-center transition-all shadow-md"
@@ -75,7 +76,10 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed }) => {
                     }}
                 >
                     <Image src="/images/admin/adminNavbar/AdminProfile.svg" alt="Admin" width={30} height={30} />
-                    <span className="text-[#008A90] ">TESTADMIN.SYS</span>
+                    <span className="text-[#008A90] ">
+                        {pathname === "/admin/interviews/candidates" ? "WORAPONG.PAT" : "TESTADMIN.SYS"}
+                    </span>
+
                     <Image src="/images/dropdown_button.svg" alt="Dropdown" width={15} height={10} />
                     {dropdownOpen && (
                         <div className="absolute right-0 top-full w-56 bg-white border rounded-md shadow-lg p-2">

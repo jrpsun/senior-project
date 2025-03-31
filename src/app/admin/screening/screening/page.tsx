@@ -100,7 +100,7 @@ const ScreeningResultPage = () => {
       />
 
       <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
-        <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin"/>
 
         <main className={`w-full transition-all p-6 mt-[64px] ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}>
           <ApplicantHeader

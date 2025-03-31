@@ -264,8 +264,8 @@ const InterviewSchedulePage = () => {
         <AdminNavbar isCollapsed={isCollapsed} />
       </div>
       <div className="flex flex-row flex-1 relative">
-        <div className="relative z-[50]">
-          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      <div className="relative z-50">
+        <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}  userRole="admin"/>
         </div>
         <div
           className={`flex flex-col w-full p-6 mt-[64px] transition-all bg-white ${isCollapsed ? "ml-[80px]" : "ml-[300px]"

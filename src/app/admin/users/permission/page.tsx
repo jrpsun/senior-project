@@ -299,7 +299,7 @@ const PermissionPage = () => {
       <div className="flex flex-row flex-1 relative">
         {/* Sidebar */}
         <div className="relative z-50">
-          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin"/>
         </div>
 
         {/* Main Content */}

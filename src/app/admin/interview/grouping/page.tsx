@@ -16,6 +16,7 @@ import TopBarActions from "@components/components/admin/interviewSchedule/TopBar
 import { PaginationControls } from "@components/components/admin/interviewSchedule/PaginationControls";
 import { useFilterApplicants } from "@components/hooks/admin/groupingInterview/useFilterApplicants";
 import { useEditInterviewGrouping } from "@components/hooks/admin/groupingInterview/useEditInterviewGrouping";
+import AlertAdmin from "@components/components/common/admin/alertAdmin";
 //import InterviewTable from "@components/components/admin/interviewSchedule/InterviewTable";
 //import { useInterviewGrouping } from "@components/hooks/admin/groupingInterview/useInterviewGrouping";
 
@@ -32,7 +33,6 @@ const roundOptions = [
 const admitStatusOptions = ["04 - ผ่านการพิจารณา", "06 - รอสัมภาษณ์"];
 const docStatusOptions = ["03 - เอกสารครบถ้วน"];
 const paymentStatusOptions = ["03 - ชำระเงินเรียบร้อย"];
-
 
 const Page = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -69,8 +69,6 @@ const Page = () => {
         { label: "อ. เจตน์พิภพ", value: " เจตน์พิภพ" },
     ];
 
-
-
     const allRoomOptions = interviewSchedules.map(room => ({
         label: room.room,
         value: room.room
@@ -89,13 +87,13 @@ const Page = () => {
         setFilters(defaultFilters);
     };
 
-
     //Grouping Applicant
     const [isGroupingMode, setIsGroupingMode] = useState(false);
     const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
     const [isGrouped, setIsGrouped] = useState(false);
     const [showEditInterviewPopup, setShowEditInterviewPopup] = useState(false);
     const [editingInterview, setEditingInterview] = useState<(typeof mockApplicants)[0] | null>(null);
+    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
     interface Applicant {
         applicantId: string;
         round: string;
@@ -103,23 +101,23 @@ const Page = () => {
         course: string;
         admitStatus: string;
         docStatus: string;
-        interviewRoom?: string;
-        interviewDateTime?: string; // Optional property for interview date and time
-        grouping?: string; // Added grouping property
+        interviewRoom: string; // Ensure it's always a string
+        interviewDateTime: string; // Ensure it's always a string
+        grouping: string; // Ensure it's always a string
         committee?: string[];
-        paymentStatus: string; // Added paymentStatus property
+        paymentStatus: string;
     }
 
     const [applicantData, setApplicantData] = useState<Applicant[]>(
         mockApplicants.map(applicant => ({
-          ...applicant,
-          grouping: applicant.grouping ?? "ungrouped",
-          committee: applicant.committee ? [applicant.committee] : undefined,
-          interviewRoom: applicant.interviewRoom ?? "",
-          interviewDateTime: applicant.interviewDateTime || "", // ← TypeScript อาจยังไม่มั่นใจว่ามี field นี้
+            ...applicant,
+            grouping: applicant.grouping ?? "ungrouped",
+            committee: applicant.committee ? [applicant.committee] : undefined,
+            interviewRoom: applicant.interviewRoom, // Ensure it's always a string
+            interviewDateTime: applicant.interviewDateTime || "", // ← TypeScript อาจยังไม่มั่นใจว่ามี field นี้
         }))
-      );
-      
+    );
+
     const handleEnterGroupingMode = () => {
         setIsGroupingMode(true);
 
@@ -204,6 +202,7 @@ const Page = () => {
         setIsGroupingMode(false);
         setSelectedApplicants([]);
         setSelectedRooms([]);
+        setShowSuccessAlert(true);
     };
 
     const filteredApplicants = useFilterApplicants(applicantData, filters);
@@ -305,7 +304,11 @@ const Page = () => {
                 />
                 <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
                     <div className="relative z-50">
-                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+                        <Sidebar
+                            isCollapsed={isCollapsed}
+                            setIsCollapsed={setIsCollapsed}
+                            userRole="admin"
+                        />
                     </div>
                     <main
                         className={`w-full transition-all p-6 mt-[64px] min-h-[calc(100vh-64px)] ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}
@@ -535,6 +538,12 @@ const Page = () => {
                     </main>
                 </div>
             </div>
+            {showSuccessAlert && (
+                <AlertAdmin
+                    message={'ดำเนินการจัดกลุ่มเรียบร้อย ผู้สมัครรอการสัมภาษณ์'}
+                    onClose={() => setShowSuccessAlert(false)}
+                />
+            )}
             {showEditInterviewPopup && editingInterview && (
                 <PopupEditInterviewGrouping
                     isOpen={showEditInterviewPopup}

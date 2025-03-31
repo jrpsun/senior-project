@@ -47,8 +47,16 @@ const Page = () => {
     }
 
 
-    const [filters, setFilters] = useState<FilterState>({});
-    const [filterValues, setFilterValues] = useState<FilterState>({});
+    const defaultDocStatus = "03 - เอกสารครบถ้วน";
+
+const [filters, setFilters] = useState<FilterState>({
+  docStatus: defaultDocStatus,
+});
+const [filterValues, setFilterValues] = useState<FilterState>({
+  docStatus: defaultDocStatus,
+});
+
+
     const [isExpanded, setIsExpanded] = useState(false);
 
     const handleSearch = () => {
@@ -56,17 +64,20 @@ const Page = () => {
     };
 
     const handleReset = () => {
-        setFilterValues({});
-        setFilters({});
+        setFilterValues({ docStatus: defaultDocStatus });
+        setFilters({ docStatus: defaultDocStatus });
     };
+    
 
     const interviewStatusOptions = [
+        { label: "แสดงทั้งหมด", value: "" }, 
         { label: "03 - ผ่านการสัมภาษณ์", value: "03 - ผ่านการสัมภาษณ์" },
         { label: "04 - ไม่ผ่านการสัมภาษณ์", value: "04 - ไม่ผ่านการสัมภาษณ์" },
         { label: "02 - ไม่มาสัมภาษณ์", value: "02 - ไม่มาสัมภาษณ์" },
         { label: "05 - รอพิจารณาเพิ่มเติม", value: "05 - รอพิจารณาเพิ่มเติม" },
         { label: "06 - รอผลการประเมินเพิ่มเติม", value: "06 - รอผลการประเมินเพิ่มเติม" },
     ];
+    
 
     const docStatusOptions = [
         { label: "03 - เอกสารครบถ้วน", value: "03 - เอกสารครบถ้วน" },
@@ -138,7 +149,7 @@ const Page = () => {
                 />
                 <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
                     <div className="relative z-50">
-                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin"/>
                     </div>
                     <main
                         className={`w-full transition-all p-6 mt-[64px] min-h-[calc(100vh-64px)] ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}
@@ -183,7 +194,7 @@ const Page = () => {
                                     />
                                 </div>
 
-                                <div className="w-[300px]">
+                                <div className="w-[300px] z-20">
                                     <SearchField
                                         label="สถานะการสัมภาษณ์"
                                         type="dropdown"

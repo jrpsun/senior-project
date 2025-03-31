@@ -9,8 +9,21 @@ import AdminNavbar from "@components/components/adminNavbar";
 import SearchField from "@components/components/form/searchField";
 import Image from 'next/image';
 import PopupEditGrouping from "@components/components/common/admin/screening/popupEditGrouping";
+import AlertAdmin from "@components/components/common/admin/alertAdmin";
 
-const applicant = [
+type Applicant = {
+    round: string;
+    applicantId: string;
+    name: string;
+    course: string;
+    admitStatus: string;
+    docStatus: string;
+    paymentStatus: string;
+    grouping: string;
+    committee: string | undefined;
+};
+
+const applicant: Applicant[] = [
     { round: 'DST01', applicantId: '0000001', name: 'อาทิตย์ แสงจันทร์', course: 'ITDS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', grouping: 'ungrouped', committee: undefined as string | undefined },
     { round: 'ICT01', applicantId: '0000001', name: 'กนกวรรณ ทองสุข', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', grouping: 'ungrouped', committee: undefined as string | undefined },
     { round: 'DST01', applicantId: '0000002', name: 'พิชญะ วิสุทธิ์', course: 'ITDS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', grouping: 'ungrouped', committee: undefined as string | undefined },
@@ -105,6 +118,7 @@ const Page = () => {
     const [isGrouped, setIsGrouped] = useState(false);
     const [showEditPopup, setShowEditPopup] = useState(false);
     const [editingApplicant, setEditingApplicant] = useState<typeof applicant[0] | null>(null);
+    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
 
     const handleEnterGroupingMode = () => {
@@ -154,21 +168,10 @@ const Page = () => {
         setIsGroupingMode(false);
         setSelectedApplicants([]);
         setSelectedCommittee([]);
+        setShowSuccessAlert(true);
     };
 
-    const filteredApplicants = applicantData.filter(app =>
-        (!filters.course || app.course === filters.course) &&
-        (!filters.round || app.round === filters.round) &&
-        (!filters.admitStatus || app.admitStatus === filters.admitStatus) &&
-        (!filters.docStatus || app.docStatus === filters.docStatus) &&
-        (!filters.paymentStatus || app.paymentStatus === filters.paymentStatus) &&
-        (!filters.applicantId || app.applicantId.includes(filters.applicantId)) &&
-        (!filters.name || app.name.includes(filters.name)) &&
-        (!filters.grouping || app.grouping === filters.grouping) &&
-        (!filters.committee || app.committee === filters.committee)
-    );
-
-    const handleEditGrouping = (applicant: typeof applicant[0]) => {
+    const handleEditGrouping = (applicant: Applicant) => {
         setEditingApplicant(applicant);
         setShowEditPopup(true);
     };
@@ -181,10 +184,16 @@ const Page = () => {
         console.log("📥 Export to Excel clicked");
     };
 
-
     // Calculate indexes
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
+    const filteredApplicants = applicantData.filter((app) => {
+        return Object.entries(filters).every(([key, value]) => {
+            if (!value) return true;
+            return app[key as keyof Applicant]?.toString().includes(value.toString());
+        });
+    });
+
     const paginatedApplicants = filteredApplicants.slice(startIndex, endIndex);
 
     // Pagination Handlers
@@ -228,6 +237,7 @@ const Page = () => {
         }
     };
 
+
     return (
         <div className="flex flex-col min-h-screen bg-white">
             <div>
@@ -236,7 +246,7 @@ const Page = () => {
                 />
                 <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
                     <div className="relative z-50">
-                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin" />
                     </div>
                     <main
                         className={`w-full transition-all p-6 mt-[64px] min-h-[calc(100vh-64px)] ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}
@@ -771,6 +781,13 @@ const Page = () => {
                     </main>
                 </div>
             </div>
+            {showSuccessAlert && (
+                <AlertAdmin
+                    message={'ดำเนินการจัดกลุ่มเรียบร้อย ผู้สมัครรอการพิจารณา'}
+                    onClose={() => setShowSuccessAlert(false)}
+                />
+            )}
+
             {showEditPopup && editingApplicant && (
                 <PopupEditGrouping
                     isOpen={showEditPopup}
@@ -789,9 +806,7 @@ const Page = () => {
                     }}
                 />
             )}
-
         </div>
-
     );
 };
 

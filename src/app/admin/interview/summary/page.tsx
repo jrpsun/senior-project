@@ -58,7 +58,7 @@ const SummaryResultPage = () => {
         const hasPendingResult = filteredData.some(group =>
             group.applicants.some(app =>
                 app.interviewResult === "รอ" ||
-                app.interviewResult === "รอผลการประเมินเพิ่มเติม" 
+                app.interviewResult === "รอผลการประเมินเพิ่มเติม"
             )
         );
 
@@ -208,9 +208,9 @@ const SummaryResultPage = () => {
             />
 
             <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
-                <div className="relative z-20">
-                    <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-                </div>
+            <div className="relative z-50">
+        <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}  userRole="admin"/>
+        </div>
 
                 <main
                     className={`w-full transition-all p-6 mt-[64px] min-h-[calc(100vh-64px)] ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}
@@ -254,7 +254,7 @@ const SummaryResultPage = () => {
                                     placeholder="เลือกรอบรับสมัคร"
                                 />
                             </div>
-                            <div className="w-[300px] z-[9999] relative">
+                            <div className="w-[325px] z-[9999] relative">
                                 <SearchField
                                     label="สถานะการสัมภาษณ์"
                                     type="dropdown"
@@ -485,7 +485,6 @@ const SummaryResultPage = () => {
                             </div>
                         )}
 
-
                         {/* แถบคะแนนเฉลี่ยรวม */}
                         <div className="border border-black rounded-md px-6 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 text-[#333]">
                             <div className="flex items-center gap-2">
@@ -573,31 +572,29 @@ const SummaryResultPage = () => {
                                             <span>{group.avgComputerScore?.toFixed(2) || '-'}</span>
                                         </div>
                                     </div>
-
                                 </div>
 
                                 {/* ตารางผู้สมัคร */}
                                 <div className="overflow-x-auto">
-                                    <table className="w-full border-t border-gray-200 table-fixed">
+                                <table className="w-full border-t border-gray-200 table-auto min-w-[1000px]">
                                         <thead className="bg-[#F5F5F5] text-[#565656] text-left">
                                             <tr>
-                                                <th className="px-2 py-2 w-[50px] text-center">No</th>
-                                                <th className="px-2 py-2 w-[100px]">เลขที่สมัคร</th>
-                                                <th className="px-2 py-2 w-[170px]">ชื่อ - นามสกุล ผู้สมัคร</th>
-                                                <th className="px-2 py-2 w-[100px]">ห้องสัมภาษณ์</th>
-                                                <th className="px-2 py-2 w-[130px]">ภาษาอังกฤษ (/10)</th>
-                                                <th className="px-2 py-2 w-[120px]">บุคลิกภาพ (/10)</th>
-                                                <th className="px-2 py-2 w-[140px]">ความตั้งใจเรียน (/10)</th>
-                                                <th className="px-2 py-2 w-[120px]">คอมพิวเตอร์ (/4)</th>
-                                                <th className="px-2 py-2 w-[120px]">คะแนนรวม (/34)</th>
-                                                <th className="px-2 py-2 w-[160px]">สถานะการสัมภาษณ์</th>
-                                                <th className="px-2 py-2 w-[100px]">จัดการ</th>
+                                                <th className="px-2 py-2 w-[50px] text-center whitespace-nowrap">No</th>
+                                                <th className="px-2 py-2 w-[100px] whitespace-nowrap">เลขที่สมัคร</th>
+                                                <th className="px-2 py-2 w-[170px] whitespace-nowrap">ชื่อ - นามสกุล ผู้สมัคร</th>
+                                                <th className="px-2 py-2 w-[100px] whitespace-nowrap">ห้องสัมภาษณ์</th>
+                                                <th className="px-2 py-2 w-[130px] whitespace-nowrap">ภาษาอังกฤษ (/10)</th>
+                                                <th className="px-2 py-2 w-[120px] whitespace-nowrap">บุคลิกภาพ (/10)</th>
+                                                <th className="px-2 py-2 w-[140px] whitespace-nowrap">ความตั้งใจเรียน (/10)</th>
+                                                <th className="px-2 py-2 w-[120px] whitespace-nowrap">คอมพิวเตอร์ (/4)</th>
+                                                <th className="px-2 py-2 w-[120px] whitespace-nowrap">คะแนนรวม (/34)</th>
+                                                <th className="px-2 py-2 w-[160px] text-center whitespace-nowrap">สถานะการสัมภาษณ์</th>
+                                                <th className="px-2 py-2 w-[100px] text-center whitespace-nowrap">จัดการ</th>
                                             </tr>
                                         </thead>
-
                                         <tbody>
                                             {group.applicants.map((a, idx) => (
-                                                <tr key={a.id} className="border-t">
+                                                <tr key={a.id} className="border-t ">
                                                     <td className="px-2 py-2 text-center whitespace-nowrap">{idx + 1}</td>
                                                     <td className="px-2 py-2">{a.id}</td>
                                                     <td className="px-2 py-2">{a.name}</td>
@@ -627,8 +624,7 @@ const SummaryResultPage = () => {
                                                                 "ยังไม่ระบุผล"}
                                                         </div>
                                                     </td>
-
-                                                    <td className="py-2 text-center whitespace-nowrap">
+                                                    <td className="py-2 px-2 text-center max-w-[160px] overflow-hidden">
                                                         <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] ">
                                                             <div className="flex flex-row gap-1">
                                                                 <div className="pt-1">
