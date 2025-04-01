@@ -155,7 +155,8 @@ const ScreeningResultPage = () => {
                             <Image
                                 src="/images/admin/preliminaryResult/warning_export_icon.svg"
                                 alt="warning"
-                                className="w-8 h-8"
+                                width={32}
+                                height={32}
                             />
                             <h3 className="text-xl font-semibold ml-2">พบผู้สมัครที่ยังไม่ได้รับการพิจารณา</h3>
                         </div>
@@ -172,7 +173,7 @@ const ScreeningResultPage = () => {
                                 ย้อนกลับ
                             </button>
                             <button
-                                className="px-4 py-2 bg-[#008A90] text-white rounded-md flex items-center gap-2"
+                                className="px-4 py-2 bg-[#00796B] text-white rounded-md flex items-center gap-2"
                                 onClick={() => {
                                     setIsPopupVisible(false);
                                     // ฟังก์ชัน export
@@ -181,7 +182,8 @@ const ScreeningResultPage = () => {
                                 <Image
                                     src="/images/admin/preliminaryResult/download_icon.svg"
                                     alt="download"
-                                    className="w-4 h-4"
+                                    width={16}
+                                    height={16}
                                 />
                                 ดำเนินการส่งออก
                             </button>
@@ -196,8 +198,8 @@ const ScreeningResultPage = () => {
             />
 
             <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
-                <div className="relative z-50">
-                    <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+                <div className="relative z-20">
+                    <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin"/>
                 </div>
 
                 <main

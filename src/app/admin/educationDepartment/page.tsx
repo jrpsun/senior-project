@@ -46,7 +46,7 @@ const docStatusOptions = ["01-ยังไม่มีเอกสาร", "02-�
 const paymentStatusOptions = ["01-ยังไม่ได้ชำระเงิน", "02-รอตรวจสอบการชำระเงิน", "03-ชำระเงินเรียบร้อย", "04-ชำระเงินไม่สำเร็จ"];
 
 const Page = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);  
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [filters, setFilters] = useState({});
   const [filterValues, setFilterValues] = useState({});
   const [isExpanded, setIsExpanded] = useState(false);
@@ -120,9 +120,13 @@ const Page = () => {
 
   return (
     <div>
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      <Sidebar
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
+        userRole="admin"
+      />
       <div className={`${isCollapsed ? "ml-[100px] p-4" : "ml-[325px] p-4"
-            }`}>
+        }`}>
         {/* Search and Filter Box */}
         <div className="bg-white p-4 shadow-md rounded-md">
           <h2 className="text-lg font-semibold mb-8">ค้นหาผู้สมัคร</h2>
