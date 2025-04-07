@@ -1,6 +1,7 @@
 import React from "react";
 import { useLanguage } from "../../../../hooks/LanguageContext";
 import { trainingTexts } from "../../../../translation/TrainingInfo";
+import ReportProb from "@components/components/common/admin/reportProb";
 
 interface trainingSummaryProps {
     trainings: {
@@ -12,9 +13,11 @@ interface trainingSummaryProps {
         document: string;
         documentSize: string;
     }[];
+    isVisible: boolean;
+    setIsVisible: (value: boolean) => void;
 }
 
-const trainingSummary: React.FC<trainingSummaryProps> = ({ trainings }) => {
+const trainingSummary: React.FC<trainingSummaryProps> = ({ trainings, isVisible, setIsVisible }) => {
     const { language } = useLanguage();
     const texts = trainingTexts[language] || trainingTexts["ENG"];
 
@@ -41,6 +44,7 @@ const trainingSummary: React.FC<trainingSummaryProps> = ({ trainings }) => {
                     <h2 className="text-2xl text-[#008A90] font-semibold mb-6">
                         {texts.trainingTitle}
                     </h2>
+                    <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
                     {/* ตารางสำหรับหน้าจอใหญ่ */}
                     <div className="overflow-x-auto w-full hidden md:flex">
                         <table className="w-full max-w-full border-collapse border border-[#B9B9B9]">

@@ -49,7 +49,7 @@ const GeneralInformation = ({ onUpdate }) => {
 
   const fetchGeneralInfoData = async () => {
     try {
-      const res = await fetch(`${process.env.API_BASE_URL}/applicant/general/1`, {
+      const res = await fetch(`${process.env.API_BASE_URL}/applicant/general/0000001`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

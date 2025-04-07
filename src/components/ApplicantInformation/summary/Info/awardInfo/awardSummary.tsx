@@ -1,6 +1,7 @@
 import React from "react";
 import { useLanguage } from "../../../../../hooks/LanguageContext";
 import { awardTexts } from "../../../../../translation/AwardInfo";
+import ReportProb from "@components/components/common/admin/reportProb";
 
 interface AwardSummaryProps {
     awards: {
@@ -12,9 +13,11 @@ interface AwardSummaryProps {
         document: string;
         documentSize: string;
     }[];
+    isVisible: boolean;
+    setIsVisible: (value: boolean) => void;
 }
 
-const AwardSummary: React.FC<AwardSummaryProps> = ({ awards }) => {
+const AwardSummary: React.FC<AwardSummaryProps> = ({ awards, isVisible, setIsVisible }) => {
     const { language } = useLanguage();
     const texts = awardTexts[language] || awardTexts["ENG"];
 
@@ -47,6 +50,7 @@ const AwardSummary: React.FC<AwardSummaryProps> = ({ awards }) => {
                     <h2 className="text-2xl text-[#008A90] font-semibold mb-6">
                         {texts.comAwardSumTitle}
                     </h2>
+                    <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
                     {/* --- แสดงเป็นตารางเมื่อหน้าจอใหญ่ (>= md) --- */}
                     <div className="overflow-x-auto w-full hidden md:flex">
                         <table className="w-full max-w-full border-collapse border border-[#B9B9B9]">

@@ -38,7 +38,7 @@ const ApplicationInfo = () => {
   const handleSave = async () => {
     console.log("Saving Combined Changes:", editedGeneralData);
     try {
-      const response = await fetch(`${process.env.API_BASE_URL}/applicant/general/1`, {
+      const response = await fetch(`${process.env.API_BASE_URL}/applicant/general/0000001`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

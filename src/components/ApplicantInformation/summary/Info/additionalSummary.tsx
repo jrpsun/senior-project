@@ -1,6 +1,7 @@
 import React from "react";
 import { useLanguage } from "../../../../hooks/LanguageContext";
 import { additionalDocumentsTexts } from "../../../../translation/AdditionalDocsInfo";
+import ReportProb from "@components/components/common/admin/reportProb";
 
 interface AdditionalDocumentsProps {
   documents: {
@@ -10,8 +11,10 @@ interface AdditionalDocumentsProps {
     resume?: { name: string; size: string; url: string };
     otherDocuments?: { name: string; size: string; url: string };
   };
+  isVisible: boolean;
+  setIsVisible: (value: boolean) => void;
 }
-const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ documents }) => {
+const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ documents, isVisible, setIsVisible }) => {
   const { language } = useLanguage();
   const texts = additionalDocumentsTexts[language] || additionalDocumentsTexts["ENG"];
 
@@ -27,6 +30,7 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
                 <h3 className="text-[#565656] font-semibold mb-2">
                   {texts.statementOfPurpose}
                 </h3>
+                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
                 <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
@@ -50,6 +54,7 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
                 <h3 className="text-[#565656] font-semibold mb-2 ">
                   {texts.portfolio}
                 </h3>
+                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
                 <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
@@ -71,6 +76,7 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
             {documents.videoLink && (
               <div className="mb-4">
                 <h3 className="text-[#565656] font-semibold mb-2 ">{texts.video}</h3>
+                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
                 <a href={documents.videoLink} target="_blank" rel="noopener noreferrer" className="text-[#008A90] hover:underline break-all">
                   {documents.videoLink}
                 </a>
@@ -83,6 +89,7 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
                 <h3 className="text-[#565656] font-semibold mb-2 ">
                   {texts.resume}
                 </h3>
+                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
                 <div className="border border-gray-300 rounded-lg p-2 flex flex-wrap items-center gap-4 shadow-sm">
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
@@ -106,6 +113,7 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
                 <h3 className="text-[#565656] font-semibold mb-2">
                   {texts.otherDocuments}
                 </h3>
+                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
                 <div className="border border-gray-300 rounded-lg p-2 flex flex-wrap items-center gap-4 shadow-sm">
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
