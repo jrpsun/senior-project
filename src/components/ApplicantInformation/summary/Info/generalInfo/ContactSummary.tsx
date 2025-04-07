@@ -1,22 +1,24 @@
 import React from "react";
 import { useLanguage } from "../../../../../hooks/LanguageContext"; // ใช้ context เพื่อดึงค่าภาษา
 import { generalInfoTexts } from "../../../../../translation/generalInfo";
+import { ContactInfoInterface } from "@components/types/generalInfoType";
+import ReportProb from "@components/components/common/admin/reportProb";
 
-interface ContactSummaryProps {
+/*interface ContactSummaryProps {
   phoneNumber: string;
   email: string;
   line: string;
   facebook: string;
   instagram: string;
+}*/
+
+interface ContactSummaryProps {
+  props: ContactInfoInterface;
+  isVisible: boolean;
+  setIsVisible: (value: boolean) => void;
 }
 
-const ContactSummary: React.FC<ContactSummaryProps> = ({
-  phoneNumber,
-  email,
-  line,
-  facebook,
-  instagram,
-}) => {
+const ContactSummary: React.FC<ContactSummaryProps> = ({ props, isVisible, setIsVisible }) => {
   const { language } = useLanguage();
   const texts = generalInfoTexts[language] ?? generalInfoTexts["ENG"];
 
@@ -32,13 +34,14 @@ const ContactSummary: React.FC<ContactSummaryProps> = ({
             {/* หมายเลขโทรศัพท์ */}
             <div>
               <p className="text-[#565656] font-bold">{texts.phone}</p>
-              <p className="text-[#565656] text-left pl-6">{phoneNumber}</p>
+              <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+              <p className="text-[#565656] text-left pl-6">{props?.applicantPhone}</p>
             </div>
             
             {/* อีเมล */}
             <div>
               <p className="text-[#565656] font-bold">{texts.email}</p>
-              <p className="text-[#565656] text-left pl-6">{email}</p>
+              <p className="text-[#565656] text-left pl-6">{props?.applicantEmail}</p>
             </div>
           </div>
 
@@ -46,19 +49,19 @@ const ContactSummary: React.FC<ContactSummaryProps> = ({
             {/* Line ID */}
             <div>
               <p className="text-[#565656] font-bold">{texts.line}</p>
-              <p className="text-[#565656] text-left pl-6">{line || "-"}</p>
+              <p className="text-[#565656] text-left pl-6">{props?.line || "-"}</p>
             </div>
 
             {/* Facebook */}
             <div>
               <p className="text-[#565656] font-bold">Facebook</p>
-              <p className="text-[#565656] text-left pl-6">{facebook || "-"}</p>
+              <p className="text-[#565656] text-left pl-6">{props?.facebook || "-"}</p>
             </div>
             
             {/* Instagram */}
             <div>
               <p className="text-[#565656] font-bold">Instagram</p>
-              <p className="text-[#565656] text-left pl-6">{instagram || "-"}</p>
+              <p className="text-[#565656] text-left pl-6">{props?.instagram || "-"}</p>
             </div>
           </div>
         </div>

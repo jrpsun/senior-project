@@ -1,6 +1,7 @@
 import React from "react";
 import { useLanguage } from "../../../../../hooks/LanguageContext";
 import { talentTexts } from "../../../../../translation/AwardInfo";
+import ReportProb from "@components/components/common/admin/reportProb";
 
 interface TalentSummaryProps {
     talents: {
@@ -12,9 +13,11 @@ interface TalentSummaryProps {
         document?: string;
         documentSize?: string;
     }[];
+    isVisible: boolean;
+    setIsVisible: (value: boolean) => void;
 }
 
-const TalentSummary: React.FC<TalentSummaryProps> = ({ talents }) => {
+const TalentSummary: React.FC<TalentSummaryProps> = ({ talents, isVisible, setIsVisible }) => {
     const { language } = useLanguage();
     const texts = talentTexts[language] || talentTexts["ENG"];
     
@@ -47,7 +50,7 @@ const TalentSummary: React.FC<TalentSummaryProps> = ({ talents }) => {
                     <h2 className="text-2xl text-[#008A90] font-semibold mb-6">
                         {texts.talentSummaryTitle}
                     </h2>
-
+                    <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
                     {/* --- แสดงเป็นตารางสำหรับหน้าจอใหญ่ (>= md) --- */}
                     <div className="overflow-x-auto w-full hidden md:flex">
                         <table className="w-full max-w-full border-collapse border border-[#B9B9B9]">

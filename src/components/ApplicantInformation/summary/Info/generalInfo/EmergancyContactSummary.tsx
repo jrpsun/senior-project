@@ -1,8 +1,10 @@
 import React from "react";
 import { useLanguage } from "../../../../../hooks/LanguageContext";
 import { generalInfoTexts} from "../../../../../translation/generalInfo";
+import { EmergencyContactInterface } from "@components/types/generalInfoType";
+import ReportProb from "@components/components/common/admin/reportProb";
 
-interface EmergencyContactProps {
+/*interface EmergencyContactProps {
     firstName: string;
     middleName?: string;
     lastName: string;
@@ -12,19 +14,15 @@ interface EmergencyContactProps {
     relationship: string;
     phoneNumber: string;
     email: string;
+}*/
+
+interface EmergencyContactProps {
+    props:EmergencyContactInterface;
+    isVisible: boolean;
+    setIsVisible: (value: boolean) => void;
 }
 
-const EmergencyContactSummary: React.FC<EmergencyContactProps> = ({
-    firstName,
-    middleName,
-    lastName,
-    firstNameEng,
-    middleNameEng,
-    lastNameEng,
-    relationship,
-    phoneNumber,
-    email
-}) => {
+const EmergencyContactSummary: React.FC<EmergencyContactProps> = ({ props, isVisible, setIsVisible }) => {
     const { language } = useLanguage();
     const texts = generalInfoTexts[language] ?? generalInfoTexts["ENG"];
 
@@ -39,49 +37,50 @@ const EmergencyContactSummary: React.FC<EmergencyContactProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <p className="text-[#565656] font-bold">{texts.firstName}</p>
-                            <p className="text-[#565656] text-left pl-6">{firstName}</p>
+                            <p className="text-[#565656] text-left pl-6">{props?.contactFirstNameTH}</p>
                         </div>
-                        {middleName && (
+                        {props?.contactMiddleNameTH && (
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.middleName}</p>
-                                <p className="text-[#565656] text-left pl-6">{middleName}</p>
+                                <p className="text-[#565656] text-left pl-6">{props?.contactMiddleNameTH}</p>
                             </div>
                         )}
                         <div>
                             <p className="text-[#565656] font-bold">{texts.lastName}</p>
-                            <p className="text-[#565656] text-left pl-6">{lastName}</p>
+                            <p className="text-[#565656] text-left pl-6">{props?.contactLastNameTH}</p>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                         <div>
                             <p className="text-[#565656] font-bold">{texts.firstNameEng}</p>
-                            <p className="text-[#565656] text-left pl-6">{firstNameEng}</p>
+                            <p className="text-[#565656] text-left pl-6">{props?.contactFirstNameEN}</p>
                         </div>
-                        {middleNameEng && (
+                        {props?.contactMiddleNameEN && (
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.middleNameEng}</p>
-                                <p className="text-[#565656] text-left pl-6">{middleNameEng}</p>
+                                <p className="text-[#565656] text-left pl-6">{props?.contactMiddleNameEN}</p>
                             </div>
                         )}
                         <div>
                             <p className="text-[#565656] font-bold">{texts.lastNameEng}</p>
-                            <p className="text-[#565656] text-left pl-6">{lastNameEng}</p>
+                            <p className="text-[#565656] text-left pl-6">{props?.contactLastNameEN}</p>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                         <div>
                             <p className="text-[#565656] font-bold">{texts.relationship}</p>
-                            <p className="text-[#565656] text-left pl-6">{relationship}</p>
+                            <p className="text-[#565656] text-left pl-6">{props?.relationship}</p>
                         </div>
                         <div>
                             <p className="text-[#565656] font-bold">{texts.phone}</p>
-                            <p className="text-[#565656] text-left pl-6">{phoneNumber}</p>
+                            <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+                            <p className="text-[#565656] text-left pl-6">{props?.contactPhone}</p>
                         </div>
                         <div>
                             <p className="text-[#565656] font-bold">{texts.email}</p>
-                            <p className="text-[#565656] text-left pl-6">{email}</p>
+                            <p className="text-[#565656] text-left pl-6">{props?.contactEmail}</p>
                         </div>
                     </div>
                 </div>

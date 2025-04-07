@@ -1,6 +1,7 @@
 import React from "react";
 import { useLanguage } from "../../../../../hooks/LanguageContext"; // ใช้ context เพื่อดึงค่าภาษา
 import { educationInfoTexts } from "../../../../../translation/educationInfo";
+import ReportProb from "@components/components/common/admin/reportProb";
 
 interface EducationLevelSummaryProps {
     currentStatus: "Studying" | "Graduated";
@@ -36,6 +37,9 @@ interface EducationLevelSummaryProps {
 
     graduationYear?: string;
     graduationDate?: string;
+
+    isVisible: boolean;
+    setIsVisible: (value: boolean) => void;
 }
 
 const EducationLevelSummary: React.FC<EducationLevelSummaryProps> = ({
@@ -68,6 +72,8 @@ const EducationLevelSummary: React.FC<EducationLevelSummaryProps> = ({
     computerSubject,
     graduationYear,
     graduationDate,
+    isVisible, 
+    setIsVisible
 }) => {
     const { language } = useLanguage();
     const texts = educationInfoTexts[language] || educationInfoTexts["ENG"]; // ใช้ ENG เป็นค่าเริ่มต้น
@@ -90,6 +96,7 @@ const EducationLevelSummary: React.FC<EducationLevelSummaryProps> = ({
                     {transcriptFile && (
                         <div className="mb-4">
                             <h3 className="text-[#565656] font-semibold mb-2">{texts.transcript}</h3>
+                            <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
                             <div className="border border-gray-300 rounded-lg p-3 flex items-center gap-4 shadow-sm">
                                 <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                                 <div className="flex flex-col max-w-full">
@@ -137,6 +144,7 @@ const EducationLevelSummary: React.FC<EducationLevelSummaryProps> = ({
                             <>
                                 <div className="col-span-1">
                                     <p className="text-[#565656] font-bold">{texts.school}</p>
+                                    <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
                                     <p className="text-[#565656] text-left pl-6">{school}</p>
                                 </div>
                                 <div className="col-span-1">
@@ -166,6 +174,7 @@ const EducationLevelSummary: React.FC<EducationLevelSummaryProps> = ({
                         {["Mathayom6", "VocCert"].includes(degree) && gpa && (
                             <div className="col-span-1">
                                 <p className="text-[#565656] font-bold">{texts.cumulativeGPA}</p>
+                                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
                                 <p className="text-[#565656] text-left pl-6">{gpa}</p>
                             </div>
                         )}
