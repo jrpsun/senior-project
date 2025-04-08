@@ -2,83 +2,61 @@ import React from "react";
 import { useLanguage } from "../../../../../hooks/LanguageContext"; // ใช้ context เพื่อดึงค่าภาษา
 import { educationInfoTexts } from "../../../../../translation/educationInfo";
 import ReportProb from "@components/components/common/admin/reportProb";
+import { EducationBackground } from "@components/types/educationInfoType";
 
-interface EducationLevelSummaryProps {
-    currentStatus: "Studying" | "Graduated";
-    transcriptFile?: string;
-    transcriptSize?: string;
-    program?: string;
-    degree: string;
-    customDegree?: string;
-    country: string;
-    province?: string;
-    school: string;
-    major: string;
-    customMajor?: string;
-    gpa?: string;
-    gpaMath?: string;
-    gpaEnglish?: string;
-    gpaScience?: string;
-    mathScore?: string;
-    scienceScore?: string;
-    socialStudiesScore?: string;
-    languageArtsScore?: string;
+// interface EducationLevelSummaryProps {
+//     currentStatus: "Studying" | "Graduated";
+//     transcriptFile?: string;
+//     transcriptSize?: string;
+//     program?: string;
+//     degree: string;
+//     customDegree?: string;
+//     country: string;
+//     province?: string;
+//     school: string;
+//     major: string;
+//     customMajor?: string;
+//     gpa?: string;
+//     gpaMath?: string;
+//     gpaEnglish?: string;
+//     gpaScience?: string;
+//     mathScore?: string;
+//     scienceScore?: string;
+//     socialStudiesScore?: string;
+//     languageArtsScore?: string;
 
-    mathTotalCredit?: string;
-    scienceTotalCredit?: string;
-    englishTotalCredit?: string;
-    computerTotalCredit?: string;
+//     mathTotalCredit?: string;
+//     scienceTotalCredit?: string;
+//     englishTotalCredit?: string;
+//     computerTotalCredit?: string;
 
 
-    mathSubject?: string;
-    scienceSubject?: string;
-    englishSubject?: string;
-    computerSubject?: string;
+//     mathSubject?: string;
+//     scienceSubject?: string;
+//     englishSubject?: string;
+//     computerSubject?: string;
 
-    graduationYear?: string;
-    graduationDate?: string;
+//     graduationYear?: string;
+//     graduationDate?: string;
 
+//     isVisible: boolean;
+//     setIsVisible: (value: boolean) => void;
+// }
+
+interface EducationBackgroundProps {
+    props: EducationBackground;
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
 }
 
-const EducationLevelSummary: React.FC<EducationLevelSummaryProps> = ({
-    currentStatus,
-    transcriptFile,
-    transcriptSize,
-    program,
-    degree,
-    customDegree,
-    country,
-    province,
-    school,
-    major,
-    customMajor,
-    gpa,
-    gpaMath,
-    gpaEnglish,
-    gpaScience,
-    mathScore,
-    scienceScore,
-    socialStudiesScore,
-    languageArtsScore,
-    mathTotalCredit,
-    scienceTotalCredit,
-    englishTotalCredit,
-    computerTotalCredit,
-    mathSubject,
-    scienceSubject,
-    englishSubject,
-    computerSubject,
-    graduationYear,
-    graduationDate,
-    isVisible, 
-    setIsVisible
+const EducationLevelSummary: React.FC<EducationBackgroundProps> = ({
+    props, isVisible, setIsVisible
 }) => {
     const { language } = useLanguage();
     const texts = educationInfoTexts[language] || educationInfoTexts["ENG"]; // ใช้ ENG เป็นค่าเริ่มต้น
+    const program = "DST"
 
-    const isGED = degree === "GED";
+    const isGED = props?.academicType === "GED";
     return (
         <div className="flex justify-center py-5 bg-[white]">
             <div className="bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-3">
@@ -89,11 +67,11 @@ const EducationLevelSummary: React.FC<EducationLevelSummaryProps> = ({
                     {/* สถานะการศึกษา */}
                     <div className="mb-4">
                         <p className="text-[#565656] font-bold">{texts.currentStatus}</p>
-                        <p className="text-[#565656] text-left pl-6">{currentStatus === "Studying" ? texts.studyingStatus : texts.graduatedStatus}</p>
+                        <p className="text-[#565656] text-left pl-6">{props?.currentStatus === "Studying" ? texts.studyingStatus : texts.graduatedStatus}</p>
                     </div>
 
                     {/* Transcript */}
-                    {transcriptFile && (
+                    {props?.docCopyName && (
                         <div className="mb-4">
                             <h3 className="text-[#565656] font-semibold mb-2">{texts.transcript}</h3>
                             <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
@@ -101,14 +79,14 @@ const EducationLevelSummary: React.FC<EducationLevelSummaryProps> = ({
                                 <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                                 <div className="flex flex-col max-w-full">
                                     <a
-                                        href={transcriptFile}
+                                        href={props?.docCopyTrans}
                                         download
                                         className="text-[#008A90] font-medium hover:underline truncate max-w-[250px] md:max-w-[400px] inline-block"
-                                        title={transcriptFile.split("/").pop()}
+                                        title={props?.docCopyName}
                                     >
-                                        {transcriptFile.split("/").pop()}
+                                        {props?.docCopyName}
                                     </a>
-                                    {transcriptSize && <span className="text-gray-500 text-xs md:text-sm">{transcriptSize}</span>}
+                                    {props?.docCopySize && <span className="text-gray-500 text-xs md:text-sm">{props?.docCopySize}</span>}
                                 </div>
                             </div>
                         </div>
@@ -120,22 +98,22 @@ const EducationLevelSummary: React.FC<EducationLevelSummaryProps> = ({
                         {/* ระดับการศึกษา */}
                         <div className="col-span-1 md:col-span-2">
                             <p className="text-[#565656] font-bold">{texts.degree}</p>
-                            <p className="text-[#565656] text-left pl-6">{degree === "other" ? customDegree : degree}</p>
+                            <p className="text-[#565656] text-left pl-6">{props?.academicType === "other" ? props?.customAcademicType : props?.academicType}</p>
                         </div>
 
                         {/* ประเทศที่ศึกษา */}
                         {!isGED && (
                             <div className="col-span-1 md:col-span-2">
                                 <p className="text-[#565656] font-bold">{texts.country}</p>
-                                <p className="text-[#565656] text-left pl-6">{country}</p>
+                                <p className="text-[#565656] text-left pl-6">{props?.academicCountry}</p>
                             </div>
                         )}
 
                         {/* จังหวัดที่ศึกษา (เฉพาะประเทศไทย) */}
-                        {!isGED && country === "ไทย" && province && (
+                        {!isGED && props?.academicCountry === "ไทย" && props?.academicProvince && (
                             <div className="col-span-1">
                                 <p className="text-[#565656] font-bold">{texts.province}</p>
-                                <p className="text-[#565656] text-left pl-6">{province}</p>
+                                <p className="text-[#565656] text-left pl-6">{props?.academicProvince}</p>
                             </div>
                         )}
 
@@ -145,134 +123,134 @@ const EducationLevelSummary: React.FC<EducationLevelSummaryProps> = ({
                                 <div className="col-span-1">
                                     <p className="text-[#565656] font-bold">{texts.school}</p>
                                     <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
-                                    <p className="text-[#565656] text-left pl-6">{school}</p>
+                                    <p className="text-[#565656] text-left pl-6">{props?.schoolName}</p>
                                 </div>
                                 <div className="col-span-1">
                                     <p className="text-[#565656] font-bold">{texts.major}</p>
-                                    <p className="text-[#565656] text-left pl-6">{major === "other" ? customMajor : major}</p>
+                                    <p className="text-[#565656] text-left pl-6">{props?.studyPlan === "other" ? props?.customStudyPlan : props?.studyPlan}</p>
                                 </div>
                             </>
                         )}
 
                         {/* ปีที่จบการศึกษา (เฉพาะ GED / Grade12/13) */}
-                        {["GED", "Grade12/13", "other"].includes(degree) && graduationYear && (
+                        {["GED", "Grade12/13", "other"].includes(props?.academicType || "") && props?.graduateYear && (
                             <div className="col-span-1">
                                 <p className="text-[#565656] font-bold">{texts.graduationYear}</p>
-                                <p className="text-[#565656] text-left pl-6">{degree === "other" ? customDegree : graduationYear}</p>
+                                <p className="text-[#565656] text-left pl-6">{props?.academicType === "other" ? props?.customAcademicType : props?.graduateYear}</p>
                             </div>
                         )}
 
                         {/* วันที่จบการศึกษา (เฉพาะ ม.6 และ ปวช.) */}
-                        {["Mathayom6", "VocCert"].includes(degree) && graduationDate && (
+                        {["Mathayom6", "VocCert"].includes(props?.academicType || "") && props?.graduateDate && (
                             <div className="col-span-1">
                                 <p className="text-[#565656] font-bold">{texts.graduationDate}</p>
-                                <p className="text-[#565656] text-left pl-6">{graduationDate}</p>
+                                <p className="text-[#565656] text-left pl-6">{props?.graduateDate}</p>
                             </div>
                         )}
 
                         {/* GPAX รวม (เฉพาะ ม.6 และ ปวช.) */}
-                        {["Mathayom6", "VocCert"].includes(degree) && gpa && (
+                        {["Mathayom6", "VocCert"].includes(props?.academicType || "") && props?.cumulativeGPA && (
                             <div className="col-span-1">
                                 <p className="text-[#565656] font-bold">{texts.cumulativeGPA}</p>
                                 <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
-                                <p className="text-[#565656] text-left pl-6">{gpa}</p>
+                                <p className="text-[#565656] text-left pl-6">{props?.cumulativeGPA}</p>
                             </div>
                         )}
 
 
 
                         {/* คะแนนวิชาเฉพาะของ GED (ยังคงเดิม) */}
-                        {degree === "GED" && (
+                        {props?.academicType === "GED" && (
                             <>
-                                {mathScore && (
+                                {props?.gedMathematics && (
                                     <div>
                                         <p className="text-[#565656] font-bold">{texts.mathScore}</p>
-                                        <p className="text-[#565656] text-left pl-6">{mathScore}</p>
+                                        <p className="text-[#565656] text-left pl-6">{props?.gedMathematics}</p>
                                     </div>
                                 )}
-                                {scienceScore && (
+                                {props?.gedScience && (
                                     <div>
                                         <p className="text-[#565656] font-bold">{texts.scienceScore}</p>
-                                        <p className="text-[#565656] text-left pl-6">{scienceScore}</p>
+                                        <p className="text-[#565656] text-left pl-6">{props?.gedScience}</p>
                                     </div>
                                 )}
-                                {socialStudiesScore && (
+                                {props?.gedSocialStudies && (
                                     <div>
                                         <p className="text-[#565656] font-bold">{texts.socialStudiesScore}</p>
-                                        <p className="text-[#565656] text-left pl-6">{socialStudiesScore}</p>
+                                        <p className="text-[#565656] text-left pl-6">{props?.gedSocialStudies}</p>
                                     </div>
                                 )}
-                                {languageArtsScore && (
+                                {props?.gedLanguageArts && (
                                     <div>
                                         <p className="text-[#565656] font-bold">{texts.languageArtsScore}</p>
-                                        <p className="text-[#565656] text-left pl-6">{languageArtsScore}</p>
+                                        <p className="text-[#565656] text-left pl-6">{props?.gedLanguageArts}</p>
                                     </div>
                                 )}
                             </>
                         )}
 
                         {/* แสดงเกรดเฉลี่ยแยกวิชา (Math, Science, English) เฉพาะ DST */}
-                        {degree === "Mathayom6" && program === "DST" && (
+                        {props?.academicType === "Mathayom6" && program === "DST" && (
                             <>
-                                {gpaMath && (
+                                {props?.dstMathematics && (
                                     <div>
                                         <p className="text-[#565656] font-bold">{texts.mathematicsGPA}</p>
-                                        <p className="text-[#565656] text-left pl-6">{gpaMath}</p>
+                                        <p className="text-[#565656] text-left pl-6">{props?.dstMathematics}</p>
                                     </div>
                                 )}
-                                {gpaScience && (
+                                {props?.dstScitech && (
                                     <div>
                                         <p className="text-[#565656] font-bold">{texts.scienceGPA}</p>
-                                        <p className="text-[#565656] text-left pl-6">{gpaScience}</p>
+                                        <p className="text-[#565656] text-left pl-6">{props?.dstScitech}</p>
                                     </div>
                                 )}
-                                {gpaEnglish && (
+                                {props?.dstEnglish && (
                                     <div>
                                         <p className="text-[#565656] font-bold">{texts.englishGPA}</p>
-                                        <p className="text-[#565656] text-left pl-6">{gpaEnglish}</p>
+                                        <p className="text-[#565656] text-left pl-6">{props?.dstEnglish}</p>
                                     </div>
                                 )}
                             </>
                         )}
 
                         {/* หน่วยกิตและรายวิชาเฉพาะของ Grade 12/Year 13 */}
-                        {degree === "Grade12/13" && (
+                        {props?.academicType === "Grade12/13" && (
                             <>
                                 {/* วิชาคณิตศาสตร์ */}
-                                {(mathTotalCredit || mathSubject) && (
+                                {(props?.g12MathCredit || props?.g12MathTitle) && (
                                     <div>
                                         <p className="text-[#565656] font-bold">{texts.mathSubject}</p>
-                                        {mathTotalCredit && (
-                                            <p className="text-[#565656] text-left pl-6">{texts.totalCredit}: {mathTotalCredit}</p>
+                                        {props?.g12MathCredit && (
+                                            <p className="text-[#565656] text-left pl-6">{texts.totalCredit}: {props?.g12MathCredit}</p>
                                         )}
-                                        {mathSubject && (
-                                            <p className="text-[#565656] text-left pl-6">{texts.subject}: {mathSubject}</p>
+                                        {props?.g12MathTitle && (
+                                            <p className="text-[#565656] text-left pl-6">{texts.subject}: {props?.g12MathTitle}</p>
                                         )}
                                     </div>
                                 )}
 
                                 {/* วิชาวิทยาศาสตร์ */}
-                                {(scienceTotalCredit || scienceSubject) && (
+                                {(props?.g12SciCredit || props?.g12SciTitle) && (
                                     <div>
                                         <p className="text-[#565656] font-bold">{texts.scienceSubject}</p>
-                                        {scienceTotalCredit && (
-                                            <p className="text-[#565656] text-left pl-6">{texts.totalCredit}: {scienceTotalCredit}</p>
+                                        {props?.g12SciCredit && (
+                                            <p className="text-[#565656] text-left pl-6">{texts.totalCredit}: {props?.g12SciCredit}</p>
                                         )}
-                                        {scienceSubject && (
-                                            <p className="text-[#565656] text-left pl-6">{texts.subject}: {scienceSubject}</p>
+                                        {props?.g12SciTitle && (
+                                            <p className="text-[#565656] text-left pl-6">{texts.subject}: {props?.g12SciTitle}</p>
                                         )}
                                     </div>
                                 )}
 
                                 {/* วิชาภาษาอังกฤษ */}
-                                {(englishTotalCredit || englishSubject) && (
+                                {(props?.g12EnCredit || props?.g12EnTitle) && (
                                     <div>
                                         <p className="text-[#565656] font-bold">{texts.englishSubject}</p>
-                                        {englishTotalCredit && (
-                                            <p className="text-[#565656] text-left pl-6">{texts.totalCredit}: {englishTotalCredit}</p>
+                                        {props?.g12EnCredit && (
+                                            <p className="text-[#565656] text-left pl-6">{texts.totalCredit}: {props?.g12EnCredit}</p>
                                         )}
-                                        {englishSubject && (
-                                            <p className="text-[#565656] text-left pl-6">{texts.subject}: {englishSubject}</p>
+                                        {props?.g12EnTitle && (
+                                            <p className="text-[#565656] text-left pl-6">{texts.subject}: {props?.g12EnTitle}</p>
                                         )}
                                     </div>
                                 )}
@@ -280,7 +258,7 @@ const EducationLevelSummary: React.FC<EducationLevelSummaryProps> = ({
                         )}
 
                         {/* หน่วยกิตและรายวิชาเฉพาะของ VocCert (ปวช.) */}
-                        {degree === "VocCert" && (
+                        {/* {props?.academicType === "VocCert" && (
                             <>
                                 {(computerTotalCredit || computerSubject) && (
                                     <div>
@@ -294,7 +272,7 @@ const EducationLevelSummary: React.FC<EducationLevelSummaryProps> = ({
                                     </div>
                                 )}
                             </>
-                        )}
+                        )} */}
                     </div>
                 </div>
             </div>

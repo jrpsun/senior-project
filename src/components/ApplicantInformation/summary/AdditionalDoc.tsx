@@ -1,4 +1,5 @@
-import React from "react";
+"use client"
+import React, { useEffect, useState } from "react";
 import { useLanguage } from "../../../hooks/LanguageContext";
 import { summaryTexts } from "@components/translation/summary";
 import AdditionalDocumentsSummary from "./Info/additionalSummary";
@@ -20,6 +21,46 @@ const additionalDocumentsData = {
 const AdditionalDocumentsPage = () => {
   const { language } = useLanguage();
   const texts = summaryTexts[language] || summaryTexts["ENG"];
+  const [isVisible, setIsVisible] = useState(false)
+  const [formData, setFormData] = useState({
+    stateOfPurpose: "",
+    stateOfPurposeName: "",
+    stateOfPurposeSize: "",
+    portfolio: "",
+    portfolioName: "",
+    portfolioSize: "",
+    vdo: "",
+    applicantResume: "",
+    applicantResumeName: "",
+    applicantResumeSize: "",
+    additional: "",
+    additionalName: "",
+    additionalSize: "",
+  })
+
+  useEffect(() => {
+    fetchDocuments();
+  },[])
+
+  const fetchDocuments = async() => {
+    try {
+      const res = await fetch(`${process.env.API_BASE_URL}/applicant/document/0000001`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+      const data = await res.json()
+      console.log("data Document", data)
+      setFormData(data)
+
+    } catch (error){
+      console.error('Failed to fetch rewards:', error);
+      throw error;
+    }
+  }
 
   return (
     <div className="space-y-2">
@@ -27,7 +68,11 @@ const AdditionalDocumentsPage = () => {
         {texts.additionalDoc}
       </div>
 
-      <AdditionalDocumentsSummary documents={additionalDocumentsData} />
+      <AdditionalDocumentsSummary 
+        documents={formData}
+        isVisible={isVisible}
+        setIsVisible={setIsVisible}
+      />
     </div>
   );
 };

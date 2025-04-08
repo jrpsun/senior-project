@@ -2,17 +2,10 @@ import React from "react";
 import { useLanguage } from "../../../../../hooks/LanguageContext";
 import { talentTexts } from "../../../../../translation/AwardInfo";
 import ReportProb from "@components/components/common/admin/reportProb";
+import { TalentResponse } from "@components/types/TalentTypes";
 
 interface TalentSummaryProps {
-    talents: {
-        talentType: string;
-        talentYear: string;
-        talentActivity: string;
-        talentAward: string;
-        talentURL?: string;
-        document?: string;
-        documentSize?: string;
-    }[];
+    talents: TalentResponse[];
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
 }
@@ -69,14 +62,14 @@ const TalentSummary: React.FC<TalentSummaryProps> = ({ talents, isVisible, setIs
                                 {talents.map((talent, index) => (
                                     <tr key={index} className="text-center text-[#565656]">
                                         <td className="border border-[#B9B9B9] px-4 py-2 font-bold">{index + 1}</td>
-                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{talent.talentType}</td>
-                                        <td className="border border-[#B9B9B9] px-4 py-2">{talent.talentYear}</td>
-                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{talent.talentActivity}</td>
-                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{talent.talentAward}</td>
+                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{talent?.kindOfTalent}</td>
+                                        <td className="border border-[#B9B9B9] px-4 py-2">{talent?.talentYear}</td>
+                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{talent?.nameOfCompetition}</td>
+                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{talent?.talentAwards}</td>
                                         <td className="border border-[#B9B9B9] px-4 py-2 text-left">
-                                            {talent.talentURL ? (
-                                                <a href={talent.talentURL} className="text-[#008A90] hover:underline truncate max-w-[150px] sm:max-w-[200px] inline-block">
-                                                    {talent.talentURL}
+                                            {talent?.url ? (
+                                                <a href={talent?.url} className="text-[#008A90] hover:underline truncate max-w-[150px] sm:max-w-[200px] inline-block">
+                                                    {talent?.url}
                                                 </a>
                                             ) : " "}
                                         </td>
@@ -86,15 +79,15 @@ const TalentSummary: React.FC<TalentSummaryProps> = ({ talents, isVisible, setIs
                                                     <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6" />
                                                 </div>
                                                 <a
-                                                    href={talent.document}
+                                                    href={talent?.talentCer}
                                                     download
                                                     className="text-[#008A90] hover:underline truncate max-w-[150px] sm:max-w-[200px] inline-block"
-                                                    title={talent.document?.split("/").pop()}
+                                                    title={talent?.talentCerName}
                                                 >
-                                                    {talent.document?.split("/").pop()}
+                                                    {talent?.talentCerName}
                                                 </a>
                                             </div>
-                                            <span className="text-[#565656] text-sm block mt-1 px-8">{talent.documentSize}</span>
+                                            <span className="text-[#565656] text-sm block mt-1 px-8">{talent?.talentCerSize}</span>
                                         </td>
                                     </tr>
                                 ))}
@@ -106,24 +99,26 @@ const TalentSummary: React.FC<TalentSummaryProps> = ({ talents, isVisible, setIs
                     <div className="md:hidden block space-y-4">
                         {talents.map((talent, index) => (
                             <div key={index} className="border border-[#B9B9B9] rounded-lg p-4 shadow-sm">
-                                <p className="text-[#565656] font-semibold">{texts.talentType}: <span className="font-normal">{talent.talentType}</span></p>
-                                <p className="text-[#565656] font-semibold">{texts.year}: <span className="font-normal">{talent.talentYear}</span></p>
-                                <p className="text-[#565656] font-semibold">{texts.nameOfWorkActivity}: <span className="font-normal">{talent.talentActivity}</span></p>
-                                <p className="text-[#565656] font-semibold">{texts.awardsReceived}: <span className="font-normal">{talent.talentAward}</span></p>
-                                {talent.talentURL && (
+                                <p className="text-[#565656] font-semibold">{texts.talentType}: <span className="font-normal">{talent?.kindOfTalent}</span></p>
+                                <p className="text-[#565656] font-semibold">{texts.year}: <span className="font-normal">{talent?.talentYear}</span></p>
+                                <p className="text-[#565656] font-semibold">{texts.nameOfWorkActivity}: <span className="font-normal">{talent?.nameOfCompetition}</span></p>
+                                <p className="text-[#565656] font-semibold">{texts.awardsReceived}: <span className="font-normal">{talent?.talentAwards}</span></p>
+                                {talent?.url && (
                                     <p className="text-[#565656] font-semibold">{texts.talentUrlLink}:
-                                        <a href={talent.talentURL} className="text-[#008A90] hover:underline ml-2 truncate max-w-[200px] inline-block">
-                                            {talent.talentURL}
+                                        <a href={talent?.url} className="text-[#008A90] hover:underline ml-2 truncate max-w-[200px] inline-block">
+                                            {talent?.url}
                                         </a>
                                     </p>
                                 )}
-                                {talent.document && (
+                                {talent?.talentCerName && (
                                     <p className="text-[#565656] font-semibold flex items-center">
                                         {texts.attachment}:
-                                        <a href={talent.document} download className="text-[#008A90] font-medium hover:underline ml-2 truncate max-w-[200px] inline-block">
-                                            {talent.document.split("/").pop()}
+                                        <a href={talent?.talentCer}
+                                            download 
+                                            className="text-[#008A90] font-medium hover:underline ml-2 truncate max-w-[200px] inline-block">
+                                            {talent?.talentCerName}
                                         </a>
-                                        <span className="text-[#565656] text-sm ml-2">({talent.documentSize})</span>
+                                        <span className="text-[#565656] text-sm ml-2">({talent?.talentCerSize})</span>
                                     </p>
                                 )}
                             </div>

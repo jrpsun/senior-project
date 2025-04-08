@@ -69,8 +69,24 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
   const [subDistricts, setSubDistricts] = useState<{ value: string; label: string; postalCode: number; amphure_id: string }[]>([]);
   const [changedData, setChangedData] = useState({});
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+
+  const handleChange = (field: string, value: string | Date) => {
+    let formattedValue = value;
+
+    if ((value instanceof Date) && (field === "idCardExpDate")) {
+      formattedValue = value.toISOString().split("T")[0]; // "2025-04-09"
+      setExpiryDate(value)
+    }
+    if ((value instanceof Date) && (field === "passportexpiryDate")) {
+      formattedValue = value.toISOString().split("T")[0];
+      setpassportExpiryDate(value)
+    }
+    if ((value instanceof Date) && (field === "birthDate")) {
+      formattedValue = value.toISOString().split("T")[0];
+      setBirthDate(value)
+    }
+    const updatedData = { ...formData, [field]: formattedValue };
+    setFormData(updatedData);
     const newChangedData = { ...changedData, [field]: value };
     setChangedData(newChangedData);
     onChange(newChangedData);
@@ -86,7 +102,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
 
   const [formData, setFormData] = useState({
     postalCode: "",
-    profileImage: "",
+    profileImageUrl: "",
     title: "",
     firstnameTH: "",
     middlenameTH: "",
@@ -99,6 +115,8 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
     nationality: "",
     idCardNumber: "",
     idCardExpiry: "",
+    passportId: "",
+    passportExpDate: "",
     birthDate: "",
     age:"",
     gender: "",
@@ -114,15 +132,45 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
     country: "",
     addr1: "",
     addr2: "",
+    applicantPicture: "",
+    docCopyIdCard: "",
+    docCopyIdCardName: "",
+    docCopyIdCardSize: "",
+    docCopyPassport: "",
+    docCopyPassportName: "",
+    docCopyPassportSize: "",
+    docCopyHouseRegis: "",
+    docCopyHouseRegisName: "",
+    docCopyHouseRegisSize: ""
   });
 
   // โหลดข้อมูลจังหวัด อำเภอ ตำบล และประเทศ/สัญชาติ
   useEffect(() => {
-    console.log("formData", formData)
     if (data) {
+      const subDistrictData = subDistricts.find((s) => s.label === data?.subDistrict);
+      const subDistrictValue = subDistrictData ? subDistrictData.value : "";
+
+      const distrctData = districts.find((s) => s.label === data?.district);
+      const distrctValue = distrctData ? distrctData.value : "";
+      console.log("distrctValue", distrctValue)
+
+      const provinceData = provinces.find((s) => s.label === data?.province);
+      const provinceValue = provinceData ? provinceData.value : "";
+      console.log("provinceValue", provinceValue)
+
+      if (data?.idCardExpDate) {
+        setExpiryDate(new Date(data.idCardExpDate))
+      }
+      if (data?.birthDate) {
+        setBirthDate(new Date(data.birthDate))
+      }
+      if (data?.passportExpDate) {
+        setExpiryDate(new Date(data.passportExpDate))
+      }
+
       setFormData({
         postalCode: data?.nationality || "",
-        profileImage: "",
+        profileImageUrl: data.profileImageUrl ? data.profileImageUrl : "",
         title: "",
         firstnameTH: data?.firstnameTH || "",
         middlenameTH: data?.middlenameTH || "",
@@ -134,8 +182,10 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
         nicknameEN: data?.nicknameEN || "",
         nationality: data?.nationality || "", //
         idCardNumber: data?.idCardNumber || "", //
-        idCardExpiry: "",
-        birthDate: "",
+        idCardExpiry: data?.idCardExpDate || "",
+        passportId: data?.passportId || "",
+        passportExpDate: data?.passportExpDate || "",
+        birthDate: data?.birthDate || "",
         age:"",
         gender: data?.gender || "",
         houseNumber: data?.houseNumber || "",
@@ -143,14 +193,29 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
         village: data?.village || "",
         soi: data?.soi || "",
         street: data?.street || "",
-        subDistrict: data?.subDistrict || "",
-        district: data?.district || "",
-        province: data?.province || "",
+        subDistrict: subDistrictValue,
+        district: distrctValue,
+        province: provinceValue,
         city: data?.city || "",
         country: data?.country || "",
         addr1: data?.addr1 || "",
         addr2: data?.addr2 || "",
+        applicantPicture: "",
+        docCopyIdCard: "",
+        docCopyIdCardName: "",
+        docCopyIdCardSize: "",
+        docCopyPassport: "",
+        docCopyPassportName: "",
+        docCopyPassportSize: "",
+        docCopyHouseRegis: "",
+        docCopyHouseRegisName: "",
+        docCopyHouseRegisSize: ""
       })
+      // ตั้งค่าเริ่มต้นสำหรับ dropdowns
+      setSelectedProvince(provinceValue || null);
+      setSelectedDistrict(distrctValue || null);
+      setSelectedSubDistrict(subDistrictValue || null);
+      setPostalCode(data?.postalCode || "");
       setChangedData({});
     }
     const loadData = async () => {
@@ -211,30 +276,197 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
     loadData();
   }, [language, data]);
 
+  const handleAddressChange = () => {
+    const addressData = {
+      province: selectedProvince || "",
+      district: selectedDistrict || "",
+      subDistrict: selectedSubDistrict || "",
+      postalCode: postalCode || "",
+    };
+    
+    const newChangedData = { ...changedData, ...addressData };
+    setChangedData(newChangedData);
+    onChange(newChangedData);
+  };
 
   // ฟังก์ชันเปลี่ยนค่า จังหวัด-อำเภอ-ตำบล
-  const handleProvinceChange = (selectedOption: { value: string } | null) => {
-    setSelectedProvince(selectedOption ? selectedOption.value : null);
+  const handleProvinceChange = (selectedOption: { value: string, label: string } | null) => {
+    const value = selectedOption ? selectedOption.value : null;
+    const label = selectedOption ? selectedOption.label : "";
+    
+    console.log("Selected Province - value:", value, "label:", label);
+
+    setSelectedProvince(value);
     setSelectedDistrict(null);
     setSelectedSubDistrict(null);
     setPostalCode("");
-  };
 
-  const handleDistrictChange = (selectedOption: { value: string } | null) => {
-    setSelectedDistrict(selectedOption ? selectedOption.value : null);
+    // อัปเดตข้อมูลที่เปลี่ยนแปลง
+    const newChangedData = {
+        ...changedData,
+        province: label || "",
+        district: "",
+        subDistrict: "",
+        postalCode: ""
+    };
+    setChangedData(newChangedData);
+    onChange(newChangedData);
+};
+
+const handleDistrictChange = (selectedOption: { value: string, label: string } | null) => {
+    const value = selectedOption ? selectedOption.value : null;
+    const label = selectedOption ? selectedOption.label : "";
+    
+    console.log("Selected District - value:", value, "label:", label);
+
+    setSelectedDistrict(value);
     setSelectedSubDistrict(null);
     setPostalCode("");
-  };
 
-  const handleSubDistrictChange = (selectedOption: { value: string } | null) => {
-    setSelectedSubDistrict(selectedOption ? selectedOption.value : null);
-    const subDistrict = subDistricts.find((s) => s.value === selectedOption?.value);
-    setPostalCode(subDistrict ? subDistrict.postalCode.toString() : "");
+    const newChangedData = {
+        ...changedData,
+        district: label || "",
+        subDistrict: "",
+        postalCode: ""
+    };
+    setChangedData(newChangedData);
+    onChange(newChangedData);
+};
+  
+  const handleSubDistrictChange = (selectedOption: { value: string, label: string } | null) => {
+    const value = selectedOption ? selectedOption.value : null;
+    const label = selectedOption ? selectedOption.label : "";
+    setSelectedSubDistrict(value);
+    const subDistrict = subDistricts.find((s) => s.value === value);
+    const newPostalCode = subDistrict ? subDistrict.postalCode.toString() : "";
+    setPostalCode(newPostalCode);
+    
+    // ส่งข้อมูลทั้ง subDistrict และ postalCode ไปยัง parent component
+    const newChangedData = { 
+      ...changedData, 
+      subDistrict: label || "",
+      postalCode: newPostalCode
+    };
+    setChangedData(newChangedData);
+    onChange(newChangedData);
   };
 
   // กรองอำเภอ และ ตำบล ตามจังหวัดที่เลือก
   const filteredDistricts = districts.filter((d) => selectedProvince && d.province_id === selectedProvince);
   const filteredSubDistricts = subDistricts.filter((s) => selectedDistrict && s.amphure_id === selectedDistrict);
+
+  // image
+  const handleProfileImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+  
+    // ตรวจสอบประเภทไฟล์
+    if (!file.type.match('image.*')) {
+      alert('กรุณาเลือกไฟล์ภาพเท่านั้น (JPEG, PNG)');
+      return;
+    }
+  
+    // ตรวจสอบขนาดไฟล์ (ไม่เกิน 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('ขนาดไฟล์ไม่ควรเกิน 2MB');
+      return;
+    }
+  
+    // สร้าง URL สำหรับแสดงตัวอย่าง
+    const previewUrl = URL.createObjectURL(file);
+  
+    // อัปเดต state
+    setFormData(prev => ({
+      ...prev,
+      profileImageUrl: previewUrl,
+      applicantPicture: "" // รอรับค่า base64
+    }));
+  
+    // แปลงเป็น base64 สำหรับส่งไป backend
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64String = reader.result as string;
+      setFormData(prev => ({
+        ...prev,
+        applicantPicture: base64String
+      }));
+      
+      // อัปเดตข้อมูลที่เปลี่ยนแปลง
+      const newChangedData = { 
+        ...changedData, 
+        applicantPicture: base64String 
+      };
+      setChangedData(newChangedData);
+      onChange(newChangedData);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDocumentUpload = (file: File, documentType: 'idCard' | 'passport' | 'houseRegis') => {
+    if (!file) return;
+
+    const isImage = file.type.match('image.*');
+    const isPDF = file.type === 'application/pdf';
+
+    if (!isImage && !isPDF) {
+        alert('กรุณาเลือกไฟล์ภาพหรือ PDF เท่านั้น');
+        return;
+    }
+
+    // ตรวจสอบขนาดไฟล์ (สูงสุด 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('ขนาดไฟล์ไม่ควรเกิน 5 MB');
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+        const base64String = event.target?.result as string;
+
+        // ระบุฟิลด์ที่ต้องอัปเดตตามประเภทเอกสาร
+        let updatedData: Partial<typeof formData> = {};
+        let fieldfile = "";
+        let fieldName = "";
+        let fieldSize = "";
+        console.log("file name: ",URL.createObjectURL(file))
+
+        if (documentType === 'idCard') {
+            updatedData = { docCopyIdCard: base64String };
+            fieldfile = "docCopyIdCard";
+            fieldName = "docCopyIdCardName";
+            fieldSize = "docCopyIdCardSize"
+        } else if (documentType === 'passport') {
+            updatedData = { docCopyPassport: base64String };
+            fieldfile = "docCopyPassport";
+            fieldName = "docCopyPassportName";
+            fieldSize = "docCopyPassportSize";
+        } else if (documentType === 'houseRegis') {
+            updatedData = { docCopyHouseRegis: base64String };
+            fieldfile = "docCopyHouseRegis";
+            fieldName = "docCopyHouseRegisName";
+            fieldSize = "docCopyHouseRegisSize";
+        }
+
+        // อัปเดต formData
+        setFormData(prev => ({
+            ...prev,
+            ...updatedData
+        }));
+
+        // อัปเดตข้อมูลที่เปลี่ยนแปลง
+        const newChangedData = { 
+            ...changedData, 
+            [fieldfile]: base64String,
+            [fieldName]: file.name,
+            [fieldSize]: String(file.size)
+        };
+        setChangedData(newChangedData);
+        onChange(newChangedData);
+    };
+
+    reader.readAsDataURL(file);
+};
 
   return (
     <div className="flex justify-center py-5 bg-[white]">
@@ -243,27 +475,41 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
           <h2 className="text-2xl text-[#008A90] font-semibold mb-6">{currentTexts.titlePersonalInfo}</h2>
           {/* อัปโหลดรูปภาพ */}
           <div className="mb-4">
-            <label className="block text-[#565656] mb-2">{currentTexts.uploadImage} <span className="text-red-500">*</span></label>
+            <label className="block text-[#565656] mb-2">
+              {currentTexts.uploadImage} <span className="text-red-500">*</span>
+            </label>
             <div className="flex flex-wrap md:flex-nowrap items-start gap-4 md:gap-6">
               {/* กรอบอัปโหลดรูป */}
-              <div
-                className="w-28 h-36 md:w-40 md:h-48 lg:w-48 lg:h-56 border-2 border-dashed border-[#008A90] p-4 flex flex-col items-center justify-center cursor-pointer text-center"
+              <div 
+                className="relative w-28 h-36 md:w-40 md:h-48 lg:w-48 lg:h-56 border-2 border-dashed border-[#008A90] overflow-hidden cursor-pointer"
                 onClick={() => document.getElementById('profileImageUpload')?.click()}
               >
-                <Upload className="text-[#008A90] w-6 h-6" />
-                <span className="text-[#008A90] mt-2 text-sm md:text-base lg:text-lg break-words leading-tight">
-                  {currentTexts.uploadImage}
-                </span>
+                {formData.profileImageUrl ? (
+                  <img
+                    src={formData.profileImageUrl}
+                    alt="Profile Preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : data?.applicantPicture ? (
+                  <img
+                    src={`${data.applicantPicture}`}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-center">
+                    <Upload className="text-[#008A90] w-6 h-6" />
+                    <span className="text-[#008A90] mt-2 text-sm md:text-base lg:text-lg">
+                      {currentTexts.uploadImage}
+                    </span>
+                  </div>
+                )}
                 <input
                   type="file"
                   id="profileImageUpload"
                   className="hidden"
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setFormData({
-                      ...formData,
-                      profileImage: e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : ""
-                    })
-                  }
+                  accept="image/*"
+                  onChange={handleProfileImageUpload}
                 />
               </div>
 
@@ -356,7 +602,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
             <>
               <FileUpload
                 label={currentTexts?.uploadIdCard || "สำเนาบัตรประชาชน"}
-                onChange={(file) => console.log(file)}
+                onChange={(file) => handleDocumentUpload(file, 'idCard')}
                 fileType="pdf"
                 maxSize="5 MB"
                 accept=".pdf"
@@ -385,7 +631,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
                   </label>
                   <DateInput
                     selected={expiryDate}
-                    onChange={setExpiryDate}
+                    onChange={(date) => handleChange("idCardExpDate", date)}
                     placeholderText={currentTexts?.SelectidCardExpiry || "เลือกวันหมดอายุของบัตรประชาชน"}
                     mode="expiry"
                   />
@@ -399,7 +645,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
                   </label>
                   <DateInput
                     selected={birthDate}
-                    onChange={setBirthDate}
+                    onChange={(date) => handleChange("birthDate", date)}
                     placeholderText={currentTexts?.SelectBirthDate || "เลือกวันเกิด"}
                     mode="birthdate"
                   />
@@ -410,7 +656,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
             <>
               <FileUpload
                 label={currentTexts?.uploadPassport || "สำเนาหนังสือเดินทาง"}
-                onChange={(file) => console.log(file)}
+                onChange={(file) => handleDocumentUpload(file, 'passport')}
                 fileType="pdf"
                 maxSize="5 MB"
                 accept=".pdf"
@@ -439,7 +685,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
                   </label>
                   <DateInput
                       selected={passportexpiryDate}
-                      onChange={setpassportExpiryDate}
+                      onChange={(date) => handleChange("passportexpiryDate", date)}
                       placeholderText={currentTexts?.SelectPassportExpiry || "เลือกวันหมดอายุของหนังสือเดินทาง"} mode={"birthdate"}                  />
                 </div>
 
@@ -450,7 +696,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
                   </label>
                   <DateInput
                     selected={birthDate}
-                    onChange={setBirthDate}
+                    onChange={(date) => handleChange("birthDate", date)}
                     placeholderText={currentTexts?.SelectBirthDate || "เลือกวันเกิด"}
                     mode="birthdate"
                   />
@@ -486,7 +732,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
           {formData.country === "TH" && (
             <FileUpload
               label={currentTexts?.uploadHouseReg || "สำเนาทะเบียนบ้าน"}
-              onChange={(file) => console.log(file)}
+              onChange={(file) => handleDocumentUpload(file, 'houseRegis')}
               fileType="pdf"
               maxSize="5 MB"
               accept=".pdf"
@@ -572,13 +818,16 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
                 <FormField
                   label={currentTexts.postalCode}
                   value={postalCode}
-                  onChange={(value) => setPostalCode(allowOnlyNumbers(value))}
+                  onChange={(value) => {
+                    const newValue = allowOnlyNumbers(value);
+                    setPostalCode(newValue);
+                    handleChange("postalCode", newValue);
+                    handleAddressChange();
+                  }}
                   placeholder={currentTexts.postalCodePlaceholder}
                   onKeyDown={preventNonNumericInput}
                 />
-
               </div>
-
             </>
           ) : (
             <>

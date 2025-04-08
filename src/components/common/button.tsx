@@ -52,8 +52,8 @@ const Button: React.FC<ButtonProps> = ({ variant = "primary", icon, children, ..
 };
 
 // ปุ่มต่าง ๆ ที่ใช้ในระบบ
-const BackButton: React.FC<{ children: React.ReactNode; onClick?: () => void }>= ({ children }) => {
-  return <Button variant="back" icon="/images/back_arrow.svg">{children}</Button>;
+const BackButton: React.FC<{ children: React.ReactNode; onClick?: () => void }>= ({ children, onClick }) => {
+  return <Button variant="back" onClick={onClick} icon="/images/back_arrow.svg">{children}</Button>;
 };
 
 const NextButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children, onClick }) => {

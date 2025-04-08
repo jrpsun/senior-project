@@ -20,12 +20,36 @@ const SubscriptionForm: React.FC<AdmissionChannelProps> = ({ data, onChange }) =
   const [onlineSources, setOnlineSources] = useState<string[]>([]);
   const [offlineSources, setOfflineSources] = useState<string[]>([]);
 
+  // ฟังก์ชันสำหรับอัพเดทค่า onlineSources
+  const handleOnlineChange = (selectedOptions: string[]) => {
+    setOnlineSources(selectedOptions);
+    onChange({
+      onlineChannel: JSON.stringify(selectedOptions),
+      offlineChannel: JSON.stringify(offlineSources)
+    });
+  };
+
+  // ฟังก์ชันสำหรับอัพเดทค่า offlineSources
+  const handleOfflineChange = (selectedOptions: string[]) => {
+    setOfflineSources(selectedOptions);
+    onChange({
+      onlineChannel: JSON.stringify(onlineSources),
+      offlineChannel: JSON.stringify(selectedOptions)
+    });
+  };
+
   useEffect(() => {
-    if (data) {
-      // setOnlineSources(data?.onlineChannel)
-      // setOfflineSources(data?.offlineChannel)
+    if (data){
+      try {
+        setOnlineSources(data.onlineChannel ? JSON.parse(data.onlineChannel) : []);
+        setOfflineSources(data.offlineChannel ? JSON.parse(data.offlineChannel) : []);
+      } catch (error) {
+        console.error("Error parsing JSON data:", error);
+        setOnlineSources([]);
+        setOfflineSources([]);
+      }
     }
-  },[data])
+  }, [data])
 
   return (
     <div className="flex justify-center py-5 bg-[white]">
@@ -56,7 +80,7 @@ const SubscriptionForm: React.FC<AdmissionChannelProps> = ({ data, onChange }) =
               }
               options={onlineOptions[currentLanguage] || onlineOptions["ENG"]}
               selected={onlineSources}
-              onChange={setOnlineSources}
+              onChange={handleOnlineChange}
               placeholder={currentTexts.onlineSourcesPlaceholder} 
               otherPlaceholder={currentTexts.otherInput}
             />
@@ -73,7 +97,7 @@ const SubscriptionForm: React.FC<AdmissionChannelProps> = ({ data, onChange }) =
               }
               options={offlineOptions[currentLanguage] || offlineOptions["ENG"]}
               selected={offlineSources}
-              onChange={setOfflineSources}
+              onChange={handleOfflineChange}
               placeholder={currentTexts.offlineSourcesPlaceholder}
               otherPlaceholder={currentTexts.otherInput}
             />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLanguage } from "../../../hooks/LanguageContext";
 import { generalInfoTexts } from "../../../translation/generalInfo";
 import { summaryTexts } from "../../../translation/summary";
@@ -6,11 +6,58 @@ import PersonalInfoSummary from "./Info/generalInfo/PersonalInfoSummary";
 import ContactSummary from "./Info/generalInfo/ContactSummary";
 import EmergencyContactSummary from "./Info/generalInfo/EmergancyContactSummary";
 import SubscriptionSummary from "./Info/generalInfo/SubscriptionSummary";
+import { ApplicantGeneralInformationResponse, ContactInfoInterface, EmergencyContactInterface, GeneralInfoInterface } from "@components/types/generalInfoType";
 
 const GeneralInfo = () => {
     const { language } = useLanguage();
     const texts = generalInfoTexts[language] || generalInfoTexts["ENG"];
     const titletexts = summaryTexts[language] || summaryTexts["ENG"];
+    const [isVisible, setIsVisible] = useState(false)
+
+    const [generalData, setGeneralData] = useState<ApplicantGeneralInformationResponse | null>(null);
+
+    const formatDate = (dateStr?: string) =>
+        dateStr ? new Date(dateStr).toISOString().split("T")[0] : "";
+
+    const fetchGeneralData = async () => {
+        try {
+            const res = await fetch(`${process.env.API_BASE_URL}/applicant/general/0000001`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            })
+      
+            if (!res.ok) throw new Error("Failed to fetch general data");
+      
+            const result = await res.json();
+            const parsedData = {
+                ...result,
+                general_info: {
+                    ...result.general_info,
+                    birthDate: formatDate(result?.general_info?.birthDate),
+                    idCardExpDate: formatDate(result?.general_info?.idCardExpDate),
+                    passportExpDate: formatDate(result?.general_info?.passportExpDate),
+                },
+                admission_channel: {
+                  onlineChannel: JSON.parse(result?.admission_channel?.onlineChannel || "[]"),
+                  offlineChannel: JSON.parse(result?.admission_channel?.offlineChannel || "[]"),
+                },
+              };
+            
+              setGeneralData(parsedData);
+          } catch (error) {
+            console.error("Error fetching general information:", error);
+          }
+    }
+
+    useEffect(() => {
+        fetchGeneralData();
+    },[])
+
+    useEffect(() => {
+        console.log("general summary:", generalData);
+    },[generalData])
 
     return (
         <div className="space-y-6">
@@ -19,66 +66,25 @@ const GeneralInfo = () => {
             </div>
 
             <PersonalInfoSummary
-                profileImage="/path/to/profile-image.jpg"
-                nationality="ไทย"
-                title={texts.titleText || "Mr."}
-                firstName="ทดสอบ"
-                middleName=""
-                lastName="ระบบสมัคร"
-                firstNameEng="Test"
-                middleNameEng=""
-                lastNameEng="Raboobsamak"
-                nickname="เทส เทส"
-                nicknameEng="Test Test"
-                idCardCopy={{
-                    name: "Copy_ID_Card_Test_Raboobsamak.pdf",
-                    size: "500 KB",
-                    url: "/path/to/Copy_ID_Card_Test_Raboobsamak.pdf",
-                }}
-                idCardNumber="1 9057 42603 31 2"
-                idCardExpiry="31/12/2025"
-                birthDate="31/12/2007"
-                age="18 ปี 0 เดือน"
-                gender="ชาย"
-                houseRegCopy={{
-                    name: "Copy_Registration Address_Test_Raboobsamak.pdf",
-                    size: "600 KB",
-                    url: "/path/to/Copy_Registration Address_Test_Raboobsamak.pdf",
-                }}
-                houseNumber="111"
-                moo="1"
-                alley=""
-                street="ถนนเยาวราช"
-                subDistrict="แขวงสัมพันธวงศ์"
-                district="เขตสัมพันธวงศ์"
-                province="กรุงเทพมหานคร"
-                postalCode="10110"
-                country="ไทย"
+                props={generalData?.general_info as GeneralInfoInterface}
+                isVisible={isVisible}
+                setIsVisible={setIsVisible}
             />
 
             <ContactSummary
-                phoneNumber="088-888-8888"
-                email="test.raboobsamak@gmail.com"
-                line=""
-                facebook=""
-                instagram=""
+                props={generalData?.contact_info as ContactInfoInterface}
+                isVisible={isVisible}
+                setIsVisible={setIsVisible}
             />
-
             <EmergencyContactSummary
-                firstName="ดวงใจ"
-                middleName=" "
-                lastName="ใจดี"
-                firstNameEng="Duagjai"
-                middleNameEng=" "
-                lastNameEng="Jaidee"
-                relationship="แม่"
-                phoneNumber="099-999-9999"
-                email=" "
+                props={generalData?.emergency_contact as EmergencyContactInterface}
+                isVisible={isVisible}
+                setIsVisible={setIsVisible}
             />
 
             <SubscriptionSummary
-                onlineSources={["Facebook", "Website ICT Mahidol", "Line Official"]}
-                offlineSources={["MU Open House", "Dek-D TCAS"]}
+                onlineSources={generalData?.admission_channel.onlineChannel || [""]}
+                offlineSources={generalData?.admission_channel.offlineChannel || [""]}
             />
         </div>
     );

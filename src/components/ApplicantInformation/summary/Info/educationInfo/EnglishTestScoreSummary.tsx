@@ -1,48 +1,41 @@
 import React from "react";
 import { useLanguage } from "../../../../../hooks/LanguageContext";
 import { educationInfoTexts } from "../../../../../translation/educationInfo";
+import { EducationEngExam } from "@components/types/educationInfoType";
+
+// interface EnglishTestScoreSummaryProps {
+//     testType?: string;
+//     score?: string;
+//     testDate?: string;
+//     document?: string;
+//     documentSize?:string;
+//     listeningScore?: string;
+//     readingScore?: string;
+//     writingScore?: string;
+//     speakingScore?: string;
+//     literacyScore?: string;
+//     comprehensionScore?: string;
+//     conversationScore?: string;
+//     productionScore?: string;
+//     listeningComprehensionScore?: string;
+//     structureWrittenScore?: string;
+//     readingComprehensionScore?: string;
+// }
 
 interface EnglishTestScoreSummaryProps {
-    testType?: string;
-    score?: string;
-    testDate?: string;
-    document?: string;
-    documentSize?:string;
-    listeningScore?: string;
-    readingScore?: string;
-    writingScore?: string;
-    speakingScore?: string;
-    literacyScore?: string;
-    comprehensionScore?: string;
-    conversationScore?: string;
-    productionScore?: string;
-    listeningComprehensionScore?: string;
-    structureWrittenScore?: string;
-    readingComprehensionScore?: string;
+    props: EducationEngExam;
+    isVisible: boolean;
+    setIsVisible: (value: boolean) => void;
 }
 
+
 const EnglishTestScoreSummary: React.FC<EnglishTestScoreSummaryProps> = ({
-    testType,
-    score,
-    testDate,
-    document,
-    documentSize,
-    listeningScore,
-    readingScore,
-    writingScore,
-    speakingScore,
-    literacyScore,
-    comprehensionScore,
-    conversationScore,
-    productionScore,
-    listeningComprehensionScore,
-    structureWrittenScore,
-    readingComprehensionScore,
+    props, isVisible, setIsVisible
 }) => {
     const { language } = useLanguage();
     const texts = educationInfoTexts[language] || educationInfoTexts["ENG"];
 
-    if (!testType) return null; // ถ้าไม่มีประเภทคะแนนสอบ ไม่ต้องแสดงอะไร
+    if (!props?.examType) return null; // ถ้าไม่มีประเภทคะแนนสอบ ไม่ต้องแสดงอะไร
 
     return (
         <div className="flex justify-center py-5 bg-[white]">
@@ -53,113 +46,115 @@ const EnglishTestScoreSummary: React.FC<EnglishTestScoreSummaryProps> = ({
                     {document && (
                         <div className="mt-4">
                             <p className="text-[#565656] font-bold">{texts.uploadEngTestScore}</p>
-                            <a href={document} download className="text-[#008A90] font-medium hover:underline">
-                                {document.split("/").pop()}
+                            <a href={props?.enCer}
+                                download 
+                                className="text-[#008A90] font-medium hover:underline">
+                                {props?.enCerName}
                             </a>
-                            {documentSize && <span className="text-gray-500 text-sm ml-2">{documentSize}</span>}
+                            {props?.enCerSize && <span className="text-gray-500 text-sm ml-2">{props?.enCerSize}</span>}
                         </div>
                     )}
 
                     {/* ประเภทคะแนนสอบ */}
                     <div className="mb-4">
                         <p className="text-[#565656] font-bold">{texts.englishTestType}</p>
-                        <p className="text-gray-900">{testType}</p>
+                        <p className="text-gray-900">{props?.examType}</p>
                     </div>
 
 
                     {/* วันที่สอบ */}
-                    {testDate && (
+                    {props?.enExamDate && (
                         <div className="mb-4">
                             <p className="text-[#565656] font-bold">{texts.testDate}</p>
-                            <p className="text-gray-900">{testDate}</p>
+                            <p className="text-gray-900">{props?.enExamDate}</p>
                         </div>
                     )}
 
                     {/* คะแนนสอบทั่วไป */}
-                    {score && (
+                    {props?.enScore && (
                         <div className="mb-4">
                             <p className="text-[#565656] font-bold">{texts.score}</p>
-                            <p className="text-gray-900">{score}</p>
+                            <p className="text-gray-900">{props?.enScore}</p>
                         </div>
                     )}
 
                     {/* IELTS / TOEFL iBT */}
-                    {(["IELTS", "TOEFL_IBT"].includes(testType)) && (
+                    {(["IELTS", "TOEFL_IBT"].includes(props?.examType)) && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {listeningScore && (
+                            {props?.listening && (
                                 <div>
                                     <p className="text-[#565656] font-bold">{texts.listeningScore}</p>
-                                    <p className="text-gray-900">{listeningScore}</p>
+                                    <p className="text-gray-900">{props?.listening}</p>
                                 </div>
                             )}
-                            {readingScore && (
+                            {props?.reading && (
                                 <div>
                                     <p className="text-[#565656] font-bold">{texts.readingScore}</p>
-                                    <p className="text-gray-900">{readingScore}</p>
+                                    <p className="text-gray-900">{props?.reading}</p>
                                 </div>
                             )}
-                            {writingScore && (
+                            {props?.writing && (
                                 <div>
                                     <p className="text-[#565656] font-bold">{texts.writingScore}</p>
-                                    <p className="text-gray-900">{writingScore}</p>
+                                    <p className="text-gray-900">{props?.writing}</p>
                                 </div>
                             )}
-                            {speakingScore && (
+                            {props?.speaking && (
                                 <div>
                                     <p className="text-[#565656] font-bold">{texts.speakingScore}</p>
-                                    <p className="text-gray-900">{speakingScore}</p>
+                                    <p className="text-gray-900">{props?.speaking}</p>
                                 </div>
                             )}
                         </div>
                     )}
                      {/* Duolinguo */}
-                    {testType === "Duolingo" && (
+                    {props?.examType === "Duolingo" && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {literacyScore && (
+                            {props?.literacy && (
                                 <div>
                                     <p className="text-[#565656] font-bold">{texts.literacyScore}</p>
-                                    <p className="text-gray-900">{literacyScore}</p>
+                                    <p className="text-gray-900">{props?.literacy}</p>
                                 </div>
                             )}
-                            {comprehensionScore && (
+                            {props?.comprehension && (
                                 <div>
                                     <p className="text-[#565656] font-bold">{texts.comprehensionScore}</p>
-                                    <p className="text-gray-900">{comprehensionScore}</p>
+                                    <p className="text-gray-900">{props?.comprehension}</p>
                                 </div>
                             )}
-                            {conversationScore && (
+                            {props?.conversation && (
                                 <div>
                                     <p className="text-[#565656] font-bold">{texts.conversationScore}</p>
-                                    <p className="text-gray-900">{conversationScore}</p>
+                                    <p className="text-gray-900">{props?.conversation}</p>
                                 </div>
                             )}
-                            {productionScore && (
+                            {props?.production && (
                                 <div>
                                     <p className="text-[#565656] font-bold">{texts.productionScore}</p>
-                                    <p className="text-gray-900">{productionScore}</p>
+                                    <p className="text-gray-900">{props?.production}</p>
                                 </div>
                             )}
                         </div>
                     )}
                {/* Toefl ITP & IELT_PBT */}
-                    {["TOEFL_ITP", "TOEFL_PBT"].includes(testType) && (
+                    {["TOEFL_ITP", "TOEFL_PBT"].includes(props?.examType) && (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {listeningComprehensionScore && (
+                            {props?.listeningComprehensionScore && (
                                 <div>
                                     <p className="text-[#565656] font-bold">{texts.listeningComprehensionScore}</p>
-                                    <p className="text-gray-900">{listeningComprehensionScore}</p>
+                                    <p className="text-gray-900">{props?.listeningComprehensionScore}</p>
                                 </div>
                             )}
-                            {structureWrittenScore && (
+                            {props?.structureWrittenScore && (
                                 <div>
                                     <p className="text-[#565656] font-bold">{texts.structureWrittenScore}</p>
-                                    <p className="text-gray-900">{structureWrittenScore}</p>
+                                    <p className="text-gray-900">{props?.structureWrittenScore}</p>
                                 </div>
                             )}
-                            {readingComprehensionScore && (
+                            {props?.readingComprehensionScore && (
                                 <div>
                                     <p className="text-[#565656] font-bold">{texts.readingComprehensionScore}</p>
-                                    <p className="text-gray-900">{readingComprehensionScore}</p>
+                                    <p className="text-gray-900">{props?.readingComprehensionScore}</p>
                                 </div>
                             )}
                         </div>

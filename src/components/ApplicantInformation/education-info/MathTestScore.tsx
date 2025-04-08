@@ -7,8 +7,21 @@ import FileUpload from "../../form/FileUpload";
 import CustomSelect from "../../form/CustomSelect";
 import DateInput from "../../common/date";
 import { validateTestScore, preventInvalidTestScoreInput } from "../../../utils/validation";
+import { EducationMathExam } from "@components/types/educationInfoType";
 
-const MathTestScore = () => {
+const initialFormValues: EducationMathExam = {
+    mathType: "",
+    mathScore: "",
+    mathExamDate: "",
+    mathCer: "",
+}
+
+interface EducationLevelProps {
+    data: EducationMathExam;
+    onChange: (data: any) => void;
+}
+
+const MathTestScore: React.FC<EducationLevelProps> = ({ data, onChange}) => {
     const searchParams = useSearchParams();
     const programParam = searchParams.get("program"); // ดึงค่าจาก query params
 
@@ -17,18 +30,9 @@ const MathTestScore = () => {
     const currentTexts = educationInfoTexts[currentLanguage] || educationInfoTexts["ENG"];
 
     const [program, setProgram] = useState(programParam || "ICT");
-
-    const [formData, setFormData] = useState<{
-        testType: string | null;
-        score: string;
-        testDate: string | Date | null;
-        document: File | null;
-    }>({
-        testType: "",
-        score: "",
-        testDate: null,
-        document: null,
-    });
+    const [changedData, setChangedData] = useState({});
+    const [displayDate, setDisplayDate] = useState<Date | null>(null);
+    const [formData, setFormData] = useState(initialFormValues);
 
 
     useEffect(() => {
@@ -39,30 +43,97 @@ const MathTestScore = () => {
 
     if (program !== "ICT") return null;
 
-    const handleChange = (field: string, value: string | File | null | Date) => {
-        setFormData((prev) => {
-            if (field === "testType") {
-                return {
-                    testType: typeof value === "string" ? value : null,
-                    score: "", // รีเซ็ตคะแนนเมื่อเปลี่ยนประเภทการสอบ
-                    testDate: prev.testDate,
-                    document: prev.document
-                };
+    useEffect(() => {
+        if (data) {
+            if (data?.mathExamDate) {
+                setDisplayDate(new Date(data.mathExamDate))
+                console.log("displayDate Math:", displayDate)
             }
+            setFormData({
+                mathType: data?.mathType || "",
+                mathScore: data?.mathScore || "",
+                mathExamDate: data?.mathExamDate || "",
+                mathCer: data?.mathCer || "",
+                mathCerName: data?.mathCerName || "",
+                mathCerSize: data?.mathCerSize || "",
+            })
+        }
+    }, [data])
 
-            if (field === "score") {
-                return {
-                    ...prev,
-                    [field]: validateTestScore(value, prev.testType),
-                };
-            }
-            return { ...prev, [field]: value };
-        });
-    };
+    const handleChange = (field: string, value: string | Date) => {
+        let formattedValue = value;
+
+        if (value instanceof Date) {
+            formattedValue = value.toISOString().split("T")[0]; // "2025-04-09"
+            setDisplayDate(value)
+        }
+        const updatedData = { ...formData, [field]: formattedValue };
+
+        if (field === "mathType") {
+            Object.assign(updatedData, {
+                mathScore: "",
+                mathExamDate: "",
+                mathCer: "",
+                mathCerName: "",
+                mathCerSize: "",
+            });
+            setDisplayDate(null)
+        } 
+        setFormData(updatedData);
+    
+        const newChangedData = { ...changedData, ...updatedData };
+        setChangedData(newChangedData);
+        onChange(newChangedData);
+    }
 
     // ถ้าโปรแกรมไม่ใช่ ICT ให้ return null (ไม่แสดงอะไรเลย)
     if (program !== "ICT") {
         return null;
+    }
+
+    const handleMathCerUpload = async (file: File) => {
+        if (!file) return;
+        console.log("file", file)
+        
+        if (file.type !== "application/pdf") {
+            alert("กรุณาอัปโหลดไฟล์ PDF เท่านั้น");
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('ขนาดไฟล์ไม่ควรเกิน 5MB');
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = (event) => {
+            const base64String = event.target?.result as string;
+    
+            // ระบุฟิลด์ที่ต้องอัปเดตตามประเภทเอกสาร
+            let updatedData: Partial<typeof formData> = {};
+            console.log("file name: ",URL.createObjectURL(file))
+            updatedData = { mathCer: base64String };
+
+            // อัปเดต formData
+            setFormData(prev => ({
+                ...prev,
+                ...updatedData
+            }));
+    
+            // อัปเดตข้อมูลที่เปลี่ยนแปลง
+            const newChangedData = { 
+                ...changedData, 
+                mathCer: base64String,
+                mathCerName: file.name,
+                mathCerSize: String(file.size)
+            };
+            setChangedData(newChangedData);
+            onChange(newChangedData);
+        };
+    
+        reader.readAsDataURL(file);
+
     }
 
     return (
@@ -75,7 +146,7 @@ const MathTestScore = () => {
 
                     <FileUpload
                         label={currentTexts.uploadMathTestScore}
-                        onChange={(file) => handleChange("document", file)}
+                        onChange={(file) => handleMathCerUpload(file)}
                         fileType="pdf"
                         maxSize="5 MB"
                         accept=".pdf"
@@ -87,8 +158,8 @@ const MathTestScore = () => {
                             <CustomSelect
                                 label={currentTexts.mathTestType}
                                 options={MathTestTypeOptions}
-                                value={formData.testType}
-                                onChange={(selectedOption) => handleChange("testType", selectedOption?.value || "")}
+                                value={formData.mathType || ""}
+                                onChange={(selectedOption) => handleChange("mathType", selectedOption?.value || "")}
                                 placeholder={currentTexts.selectmathTestType}
                                 required={false}
                             />
@@ -97,24 +168,24 @@ const MathTestScore = () => {
 
                     <div className="grid grid-cols-1 lg:grid-cols-[400px_400px] lg:gap-x-[50px] gap-y-1 mb-1">
                         <div className="w-full max-w-[400px] mb-4">
-                            {["IGCSE_Math"].includes(formData.testType || "") ? (
+                            {["IGCSE_Math"].includes(formData.mathType || "") ? (
                                 <CustomSelect
                                     label={currentTexts.score}
                                     options={ScoreOptions}
-                                    value={formData.score}
-                                    onChange={(selectedOption) => handleChange("score", selectedOption?.value || "")}
+                                    value={formData.mathScore || ""}
+                                    onChange={(selectedOption) => handleChange("mathScore", selectedOption?.value || "")}
                                     placeholder={currentTexts.selectScore}
                                     required={false}
                                 />
                             ) : (
                                 <FormField
                                     label={currentTexts.score}
-                                    value={formData.score}
-                                    onChange={(value) => handleChange("score", value)}
+                                    value={formData.mathScore || ""}
+                                    onChange={(value) => handleChange("mathScore", value)}
                                     type="text"
                                     placeholder={currentTexts.scorePlaceholder}
                                     required={false}
-                                    onKeyDown={(event) => preventInvalidTestScoreInput(event, formData.score, formData.testType)}
+                                    //onKeyDown={(event) => preventInvalidTestScoreInput(event, formData.mathScore, formData.mathType)}
 
                                 />
                             )}
@@ -122,10 +193,10 @@ const MathTestScore = () => {
                         <div className="w-full sm:w-[400px] max-w-[400px]">
                             <label className="block text-[#565656]">{currentTexts.testDate}</label>
                             <DateInput
-                                selected={formData.testDate instanceof Date ? formData.testDate : null}
-                                onChange={(date) => handleChange("testDate", date)}
+                                selected={displayDate}
+                                onChange={(date) => handleChange("mathExamDate", date || "")}
                                 placeholderText={currentTexts.selecttestDate}
-                                mode="birthdate" // Set an appropriate mode value
+                                //mode="birthdate" // Set an appropriate mode value
                             />
                             <div className="flex items-start text-sm text-[#B3B3B3] mt-2">
                                 <svg

@@ -7,14 +7,40 @@ import FileUpload from "../../form/FileUpload";
 import CustomSelect from "../../form/CustomSelect";
 import DateInput from "../../common/date";
 import { validateTestScore, preventInvalidTestScoreInput } from "../../../utils/validation";
+import { EducationEngExam } from "@components/types/educationInfoType";
 
-const EnglishTestScore = () => {
+const initialFormValues: EducationEngExam = {
+  examType: "",
+  enScore: "",
+  enExamDate: "",
+  enCer: "",
+  listening: "",
+  reading: "",
+  writing: "",
+  speaking: "",
+  literacy: "",
+  comprehension: "",
+  conversation: "",
+  production: "",
+  listeningComprehensionScore: "",
+  structureWrittenScore: "",
+  readingComprehensionScore: "",
+};
+
+interface EducationLevelProps {
+    data: EducationEngExam;
+    onChange: (data: any) => void;
+}
+
+const EnglishTestScore: React.FC<EducationLevelProps> = ({ data, onChange }) => {
   const searchParams = useSearchParams();
   const programParam = searchParams.get("program"); // ดึงค่าจาก query params
 
   const { language } = useLanguage();
   const currentLanguage = language || "ENG";
   const currentTexts = educationInfoTexts[currentLanguage] || educationInfoTexts["ENG"];
+  const [changedData, setChangedData] = useState({});
+  const [displayDate, setDisplayDate] = useState<Date | null>(null);
 
   const [program, setProgram] = useState(programParam || "ICT");
 
@@ -24,66 +50,122 @@ const EnglishTestScore = () => {
     }
   }, [programParam]);
 
-  const [formData, setFormData] = useState({
-    testType: "",
-    score: "",
-    testDate: "",
-    document: null,
-    listeningScore: "",
-    readingScore: "",
-    writingScore: "",
-    speakingScore: "",
-    literacyScore: "",
-    comprehensionScore: "",
-    conversationScore: "",
-    productionScore: "",
-    listeningComprehensionScore: "",
-    structureWrittenScore: "",
-    readingComprehensionScore: ""
-  });
+  useEffect(() => {
+    if (data) {
+      if (data?.enExamDate) {
+        setDisplayDate(new Date(data.enExamDate))
+        console.log("displayDate", displayDate)
+      }
+      setFormData({
+        examType: data?.examType || "",
+        enScore: data?.enScore || "",
+        enExamDate: data?.enExamDate || "",
+        enCer: data?.enCer || "",
+        enCerName: data?.enCerName || "",
+        enCerSize: data?.enCerSize || "",
+        listening: data?.listening || "",
+        reading: data?.reading || "",
+        writing: data?.writing || "",
+        speaking: data?.speaking || "",
+        literacy: data?.literacy || "",
+        comprehension: data?.comprehension || "",
+        conversation: data?.conversation || "",
+        production: data?.production || "",
+        listeningComprehensionScore: data?.listeningComprehensionScore || "",
+        structureWrittenScore: data?.structureWrittenScore || "",
+        readingComprehensionScore: data?.readingComprehensionScore || ""
+      })
+    }
+  }, [data])
+
+
+  const [formData, setFormData] = useState(initialFormValues);
 
   const [errors, setErrors] = useState<Record<string, string>>({}); // เก็บข้อผิดพลาด
 
   if (program !== "ICT") return null;
 
+  const handleChange = (field: string, value: string | Date) => {
+    let formattedValue = value;
 
-  const handleChange = (field: string, value: string | number | File | null | undefined) => {
-    setFormData((prev) => {
-      // หากเปลี่ยน testType -> รีเซ็ตค่าทั้งหมด
-      if (field === "testType") {
-        return {
-          testType: typeof value === "string" ? value : "",
-          score: "",
-          testDate: "",
-          document: null,
-          listeningScore: "",
-          readingScore: "",
-          writingScore: "",
-          speakingScore: "",
-          literacyScore: "",
-          comprehensionScore: "",
-          conversationScore: "",
-          productionScore: "",
-          listeningComprehensionScore: "",
-          structureWrittenScore: "",
-          readingComprehensionScore: "",
-        };
-      }
-      if (field === "score" || field.includes("Score")) {
-        const sanitizedValue = validateTestScore(value, prev.testType);
-        return {
-          ...prev,
-          [field]: sanitizedValue,
-        };
-      }
-      return { ...prev, [field]: value };
-    });
+    if (value instanceof Date) {
+      formattedValue = value.toISOString().split("T")[0]; // "2025-04-09"
+      setDisplayDate(value)
+    }
+    const updatedData = { ...formData, [field]: formattedValue };
 
-    setErrors((prev) => ({
-      ...prev,
-      [field]: value ? "" : "",
-    }));
+    if (field === "examType") {
+        Object.assign(updatedData, {
+            enScore: "",
+            enExamDate: "",
+            enCer: "",
+            enCerName: "",
+            enCerSize: "",
+            listening: "",
+            reading: "",
+            writing: "",
+            speaking: "",
+            literacy: "",
+            comprehension: "",
+            conversation: "",
+            production: "",
+            listeningComprehensionScore: "",
+            structureWrittenScore: "",
+            readingComprehensionScore: ""
+        });
+        setDisplayDate(null)
+    }
+    setFormData(updatedData);
+    
+    const newChangedData = { ...changedData, ...updatedData };
+    setChangedData(newChangedData);
+    onChange(newChangedData);
   };
+
+  const handleEngCerUpload = async (file: File) => {
+    if (!file) return;
+    console.log("file", file)
+    
+    if (file.type !== "application/pdf") {
+        alert("กรุณาอัปโหลดไฟล์ PDF เท่านั้น");
+        return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+        alert('ขนาดไฟล์ไม่ควรเกิน 5MB');
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+        const base64String = event.target?.result as string;
+
+        // ระบุฟิลด์ที่ต้องอัปเดตตามประเภทเอกสาร
+        let updatedData: Partial<typeof formData> = {};
+        console.log("file name: ",URL.createObjectURL(file))
+        updatedData = { enCer: base64String };
+
+        // อัปเดต formData
+        setFormData(prev => ({
+            ...prev,
+            ...updatedData
+        }));
+
+        // อัปเดตข้อมูลที่เปลี่ยนแปลง
+        const newChangedData = { 
+            ...changedData, 
+            enCer: base64String,
+            enCerName: file.name,
+            enCerSize: String(file.size)
+        };
+        setChangedData(newChangedData);
+        onChange(newChangedData);
+    };
+
+    reader.readAsDataURL(file);
+  }
+
 
   const renderScoreField = (key: string, label: string, placeholder = "", info: string) => (
     <div key={key} className="flex flex-col w-full sm:w-[400px]">
@@ -94,7 +176,7 @@ const EnglishTestScore = () => {
         type="text"
         className="w-full h-full min-h-[50px]"
         placeholder={placeholder || "กรอกคะแนน"} 
-        onKeyDown={(event) => preventInvalidTestScoreInput(event, formData[key], formData.testType)}
+        onKeyDown={(event) => preventInvalidTestScoreInput(event, formData[key], formData.examType)}
       />
       {/* แสดง Error Message เฉพาะเมื่อมันเป็นข้อความ (ไม่ใช่ตัวเลข) */}
       {errors[key] && isNaN(Number(errors[key])) && <p className="text-red-500 text-sm mt-1">{errors[key]}</p>}
@@ -113,7 +195,7 @@ const EnglishTestScore = () => {
 
           <FileUpload
             label={currentTexts.uploadEngTestScore}
-            onChange={(file) => handleChange("document", file)}
+            onChange={(file) => handleEngCerUpload(file)}
             fileType="pdf"
             maxSize="5 MB"
             accept=".pdf"
@@ -125,8 +207,8 @@ const EnglishTestScore = () => {
               <CustomSelect
                 label={currentTexts.englishTestType}
                 options={EnglishTestTypeOptions}
-                value={formData.testType}
-                onChange={(selectedOption) => handleChange("testType", selectedOption?.value || "")}
+                value={formData.examType}
+                onChange={(selectedOption) => handleChange("examType", selectedOption?.value || "")}
                 placeholder={currentTexts.englishTestTypePlaceholder}
                 required={false}
               />
@@ -136,20 +218,20 @@ const EnglishTestScore = () => {
           <div className="grid grid-cols-1 lg:grid-cols-[400px_400px] lg:gap-x-[50px] gap-y-1 mb-1">
             <div className="w-full max-w-[400px] mb-4">
               <div className="w-full max-w-[400px] mb-4">
-                {["IGCSE_ESL", "IGCSE_FL"].includes(formData.testType) ? (
+                {["IGCSE_ESL", "IGCSE_FL"].includes(formData.examType) ? (
                   <CustomSelect
                     label={currentTexts.score}
                     options={ScoreOptions}
-                    value={formData.score}
-                    onChange={(selectedOption) => handleChange("score", selectedOption?.value || "")}
+                    value={formData.enScore}
+                    onChange={(selectedOption) => handleChange("enScore", selectedOption?.value || "")}
                     placeholder={currentTexts.selectScore}
                     required={false}
                   />
                 ) : (
                   <FormField
                     label={currentTexts.score}
-                    value={formData.score}
-                    onChange={(value) => handleChange("score", value)}
+                    value={formData.enScore}
+                    onChange={(value) => handleChange("enScore", value)}
                     type="text"
                     placeholder={currentTexts.scorePlaceholder}
                     required={false}
@@ -161,8 +243,8 @@ const EnglishTestScore = () => {
             <div className="w-full sm:w-[400px] max-w-[400px]">
               <label className="block text-[#565656]">{currentTexts.testDate} </label>
               <DateInput
-                selected={formData.testDate}
-                onChange={(date) => handleChange("testDate", date)}
+                selected={displayDate}
+                onChange={(date) => handleChange("enExamDate", date)}
                 placeholderText={currentTexts.selecttestDate}
                 required={false}
               />
@@ -185,38 +267,38 @@ const EnglishTestScore = () => {
             </div>
           </div>
           {/* แสดงฟิลด์คะแนนเฉพาะเมื่อเลือก IELTS หรือ TOEFL iBT */}
-          {["IELTS", "TOEFL_IBT"].includes(formData.testType) && (
+          {["IELTS", "TOEFL_IBT"].includes(formData.examType) && (
           <div className="grid grid-cols-1 lg:grid-cols-[400px_400px] lg:gap-x-[50px] gap-y-1 mb-1">
               {[
-                { key: "listeningScore", label: currentTexts.listeningScore, placeholder: currentTexts.listeningScorePlaceholder },
-                { key: "readingScore", label: currentTexts.readingScore, placeholder: currentTexts.readingScorePlaceholder },
-                { key: "writingScore", label: currentTexts.writingScore, placeholder: currentTexts.writingScorePlaceholder },
-                { key: "speakingScore", label: currentTexts.speakingScore, placeholder: currentTexts.speakingScorePlaceholder }
+                { key: "listening", label: currentTexts.listeningScore, placeholder: currentTexts.listeningScorePlaceholder },
+                { key: "reading", label: currentTexts.readingScore, placeholder: currentTexts.readingScorePlaceholder },
+                { key: "writing", label: currentTexts.writingScore, placeholder: currentTexts.writingScorePlaceholder },
+                { key: "speaking", label: currentTexts.speakingScore, placeholder: currentTexts.speakingScorePlaceholder }
               ].map(({ key, label, placeholder }) =>
                 renderScoreField(
                   key,
                   label,
                   placeholder,
-                  formData.testType === "IELTS" ? currentTexts.infoIELTSScore : currentTexts.infoTOEFLInternetScore
+                  formData.examType === "IELTS" ? currentTexts.infoIELTSScore : currentTexts.infoTOEFLInternetScore
                 )
               )}
             </div>
           )}
 
           {/* แสดงฟิลด์คะแนนเฉพาะเมื่อเลือก Duolingo */}
-          {formData.testType === "Duolingo" && (
+          {formData.examType === "Duolingo" && (
                       <div className="grid grid-cols-1 lg:grid-cols-[400px_400px] lg:gap-x-[50px] gap-y-1 mb-1">
               {[
-                { key: "literacyScore", label: currentTexts.literacyScore, placeholder: currentTexts.literacyScorePlaceholder, info: currentTexts.infoDuolingoScore },
-                { key: "comprehensionScore", label: currentTexts.comprehensionScore, placeholder: currentTexts.comprehensionScorePlaceholder, info: currentTexts.infoDuolingoScore },
-                { key: "conversationScore", label: currentTexts.conversationScore, placeholder: currentTexts.conversationScorePlaceholder, info: currentTexts.infoDuolingoScore },
-                { key: "productionScore", label: currentTexts.productionScore, placeholder: currentTexts.productionScorePlaceholder, info: currentTexts.infoDuolingoScore }
+                { key: "literacy", label: currentTexts.literacyScore, placeholder: currentTexts.literacyScorePlaceholder, info: currentTexts.infoDuolingoScore },
+                { key: "comprehension", label: currentTexts.comprehensionScore, placeholder: currentTexts.comprehensionScorePlaceholder, info: currentTexts.infoDuolingoScore },
+                { key: "conversation", label: currentTexts.conversationScore, placeholder: currentTexts.conversationScorePlaceholder, info: currentTexts.infoDuolingoScore },
+                { key: "production", label: currentTexts.productionScore, placeholder: currentTexts.productionScorePlaceholder, info: currentTexts.infoDuolingoScore }
               ].map(({ key, label, placeholder, info }) => renderScoreField(key, label, placeholder, info))}
             </div>
           )}
 
           {/* แสดงฟิลด์คะแนนเฉพาะเมื่อเลือก TOEFL ITP & TOEFL PBT */}
-          {["TOEFL_ITP", "TOEFL_PBT"].includes(formData.testType) && (
+          {["TOEFL_ITP", "TOEFL_PBT"].includes(formData.examType) && (
               <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-6 gap-y-4 mt-6 w-full">
               {[
                 { key: "listeningComprehensionScore", textKey: "listeningComprehensionScore", placeholderKey: "listeningComprehensionScorePlaceholder", infoKey: "infoTOEFLScore" },

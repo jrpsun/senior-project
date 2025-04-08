@@ -10,6 +10,7 @@ import { useLanguage } from "../../../hooks/LanguageContext";
 import Popup from "../../../components/common/popup";
 import { BackButton, NextButton } from "@components/components/common/button";
 import { generalInfoTexts } from "@components/translation/generalInfo";
+import next from "next";
 
 
 const ApplicationInfo = () => {
@@ -18,25 +19,74 @@ const ApplicationInfo = () => {
   const [isPopupOpen, setPopupOpen] = useState(false);
   const currentTexts = generalInfoTexts[language as keyof typeof generalInfoTexts] || generalInfoTexts["ENG"];
   const [editedGeneralData, setEditedGeneralData] = useState({})
+  const [editedEducationData, setEditedEducationData] = useState({})
+  const [editedAwardData, setEditedAwardData] = useState([{}])
+  const [editedTalentData, setEditedTalentData] = useState([{}])
+  const [editedTrainData, setEditedTrainData] = useState([{}])
+  const [editedDocData, setEditedDocData] = useState({})
 
   const handleGeneralInfoUpdate = (key: string, updatedData: any) => {
-    setEditedGeneralData(prev => ({ ...prev, [key]: updatedData}));
+    setEditedGeneralData(prev => ({ ...prev, [key]: updatedData }));
   };
+
+  const handleEducationUpdate = (key: string, updatedData: any) => {
+    setEditedEducationData(prev => ({ ...prev, [key]: updatedData }))
+  }
 
   const handleOpenPopup = () => setPopupOpen(true);
   const handleClosePopup = () => setPopupOpen(false);
+
+  const nextStep = () => {
+    setSelected(prev => Math.min(prev + 1, 5));
+    console.log("next", selected)
+  };
+
+  const prevStep = () => {
+    setSelected(prev => Math.max(prev - 1, 0));
+    console.log("back", selected)
+  };
   
   const contents = [
     <GeneralInformation key="general" onUpdate={handleGeneralInfoUpdate}/>,
-    <EducationInformation key="education" />,
-    <Award key="award" />,
-    <Training key="training" />,
-    <AdditionalDocuments key="documents" />,
+    <EducationInformation key="education" onUpdate={handleEducationUpdate}/>,
+    <Award key="award" setAward={setEditedAwardData} setTalent={setEditedTalentData}/>,
+    <Training key="training" setTrain={setEditedTrainData}/>,
+    <AdditionalDocuments key="documents" setDoc={setEditedDocData}/>,
     <Summary key="summary" onOpenPopup={handleOpenPopup} />,
   ];
 
   const handleSave = async () => {
-    console.log("Saving Combined Changes:", editedGeneralData);
+    if (selected === 0) {
+      console.log("Saving Combined Changes:", editedGeneralData);
+      updatedGeneralInfo();
+    } else if (selected === 1) {
+      console.log("click edu tab", editedEducationData)
+      updatedEducationInfo();
+    } else if (selected === 2) {
+      console.log("award tab:", editedAwardData)
+      console.log("talent tab:", editedTalentData)
+      if (editedAwardData.length > 0 && Object.keys(editedAwardData[0]).length > 0) {
+        console.log("reward pass");
+        updatedAward();
+      } 
+      if (editedTalentData.length > 0 && Object.keys(editedTalentData[0]).length > 0) {
+        console.log("talent pass");
+        upDatedTalent();
+      }
+    } else if (selected === 3) {
+      console.log("Training Data tab:", editedTrainData);
+      if (editedTrainData.length > 0 && Object.keys(editedTrainData[0]).length > 0) {
+        updatedTraining();
+      }
+    } else if (selected === 4) {
+      console.log("Doc tab: ", editedDocData);
+      updatedDocument();
+    } else if (selected === 5) {
+      submitForm();
+    }
+  }
+
+  const updatedGeneralInfo = async() => {
     try {
       const response = await fetch(`${process.env.API_BASE_URL}/applicant/general/0000001`, {
         method: 'PUT',
@@ -56,8 +106,132 @@ const ApplicationInfo = () => {
     } catch (error){
       console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
     }
-
   }
+
+  const updatedEducationInfo = async() => {
+    try {
+      const response = await fetch(`${process.env.API_BASE_URL}/applicant/education/0000001`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editedEducationData.education),
+      });
+
+      const result = await response.json()
+      if (response.ok) {
+        console.log('ข้อมูลถูกอัปเดตเรียบร้อย:', result);
+      } else {
+        console.error('เกิดข้อผิดพลาด:', result.error);
+      }
+
+    } catch (error){
+      console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
+    }
+  }
+
+  const updatedAward = async() => {
+    try {
+      const response = await fetch(`${process.env.API_BASE_URL}/applicant/reward`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editedAwardData),
+      });
+
+      const result = await response.json()
+      if (response.ok) {
+        console.log('ข้อมูลถูกอัปเดตเรียบร้อย:', result);
+      } else {
+        console.error('เกิดข้อผิดพลาด:', result.error);
+      }
+    } catch (error){
+      console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
+    }
+  }
+
+  const upDatedTalent = async() => {
+    try {
+      const response = await fetch(`${process.env.API_BASE_URL}/applicant/talent`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editedTalentData),
+      });
+
+      const result = await response.json()
+      if (response.ok) {
+        console.log('ข้อมูลถูกอัปเดตเรียบร้อย:', result);
+      } else {
+        console.error('เกิดข้อผิดพลาด:', result.error);
+      }
+    } catch (error){
+      console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
+    }
+  }
+
+  const updatedTraining = async() => {
+    try {
+      const response = await fetch(`${process.env.API_BASE_URL}/applicant/training`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editedTrainData),
+      });
+
+      const result = await response.json()
+      if (response.ok) {
+        console.log('ข้อมูลถูกอัปเดตเรียบร้อย:', result);
+      } else {
+        console.error('เกิดข้อผิดพลาด:', result.error);
+      }
+    } catch (error){
+      console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
+    }
+  }
+
+  const updatedDocument = async() => {
+    try {
+      const response = await fetch(`${process.env.API_BASE_URL}/applicant/document/0000001`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editedDocData),
+      });
+
+      const result = await response.json()
+      if (response.ok) {
+        console.log('ข้อมูลถูกอัปเดตเรียบร้อย:', result);
+      } else {
+        console.error('เกิดข้อผิดพลาด:', result.error);
+      }
+    } catch (error){
+      console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
+    }
+  }
+
+  const submitForm = async() => {
+    try {
+      const response = await fetch(`${process.env.API_BASE_URL}/applicant/submit/0000001`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json()
+      if (response.ok) {
+        console.log('ข้อมูลถูกอัปเดตเรียบร้อย:', result);
+      }
+    } catch (error){
+      console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
+    }
+  }
+
 
   return (
     <div className="bg-[white] min-h-screen">
@@ -123,10 +297,12 @@ const ApplicationInfo = () => {
         </div>
         <div className="mt-10">{contents[selected]}</div>
       </div>
-      <div className="flex flex-row justify-center gap-4">
+      <div className="flex justify-center mt-6 mb-6 gap-x-4">
+        <BackButton onClick={prevStep}>{currentTexts.backButton}</BackButton>
         <button onClick={handleSave}>Save</button>
-        <NextButton>{currentTexts.NextButton}</NextButton>
+        <NextButton onClick={nextStep}>{currentTexts.nextButton}</NextButton>
       </div>
+      
       {isPopupOpen && (
         <Popup isOpen={isPopupOpen} onClose={handleClosePopup} type="confirmApplication">
           <p>คุณต้องการยืนยันการสมัครหรือไม่?</p>

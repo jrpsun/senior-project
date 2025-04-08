@@ -64,7 +64,7 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                     {/* รูปภาพ */}
                     <div className="mb-4">
                         <p className="text-[#565656] font-bold">{texts.uploadImage}</p>
-                        <img src={'/path/to/profile-image.jpg'} alt="Profile" className="w-32 h-32 rounded-md object-cover" />
+                        <img src={`${props?.applicantPicture}`} alt="Profile" className="w-32 h-32 rounded-md object-cover" />
                     </div>
 
                     {/* ข้อมูลส่วนตัว */}
@@ -113,7 +113,7 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                     </div>
 
                     {/*สำเนาบัตรประชาชน */}
-                    {props?.idCardCopy && (
+                    {props?.docCopyIdCardName && (
                         <div className="mb-4">
                             <h3 className="text-[#565656] font-semibold">{texts.uploadIdCard}</h3>
                             <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
@@ -121,32 +121,33 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                                 <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                                 <div className="flex flex-col">
                                     <a
-                                        href={props?.idCardCopy.url}
+                                        href={props?.docCopyIdCard}
                                         download
                                         className="text-[#008A90] font-medium hover:underline truncate max-w-[250px] md:max-w-[400px] inline-block"
-                                        title={props?.idCardCopy.name}
+                                        title={props?.docCopyIdCardName}
                                     >
-                                        {props?.idCardCopy.name}
+                                        {props?.docCopyIdCardName}
                                     </a>
-                                    <span className="text-[#565656] text-xs md:text-sm">{props?.idCardCopy.size}</span>
+                                    <span className="text-[#565656] text-xs md:text-sm">{props?.docCopyIdCardSize}</span>
                                 </div>
                             </div>
                         </div>
                     )}
                     {/* กรณีเป็นชาวต่างชาติ แสดงสำเนาพาสปอร์ต */}
-                    {props?.nationality !== "Thai" && props?.passportCopy && (
+                    {props?.nationality !== "Thai" && props?.docCopyPassportName && (
                         <div className="mb-4">
                             <h3 className="text-[#565656] font-semibold">{texts.uploadPassport}</h3>
                             <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
                             <div className="border border-gray-300 rounded-lg p-3 flex items-center gap-4 shadow-sm">
                                 <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                                 <div className="flex flex-col">
-                                    <a href={props?.passportCopy.url} download
+                                    <a href={props?.docCopyHouseRegis}
+                                        download
                                         className="text-[#008A90] font-medium hover:underline truncate max-w-[250px] md:max-w-[400px] inline-block"
-                                        title={props?.passportCopy.name}>
-                                        {props?.passportCopy.name}
+                                        title={props?.docCopyPassportName}>
+                                        {props?.docCopyPassportName}
                                     </a>
-                                    <span className="text-[#565656] text-xs md:text-sm">{props?.passportCopy.size}</span>
+                                    <span className="text-[#565656] text-xs md:text-sm">{props?.docCopyPassportSize}</span>
                                 </div>
                             </div>
                         </div>
@@ -214,7 +215,7 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                     </div>
 
                     {/* 🔹 สำเนาทะเบียนบ้าน */}
-                    {props?.houseRegCopy && (
+                    {props?.docCopyHouseRegisName && (
                         <div className="mb-4">
                             <h3 className="text-[#565656] font-semibold">{texts.uploadHouseReg}</h3>
                             <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
@@ -222,14 +223,14 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                                 <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                                 <div className="flex flex-col">
                                     <a
-                                        href={props?.houseRegCopy.url}
+                                        href={props?.docCopyHouseRegis}
                                         download
                                         className="text-[#008A90] font-medium hover:underline truncate max-w-[250px] md:max-w-[400px] inline-block"
-                                        title={props?.houseRegCopy.name}
+                                        title={props?.docCopyHouseRegisName}
                                     >
-                                        {props?.houseRegCopy.name}
+                                        {props?.docCopyHouseRegisName}
                                     </a>
-                                    <span className="text-[#565656] text-xs md:text-sm">{props?.houseRegCopy.size}</span>
+                                    <span className="text-[#565656] text-xs md:text-sm">{props?.docCopyHouseRegisSize}</span>
                                 </div>
                             </div>
                         </div>

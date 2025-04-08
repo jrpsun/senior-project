@@ -2,15 +2,10 @@ import React from "react";
 import { useLanguage } from "../../../../hooks/LanguageContext";
 import { additionalDocumentsTexts } from "../../../../translation/AdditionalDocsInfo";
 import ReportProb from "@components/components/common/admin/reportProb";
+import { AdditionalDoc } from "@components/types/additionalDoc";
 
 interface AdditionalDocumentsProps {
-  documents: {
-    statementOfPurpose?: { name: string; size: string; url: string };
-    portfolio?: { name: string; size: string; url: string };
-    videoLink?: string;
-    resume?: { name: string; size: string; url: string };
-    otherDocuments?: { name: string; size: string; url: string };
-  };
+  documents: AdditionalDoc;
   isVisible: boolean;
   setIsVisible: (value: boolean) => void;
 }
@@ -25,7 +20,7 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
       <div className="sm:w-[1100px] max-w-none bg-white rounded-lg p-6 border border-gray-300">
 
             {/* Statement of Purpose */}
-            {documents.statementOfPurpose && (
+            {documents?.stateOfPurposeName && (
               <div className="mb-4">
                 <h3 className="text-[#565656] font-semibold mb-2">
                   {texts.statementOfPurpose}
@@ -35,21 +30,21 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
                     <a
-                      href={documents.statementOfPurpose.url}
+                      href={documents?.stateOfPurpose}
                       download
                       className="text-[#008A90] font-medium hover:underline truncate max-w-[250px] md:max-w-[400px] inline-block"
-                      title={documents.statementOfPurpose.name} // Hover เพื่อดูชื่อเต็ม
+                      title={documents?.stateOfPurposeName} // Hover เพื่อดูชื่อเต็ม
                     >
-                      {documents.statementOfPurpose.name}
+                      {documents?.stateOfPurposeName}
                     </a>
-                    <span className="text-[#565656] text-xs md:text-sm">{documents.statementOfPurpose.size}</span>
+                    <span className="text-[#565656] text-xs md:text-sm">{documents?.stateOfPurposeSize}</span>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Portfolio */}
-            {documents.portfolio && (
+            {documents?.portfolioName && (
               <div className="mb-4">
                 <h3 className="text-[#565656] font-semibold mb-2 ">
                   {texts.portfolio}
@@ -59,32 +54,32 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
                     <a
-                      href={documents.portfolio.url}
+                      href={documents?.portfolio}
                       download
                       className="text-[#008A90] font-medium hover:underline truncate max-w-[250px] md:max-w-[400px] inline-block"
-                      title={documents.portfolio.name}
+                      title={documents?.portfolioName}
                     >
-                      {documents.portfolio.name}
+                      {documents?.portfolioName}
                     </a>
-                    <span className="text-[#565656] text-xs md:text-sm">{documents.portfolio.size}</span>
+                    <span className="text-[#565656] text-xs md:text-sm">{documents?.portfolioSize}</span>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Video Link */}
-            {documents.videoLink && (
+            {documents?.vdo && (
               <div className="mb-4">
                 <h3 className="text-[#565656] font-semibold mb-2 ">{texts.video}</h3>
                 <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
-                <a href={documents.videoLink} target="_blank" rel="noopener noreferrer" className="text-[#008A90] hover:underline break-all">
-                  {documents.videoLink}
+                <a href={documents?.vdo} target="_blank" rel="noopener noreferrer" className="text-[#008A90] hover:underline break-all">
+                  {documents?.vdo}
                 </a>
               </div>
             )}
 
             {/* Resume */}
-            {documents.resume && (
+            {documents?.applicantResumeName && (
               <div className="mb-4">
                 <h3 className="text-[#565656] font-semibold mb-2 ">
                   {texts.resume}
@@ -94,21 +89,21 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
                     <a
-                      href={documents.resume.url}
+                      href={documents?.applicantResumeName}
                       download
                       className="text-[#008A90] font-medium hover:underline truncate max-w-[250px] md:max-w-[400px] inline-block"
-                      title={documents.resume.name}
+                      title={documents?.applicantResumeName}
                     >
-                      {documents.resume.name}
+                      {documents?.applicantResumeName}
                     </a>
-                    <span className="text-[#565656] text-xs md:text-sm">{documents.resume.size}</span>
+                    <span className="text-[#565656] text-xs md:text-sm">{documents?.applicantResumeSize}</span>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Other Documents */}
-            {documents.otherDocuments && (
+            {documents?.additionalName && (
               <div className="mb-4">
                 <h3 className="text-[#565656] font-semibold mb-2">
                   {texts.otherDocuments}
@@ -118,14 +113,14 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
                     <a
-                      href={documents.otherDocuments.url}
+                      href={documents?.additionalName}
                       download
                       className="text-[#008A90] font-medium hover:underline truncate max-w-[250px] md:max-w-[400px] inline-block"
-                      title={documents.otherDocuments.name}
+                      title={documents?.additionalName}
                     >
-                      {documents.otherDocuments.name}
+                      {documents?.additionalName}
                     </a>
-                    <span className="text-[#565656] text-xs md:text-sm">{documents.otherDocuments.size}</span>
+                    <span className="text-[#565656] text-xs md:text-sm">{documents?.additionalSize}</span>
                   </div>
                 </div>
               </div>

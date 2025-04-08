@@ -54,10 +54,13 @@ const EmergencyContact: React.FC<EmergencyContactProps> = ({ data, onChange }) =
       })
       setChangedData({});
     }
+  }, [data]);
+
+  useEffect(() => {
     if (emailError && formData.contactEmail !== "") {
       setEmailError(errorMessages[language]?.invalidEmail || "Invalid email");
     }
-  }, [language, formData.contactEmail, emailError, errorMessages, data]);
+  }, [language, formData.contactEmail, emailError, errorMessages])
 
   const [changedData, setChangedData] = useState({});
 

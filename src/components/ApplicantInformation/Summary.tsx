@@ -101,22 +101,22 @@ const Summary = () => {
             </div>
 
             {/* ปุ่มกดยืนยัน */}
-            {!isConfirmed && (
+            {/* {!isConfirmed && (
                 <div className="flex justify-center mt-6 mb-6 gap-x-4">
                     <BackButton>{summaryTexts[language].BackButton}</BackButton>
                     <ConfirmApplicationButton onClick={() => setConfirmOpen(true)}>
                         {summaryTexts[language].ConfirmApplicationButton}
                     </ConfirmApplicationButton>
                 </div>
-            )}
+            )} */}
             {/* ปุ่มย้อนกลับเมื่อสมัครสำเร็จแล้ว */}
-            {isConfirmed && (
+            {/* {isConfirmed && (
                 <div className="flex justify-center mt-6 mb-6">
                     <BackButton onClick={() => router.push("/programs")}>
                         {language === "TH" ? "ย้อนกลับ" : "Back"}
                     </BackButton>
                 </div>
-            )}
+            )} */}
 
             {/* Popup ยืนยันการสมัคร */}
             <Popup

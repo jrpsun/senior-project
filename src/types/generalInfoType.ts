@@ -16,6 +16,17 @@ export interface GeneralInfoInterface {
   nicknameEN?: string;
   birthDate?: string;
   livingCountry?: string;
+  applicantPicture?: string; // สำหรับเก็บรูปภาพเป็น base64
+  profileImageUrl?: string; // สำหรับแสดงผล (URL หรือ base64)
+  docCopyIdCard?: string;
+  docCopyIdCardName?: string;
+  docCopyIdCardSize?: string;
+  docCopyPassport?: string;
+  docCopyPassportName?: string;
+  docCopyPassportSize?: string;
+  docCopyHouseRegis?: string
+  docCopyHouseRegisName?: string
+  docCopyHouseRegisSize?: string
 
   houseNumber?: string;
   moo?: string;
