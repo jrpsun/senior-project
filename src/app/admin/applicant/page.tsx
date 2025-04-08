@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import React from 'react';
 import Sidebar from "@components/components/SideBar";
@@ -8,41 +8,7 @@ import SearchField from "@components/components/form/searchField";
 import Image from 'next/image';
 import AlertAdmin from "@components/components/common/admin/alertAdmin";
 import PopupCancelReason from "@components/components/common/admin/applicant/PopupCancelReason";
-
-const applicant = [
-    { round: 'DST01', applicantId: '0000001', name: 'อาทิตย์ แสงจันทร์', course: 'ITDS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Arthit.Saengchan@gmail.com', phoneNumber: '088-898-8888' },
-    { round: 'ICT01', applicantId: '0000001', name: 'กนกวรรณ ทองสุข', course: 'ITCS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Kanokwan.Thongsuk@gmail.com', phoneNumber: '089-123-4567' },
-    { round: 'DST01', applicantId: '0000002', name: 'พิชญะ วิสุทธิ์', course: 'ITDS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '02 - รอตรวจสอบเอกสาร', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Pitchaya.Visut@gmail.com', phoneNumber: '081-987-6543' },
-    { round: 'ICT01', applicantId: '0000002', name: 'วราภรณ์ เจริญสุข', course: 'ITCS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Waraporn.Jaroen@gmail.com', phoneNumber: '082-567-8901' },
-    { round: 'ICT01', applicantId: '0000003', name: 'อนันต์ โชติกุล', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '02 - รอตรวจสอบเอกสาร', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Chayapon.Rattanakun@gmail.com', phoneNumber: '089-555-1122' },
-    { round: 'ICT01', applicantId: '0000004', name: 'ปรียาภรณ์ สุทธิวัฒน์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Preeyaporn.Sutti@gmail.com', phoneNumber: '081-333-4444' },
-    { round: 'ICT01', applicantId: '0000005', name: 'ธนากร ศรีสวัสดิ์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Thanakorn.Srisawat@gmail.com', phoneNumber: '088-444-5555' },
-    { round: 'ICT01', applicantId: '0000006', name: 'ณัฐมน มณีวงศ์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Nattamon.Manee@gmail.com', phoneNumber: '089-123-4567' },
-    { round: 'DST01', applicantId: '0000003', name: 'วิศรุต พิทักษ์ธรรม', course: 'ITDS/B', admitStatus: '09 - ยกเลิกการสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Wisarut.Pitak@gmail.com', phoneNumber: '081-789-1234' },
-    { round: 'ICT01', applicantId: '0000007', name: 'อภิรักษ์ ธีรพัฒนเกียรติ', course: 'ITCS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Apirak.Thee@gmail.com', phoneNumber: '089-237-4859' },
-    { round: 'DST01', applicantId: '0000008', name: 'กนกวรรณ วัฒนปัญญากุล', course: 'ITDS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Kanokwan.wat@gmail.com', phoneNumber: '081-649-7283' },
-    { round: 'ICT01', applicantId: '0000009', name: 'พิชญา นาคสุข', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Pichaya.nak@gmail.com', phoneNumber: '092-105-3967' },
-    { round: 'ICT01', applicantId: '0000010', name: 'ชลธิชา นันทวโรภาส', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '02 - รอตรวจสอบเอกสาร', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Chonticha.nut@gmail.com', phoneNumber: '094-954-6031' },
-    { round: 'ICT01', applicantId: '0000012', name: 'พัชรีย์ เกษมสุขเจริญ', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Pacharee.kasem@gmail.com', phoneNumber: '086-576-9302' },
-    { round: 'ICT01', applicantId: '0000013', name: 'จารุวรรณ รัตนศิลป์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Jaruwan.wat@gmail.com', phoneNumber: '081-821-6403' },
-    { round: 'DST01', applicantId: '0000005', name: 'วารินทร์ รัตนประเสริฐกุล', course: 'ITDS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Warin.rat@gmail.com', phoneNumber: '095-733-2184 ' },
-    { round: 'ICT01', applicantId: '0000014', name: 'ศุภชัย จิตตเมธากานต์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Suphachail.jitt@gmail.com', phoneNumber: ' 090-142-7956' },
-    { round: 'DST01', applicantId: '0000006', name: 'มนัสนันท์ อัครพงศ์วณิช', course: 'ITDS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'Manasanan.asawa@gmail.com', phoneNumber: '093-468-5217' },
-    { round: 'ICT01', applicantId: '0000015', name: 'ปรเมศวร์ อินทร์สถิตธรรม', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Porametch.instat@gmail.com', phoneNumber: '089-677-3140' },
-    { round: 'ICT01', applicantId: '0000016', name: 'ธัญญ์วาริน บุญฤทธิ์วรา', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '02 - รอตรวจสอบเอกสาร', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Tanwarin.boon@gmail.com', phoneNumber: '082-158-9042' },
-    { round: 'ICT01', applicantId: '0000017', name: 'วรเมธ รัตนากรไพบูลย์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'Worameth.rat@gmail.com', phoneNumber: '091-345-7821' },
-    { round: 'ICT01', applicantId: '0000018', name: 'ณัฐณิชา พิพัฒน์เวชกิจ', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'natthanicha.pit@gmail.com', phoneNumber: '096-781-2056' },
-    { round: 'ICT01', applicantId: '0000019', name: 'วีรยุทธ พิพัฒน์ผล', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'werayut.piput@gmail.com', phoneNumber: '087-519-6348' },
-    { round: 'DST01', applicantId: '0000007', name: 'อนวัช ธนเศรษฐกุลภักดี', course: 'ITDS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'annawitch.tha@hotmail.com', phoneNumber: '085-437-1920' },
-    { round: 'ICT01', applicantId: '0000020', name: 'ชยุตม์ ภูมิวรางกูร', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'chayut.mun@gmail.com', phoneNumber: '090-304-8751' },
-    { round: 'DST01', applicantId: '0000008', name: 'ขวัญฤดี บุญเรือง', course: 'ITDS/B', admitStatus: '01 - ยังไม่ยื่นใบสมัคร', docStatus: '01 - ยังไม่มีเอกสาร', paymentStatus: '01 - ยังไม่ได้ชำระเงิน', email: 'kwanruedee.boon@gmail.com', phoneNumber: '081-903-7485' },
-    { round: 'ICT01', applicantId: '0000021', name: 'ภูริชญ์ วัฒนศิริธรรมรัตน์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'poorin.watthana@gmail.com', phoneNumber: '092-601-2375' },
-    { round: 'ICT01', applicantId: '0000022', name: 'ศักดิ์สิทธิ์ จันทร์เพ็ญ', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '02 - รอตรวจสอบเอกสาร', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'saksith.jan@gmail.com', phoneNumber: '086-205-3947' },
-    { round: 'ICT01', applicantId: '0000023', name: 'ปรเมศวร์ ชัยมงคล', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'porameth.chai@gmail.com', phoneNumber: '082-470-5198' },
-    { round: 'ICT01', applicantId: '0000024', name: 'นลินี โชติวัฒน์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'nalinee.chot@gmail.com', phoneNumber: '091-395-8402' },
-    { round: 'ICT01', applicantId: '0000025', name: 'ธเนศ วงศ์มณฑลพัฒนา', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'tanet.wongmonthon@gmail.com', phoneNumber: '087-813-2907' },
-    { round: 'ICT01', applicantId: '0000025', name: 'ธนบดี มิ่งมงคลทรัพย์', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', email: 'tanabodee.mingmong@gmail.com', phoneNumber: '062-467-9312' }
-]
+import { EduScreeningInterface } from "@components/types/screening";
 
 const courseOptions = ["ITDS/B", "ITCS/B"];
 const roundOptions = [
@@ -55,6 +21,33 @@ const docStatusOptions = ["01 - ยังไม่มีเอกสาร", "02
 const paymentStatusOptions = ["01 - ยังไม่ได้ชำระเงิน", "02 - รอตรวจสอบการชำระเงิน", "03 - ชำระเงินเรียบร้อย", "04 - ชำระเงินไม่สำเร็จ"];
 
 const Page = () => {
+
+
+    const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+    const [applicants, setApplicants] = useState<EduScreeningInterface[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    async function fetchAllApplicants() {
+        const res = await fetch(`${API_BASE_URL}/education-department/all-applicant-edu`);
+        if (!res.ok) {
+            throw new Error("Failed to fetch applicants");
+        }
+        return res.json();
+    }
+
+    useEffect(() => {
+        fetchAllApplicants()
+            .then((data) => {
+                console.log("Fetched data:", data);
+                setApplicants(data.applicants || []);
+            })
+            .catch((err) => {
+                console.error(err);
+            })
+            .finally(() => setLoading(false));
+    }, []);
+
+
     const [isCollapsed, setIsCollapsed] = useState(false);
     interface FilterState {
         course?: string;
@@ -63,7 +56,8 @@ const Page = () => {
         docStatus?: string;
         paymentStatus?: string;
         applicantId?: string;
-        name?: string;
+        fname?: string;
+        lname?: string;
     }
 
     const [filters, setFilters] = useState<FilterState>({});
@@ -79,14 +73,15 @@ const Page = () => {
         setFilterValues({});
         setFilters({});
     };
-    const filteredApplicants = applicant.filter(app =>
-        (!filters.course || app.course === filters.course) &&
-        (!filters.round || app.round === filters.round) &&
-        (!filters.admitStatus || app.admitStatus === filters.admitStatus) &&
+    const filteredApplicants = applicants.filter(app =>
+        (!filters.course || app.program === filters.course) &&
+        (!filters.round || app.roundName === filters.round) &&
+        (!filters.admitStatus || app.admissionStatus === filters.admitStatus) &&
         (!filters.docStatus || app.docStatus === filters.docStatus) &&
         (!filters.paymentStatus || app.paymentStatus === filters.paymentStatus) &&
-        (!filters.applicantId || app.applicantId.includes(filters.applicantId)) &&
-        (!filters.name || app.name.includes(filters.name))
+        (!filters.applicantId || app.applicantId?.includes(filters.applicantId)) &&
+        (!filters.fname || app.firstnameEN?.includes(filters.fname)) &&
+        (!filters.lname || app.lastnameEN?.includes(filters.lname))
     );
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -121,7 +116,7 @@ const Page = () => {
     const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
 
     const eligibleApplicants = filteredApplicants.filter(
-        (app) => app.admitStatus === "02 - ยื่นใบสมัครแล้ว"
+        (app) => app.admissionStatus === "02 - ยื่นใบสมัครแล้ว"
     );
 
     const hasSelectableApplicants = eligibleApplicants.length > 0;
@@ -316,13 +311,27 @@ const Page = () => {
                                     </div>
                                     <div className="w-[280px]">
                                         <SearchField
-                                            label="ชื่อ - นามสกุล ผู้สมัคร"
-                                            value={filterValues.name || ""}
+                                            label="ชื่อ ผู้สมัคร"
+                                            value={filterValues.fname || ""}
                                             onChange={(value) => {
                                                 if (typeof value === "object" && value !== null && "value" in value) {
-                                                    setFilterValues({ ...filterValues, name: value.value });
+                                                    setFilterValues({ ...filterValues, fname: value.value });
                                                 } else {
-                                                    setFilterValues({ ...filterValues, name: value ?? undefined });
+                                                    setFilterValues({ ...filterValues, fname: value ?? undefined });
+                                                }
+                                            }}
+                                            placeholder="กรุณากรอกข้อมูล"
+                                        />
+                                    </div>
+                                    <div className="w-[280px]">
+                                        <SearchField
+                                            label="นามสกุล ผู้สมัคร"
+                                            value={filterValues.lname || ""}
+                                            onChange={(value) => {
+                                                if (typeof value === "object" && value !== null && "value" in value) {
+                                                    setFilterValues({ ...filterValues, lname: value.value });
+                                                } else {
+                                                    setFilterValues({ ...filterValues, lname: value ?? undefined });
                                                 }
                                             }}
                                             placeholder="กรุณากรอกข้อมูล"
@@ -440,14 +449,14 @@ const Page = () => {
                                     </thead>
                                     <tbody>
                                         {paginatedApplicants.map((app, index) => {
-                                            const isSelectable = app.admitStatus === "02 - ยื่นใบสมัครแล้ว";
+                                            const isSelectable = app.admissionStatus === "02 - ยื่นใบสมัครแล้ว";
 
                                             return (
                                                 <tr
                                                     key={index}
                                                     className={`text-[#565656] h-[50px] items-center 
-          ${app.admitStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
-          ${app.admitStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
+          ${app.admissionStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
+          ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
         `}
                                                 >
                                                     <td className="text-center">
@@ -465,28 +474,28 @@ const Page = () => {
                                                     </td>
 
                                                     <td className="text-center whitespace-nowrap">{startIndex + index + 1}</td>
-                                                    <td className="text-center whitespace-nowrap">{app.round}</td>
+                                                    <td className="text-center whitespace-nowrap">{app.roundName}</td>
                                                     <td className="text-center whitespace-nowrap">{app.applicantId}</td>
-                                                    <td className="whitespace-nowrap">{app.name}</td>
-                                                    <td className="text-center whitespace-nowrap">{app.course}</td>
+                                                    <td className="whitespace-nowrap">{app.firstnameEN} {app.lastnameEN}</td>
+                                                    <td className="text-center whitespace-nowrap">{app.program}</td>
 
                                                     <td>
                                                         <div className={`mr-4 whitespace-nowrap
-            ${app.admitStatus === "02 - ยื่นใบสมัครแล้ว" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-            ${app.admitStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : "py-2"}
-            ${app.admitStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-            ${app.admitStatus === "05 - ไม่ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600 " : "py-2"}
-            ${app.admitStatus === "06 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520] " : "py-2"}
-            ${app.admitStatus === "07 - ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-            ${app.admitStatus === "08 - ไม่ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600 " : "py-2"}
-            ${app.admitStatus === "09 - ยกเลิกการสมัคร" ? "h-[30px] pt-[2px] rounded-xl text-red-600 " : "py-2"}
+            ${app.admissionStatus === "02 - ยื่นใบสมัครแล้ว" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+            ${app.admissionStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : "py-2"}
+            ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+            ${app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600 " : "py-2"}
+            ${app.admissionStatus === "06 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520] " : "py-2"}
+            ${app.admissionStatus === "07 - ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+            ${app.admissionStatus === "08 - ไม่ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600 " : "py-2"}
+            ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "h-[30px] pt-[2px] rounded-xl text-red-600 " : "py-2"}
           `}>
-                                                            {app.admitStatus}
+                                                            {app.admissionStatus}
                                                         </div>
                                                     </td>
 
                                                     <td>
-                                                        {app.admitStatus === "09 - ยกเลิกการสมัคร" ? (
+                                                        {app.admissionStatus === "09 - ยกเลิกการสมัคร" ? (
                                                             <div>ไม่ต้องดำเนินการต่อ</div>
                                                         ) : (
                                                             <div className={`mr-4 whitespace-nowrap
@@ -500,7 +509,7 @@ const Page = () => {
                                                     </td>
 
                                                     <td>
-                                                        {app.admitStatus === "09 - ยกเลิกการสมัคร" ? (
+                                                        {app.admissionStatus === "09 - ยกเลิกการสมัคร" ? (
                                                             <div>ยกเลิกการชำระเงิน</div>
                                                         ) : (
                                                             <div className={`mr-4 whitespace-nowrap
@@ -513,11 +522,11 @@ const Page = () => {
                                                         )}
                                                     </td>
 
-                                                    <td className="py-2 whitespace-nowrap">{app.email}</td>
-                                                    <td className="py-2 whitespace-nowrap">{app.phoneNumber}</td>
+                                                    <td className="py-2 whitespace-nowrap">{app.applicantEmail}</td>
+                                                    <td className="py-2 whitespace-nowrap">{app.applicantPhone}</td>
 
                                                     <td className="py-2 text-center whitespace-nowrap">
-                                                        {app.admitStatus === "02 - ยื่นใบสมัครแล้ว" && (
+                                                        {app.admissionStatus === "02 - ยื่นใบสมัครแล้ว" && (
                                                             <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] ">
                                                                 <div className="flex flex-row gap-1">
                                                                     <div className="pt-1">
@@ -530,16 +539,16 @@ const Page = () => {
                                                             </button>
                                                         )}
 
-                                                        {app.admitStatus === "09 - ยกเลิกการสมัคร" && (
-                                                            <button 
-                                                            onClick={() => {
-                                                                setCancelReasonData({
-                                                                  reason: "สมัครผิดหลักสูตร",
-                                                                  details: "ต้องการสมัครหลักสูตร DST"
-                                                                });
-                                                                setCancelPopupVisible(true);
-                                                              }}
-                                                            className="bg-red px-1 py-1 my-2 rounded-lg border border-red-500 text-red-500 text-[14px] font-bold w-[130px]">
+                                                        {app.admissionStatus === "09 - ยกเลิกการสมัคร" && (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setCancelReasonData({
+                                                                        reason: "สมัครผิดหลักสูตร",
+                                                                        details: "ต้องการสมัครหลักสูตร DST"
+                                                                    });
+                                                                    setCancelPopupVisible(true);
+                                                                }}
+                                                                className="bg-red px-1 py-1 my-2 rounded-lg border border-red-500 text-red-500 text-[14px] font-bold w-[130px]">
                                                                 <div className="flex flex-row gap-1">
                                                                     <div className="pt-1">
                                                                         <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -612,13 +621,13 @@ const Page = () => {
                                 onClose={() => setShowAlert(false)}
                             />
                         )}
-                {cancelPopupVisible && cancelReasonData && (
-  <PopupCancelReason
-    reason={cancelReasonData.reason}
-    details={cancelReasonData.details}
-    onClose={() => setCancelPopupVisible(false)}
-  />
-)}
+                        {cancelPopupVisible && cancelReasonData && (
+                            <PopupCancelReason
+                                reason={cancelReasonData.reason}
+                                details={cancelReasonData.details}
+                                onClose={() => setCancelPopupVisible(false)}
+                            />
+                        )}
 
                     </main>
                 </div>

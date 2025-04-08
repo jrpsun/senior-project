@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import React from 'react';
 import Sidebar from "@components/components/SideBar";
@@ -7,6 +7,7 @@ import AdminNavbar from "@components/components/adminNavbar";
 import SearchField from "@components/components/form/searchField";
 import { mockApplicants } from "@components/data/admin/Interview/candidates/mockApplicants";
 import Image from 'next/image';
+import { InterviewComScreeningInterface } from "@components/types/screening";
 
 const courseOptions = ["ITDS/B", "ITCS/B"];
 const roundOptions = [
@@ -15,6 +16,32 @@ const roundOptions = [
 ];
 
 const Page = () => {
+
+    const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+    const committee_id = "100001"
+    const [applicants, setApplicants] = useState<InterviewComScreeningInterface[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    async function fetchAllApplicants() {
+        const res = await fetch(`${API_BASE_URL}/interview-committee/all-applicant-interviewC/${committee_id}`);
+        if (!res.ok) {
+            throw new Error("Failed to fetch applicants");
+        }
+        return res.json();
+    }
+
+    useEffect(() => {
+        fetchAllApplicants()
+            .then((data) => {
+                console.log("Fetched data:", data);
+                setApplicants(data.applicants || []);
+            })
+            .catch((err) => {
+                console.error(err);
+            })
+            .finally(() => setLoading(false));
+    }, []);
+
     const [isCollapsed, setIsCollapsed] = useState(false);
     interface FilterState {
         course?: string;
@@ -25,7 +52,8 @@ const Page = () => {
         interviewRoom?: string;
         paymentStatus?: string;
         applicantId?: string;
-        name?: string;
+        fname?: string;
+        lname?: string;
         committee?: string;
     }
 
@@ -63,7 +91,7 @@ const Page = () => {
 
     const currentCommitteeName = "อ. วรพงษ์"; // หรือดึงมาจาก auth ในอนาคต
 
-    const getSingleCommitteeInterviewStatus = (
+    /*const getSingleCommitteeInterviewStatus = (
         results: { committee: string; result: string }[]
     ): string => {
         const entry = results.find(r => r.committee === currentCommitteeName);
@@ -81,21 +109,22 @@ const Page = () => {
             default:
                 return "01 - รอสัมภาษณ์";
         }
-    };
+    };*/
 
-    const filteredApplicants = mockApplicants.filter(app =>
-        (!filters.course || app.course === filters.course) &&
-        (!filters.round || app.round === filters.round) &&
-        (!filters.admitStatus || app.admitStatus === filters.admitStatus) &&
-        (!filters.interviewStatus || getSingleCommitteeInterviewStatus(app.interviewResult) === filters.interviewStatus) &&
+    const filteredApplicants = applicants.filter(app =>
+        (!filters.course || app.program === filters.course) &&
+        (!filters.round || app.roundName === filters.round) &&
+        (!filters.admitStatus || app.admissionStatus === filters.admitStatus) &&
+        (!filters.interviewStatus || app.interviewStatus === filters.interviewStatus) &&
         (!filters.docStatus || app.docStatus === filters.docStatus) &&
         (!filters.interviewRoom || app.interviewRoom === filters.interviewRoom) &&
-        (!filters.committee || (
+        /*(!filters.committee || (
             Array.isArray(app.interviewResult) &&
             app.interviewResult.some(r => r.committee?.includes(filters.committee!))
-        )) &&
-        (!filters.applicantId || app.applicantId.includes(filters.applicantId)) &&
-        (!filters.name || app.name.includes(filters.name))
+        )) &&*/
+        (!filters.applicantId || app.applicantId?.includes(filters.applicantId)) &&
+        (!filters.fname || app.firstnameEN?.includes(filters.fname)) &&
+        (!filters.lname || app.lastnameEN?.includes(filters.lname))
     );
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -263,13 +292,27 @@ const Page = () => {
                                     </div>
                                     <div className="w-[280px]">
                                         <SearchField
-                                            label="ชื่อ - นามสกุล ผู้สมัคร"
-                                            value={filterValues.name || ""}
+                                            label="ชื่อ ผู้สมัคร"
+                                            value={filterValues.fname || ""}
                                             onChange={(value) => {
                                                 if (typeof value === "object" && value !== null && "value" in value) {
-                                                    setFilterValues({ ...filterValues, name: value.value });
+                                                    setFilterValues({ ...filterValues, fname: value.value });
                                                 } else {
-                                                    setFilterValues({ ...filterValues, name: value ?? undefined });
+                                                    setFilterValues({ ...filterValues, fname: value ?? undefined });
+                                                }
+                                            }}
+                                            placeholder="กรุณากรอกข้อมูล"
+                                        />
+                                    </div>
+                                    <div className="w-[280px]">
+                                        <SearchField
+                                            label="นามสกุล ผู้สมัคร"
+                                            value={filterValues.lname || ""}
+                                            onChange={(value) => {
+                                                if (typeof value === "object" && value !== null && "value" in value) {
+                                                    setFilterValues({ ...filterValues, lname: value.value });
+                                                } else {
+                                                    setFilterValues({ ...filterValues, lname: value ?? undefined });
                                                 }
                                             }}
                                             placeholder="กรุณากรอกข้อมูล"
@@ -310,20 +353,20 @@ const Page = () => {
                                         {paginatedApplicants.map((app, index) => (
                                             <tr key={index} className="text-[#565656] h-[50px] items-center">
                                                 <td className="text-center whitespace-nowrap w-[60px]">{startIndex + index + 1}</td>
-                                                <td className="text-center whitespace-nowrap w-[100px]">{app.round}</td>
+                                                <td className="text-center whitespace-nowrap w-[100px]">{app.roundName}</td>
                                                 <td className="text-center whitespace-nowrap w-[120px]">{app.applicantId}</td>
-                                                <td className="whitespace-nowrap w-[200px]">{app.name}</td>
-                                                <td className="text-center whitespace-nowrap w-[100px]">{app.course}</td>
+                                                <td className="whitespace-nowrap w-[200px]">{app.firstnameEN} {app.lastnameEN}</td>
+                                                <td className="text-center whitespace-nowrap w-[100px]">{app.program}</td>
                                                 <td className="w-[160px] pr-5"> {/* เพิ่ม padding ด้านขวา */}
                                                     <div className={`h-[30px] pt-[2px] rounded-xl whitespace-nowrap
-      ${getSingleCommitteeInterviewStatus(app.interviewResult) === "01 - รอสัมภาษณ์" ? "bg-[#FFF4E2] text-[#DAA520]" : ""}
-      ${getSingleCommitteeInterviewStatus(app.interviewResult) === "02 - ไม่มาสัมภาษณ์" ? "text-[#565656]" : ""}
-      ${getSingleCommitteeInterviewStatus(app.interviewResult) === "03 - รอพิจารณาเพิ่มเติม" ? "bg-[#FFF4E2] text-[#DAA520]" : ""}
-      ${getSingleCommitteeInterviewStatus(app.interviewResult) === "04 - ผ่านการสัมภาษณ์" ? "bg-[#E2F5E2] text-[#13522B]" : ""}
-      ${getSingleCommitteeInterviewStatus(app.interviewResult) === "05 - ไม่ผ่านการสัมภาษณ์" ? "bg-[#FEE2E2] text-red-600" : ""}
-      ${getSingleCommitteeInterviewStatus(app.interviewResult) === "06 - รอผลการประเมินเพิ่มเติม" ? "bg-[#E3F2FD] text-[#0D47A1]" : ""}
+      ${(app.interviewStatus) === "01 - รอสัมภาษณ์" ? "bg-[#FFF4E2] text-[#DAA520]" : ""}
+      ${(app.interviewStatus) === "02 - ไม่มาสัมภาษณ์" ? "text-[#565656]" : ""}
+      ${(app.interviewStatus) === "03 - รอพิจารณาเพิ่มเติม" ? "bg-[#FFF4E2] text-[#DAA520]" : ""}
+      ${(app.interviewStatus) === "04 - ผ่านการสัมภาษณ์" ? "bg-[#E2F5E2] text-[#13522B]" : ""}
+      ${(app.interviewStatus) === "05 - ไม่ผ่านการสัมภาษณ์" ? "bg-[#FEE2E2] text-red-600" : ""}
+      ${(app.interviewStatus) === "06 - รอผลการประเมินเพิ่มเติม" ? "bg-[#E3F2FD] text-[#0D47A1]" : ""}
     `}>
-                                                        {getSingleCommitteeInterviewStatus(app.interviewResult)}
+                                                        {(app.interviewStatus)}
                                                     </div>
                                                 </td>
 
@@ -337,13 +380,17 @@ const Page = () => {
 
                                                 <td className="text-center whitespace-nowrap w-[130px]">{app.interviewRoom}</td>
                                                 <td className="whitespace-nowrap w-[180px]">
-                                                    {Array.isArray(app.committee) ? app.committee.join(", ") : app.committee}
+                                                    {/*Array.isArray(app.committee) ? app.committee.join(", ") : app.committee*/}
+                                                    {app.prefix1} {app.firstName1}, {app.prefix2} {app.firstName2}
                                                 </td>
                                                 <td className="text-center whitespace-nowrap w-[180px]">
-                                                    {app.interviewDateTime ? (
+                                                    {app.interviewDate ? (
                                                         <div className="flex flex-col items-center leading-tight">
+                                                            <div>{app.interviewDate}</div>
+                                                            <div>{app.interviewTime}</div>
+                                                            {/*
                                                             <div>{app.interviewDateTime.split(" ")[0]} {app.interviewDateTime.split(" ")[1]} {app.interviewDateTime.split(" ")[2]}</div>
-                                                            <div className="text-[#6B7280]">{app.interviewDateTime.split(" ").slice(3).join(" ")}</div>
+                                                            <div className="text-[#6B7280]">{app.interviewDateTime.split(" ").slice(3).join(" ")}</div>*/}
                                                         </div>
                                                     ) : (
                                                         <span className="text-gray-400">-</span>
