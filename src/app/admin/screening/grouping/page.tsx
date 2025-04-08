@@ -2,7 +2,7 @@
 //สถานะเอกสาร มีแค่ เอกสารครบถ้วนเท่านั้น
 //สถานะชำระเงิน มีแค่ ชำระเงินเรียบร้อยเท่านั้น
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import React from 'react';
 import Sidebar from "@components/components/SideBar";
 import AdminNavbar from "@components/components/adminNavbar";
@@ -10,6 +10,7 @@ import SearchField from "@components/components/form/searchField";
 import Image from 'next/image';
 import PopupEditGrouping from "@components/components/common/admin/screening/popupEditGrouping";
 import AlertAdmin from "@components/components/common/admin/alertAdmin";
+import { EduScreeningGroupingAllCourseComInterface, EduScreeningInterface } from "@components/types/screening";
 
 type Applicant = {
     round: string;
@@ -23,7 +24,7 @@ type Applicant = {
     committee: string | undefined;
 };
 
-const applicant: Applicant[] = [
+const applicant22: Applicant[] = [
     { round: 'DST01', applicantId: '0000001', name: 'อาทิตย์ แสงจันทร์', course: 'ITDS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', grouping: 'ungrouped', committee: undefined as string | undefined },
     { round: 'ICT01', applicantId: '0000001', name: 'กนกวรรณ ทองสุข', course: 'ITCS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', grouping: 'ungrouped', committee: undefined as string | undefined },
     { round: 'DST01', applicantId: '0000002', name: 'พิชญะ วิสุทธิ์', course: 'ITDS/B', admitStatus: '02 - ยื่นใบสมัครแล้ว', docStatus: '03 - เอกสารครบถ้วน', paymentStatus: '03 - ชำระเงินเรียบร้อย', grouping: 'ungrouped', committee: undefined as string | undefined },
@@ -69,6 +70,40 @@ const docStatusOptions = ["03 - เอกสารครบถ้วน"];
 const paymentStatusOptions = ["03 - ชำระเงินเรียบร้อย"];
 
 const Page = () => {
+
+    const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+    const [committees, setCommittees] = useState<EduScreeningGroupingAllCourseComInterface[]>([]);
+    const [applicants, setApplicants] = useState<EduScreeningInterface[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    async function fetchData() {
+        try {
+            const [res_com, res_app] = await Promise.all([
+                fetch(`${API_BASE_URL}/course-committee/get-all-courseC`),
+                fetch(`${API_BASE_URL}/education-department/all-applicant-edu`)
+            ]);
+
+            if (!res_com.ok || !res_app.ok) {
+                throw new Error("Failed to fetch one or more resources");
+            }
+
+            const data_com = await res_com.json();
+            const data_app = await res_app.json();
+
+            setCommittees(data_com || []);
+            setApplicants(data_app.applicants || []);
+
+        } catch (err) {
+            console.error("Error fetching data:", err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
     const [isCollapsed, setIsCollapsed] = useState(false);
     interface FilterState {
         course?: string;
@@ -90,11 +125,22 @@ const Page = () => {
 
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const committeeOptions = [
-        { label: "อ. พิสุทธิ์ธร ", value: "อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์" },
-        { label: "อ. อารดา ", value: "อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล" },
-        { label: "อ. พรรณวดี", value: "อาจารย์ ดร. พรรณวดี ชัยวัฒนมงคล" },
-    ];
+    const comOp = committees.map((com) => ({
+        label: `อ. ${com.firstName}`,
+        value: `${com.courseComId}`
+    }));
+
+    const allApp = applicants.map((app) => ({
+        round: app.roundName,
+        applicantId: app.applicantId,
+        name: `${app.firstnameEN} ${app.lastnameEN}`,
+        course: app.program,
+        admitStatus: app.admissionStatus,
+        docStatus: app.docStatus,
+        paymentStatus: app.paymentStatus,
+        grouping: "ungrouped",
+        committee: undefined as string | undefined
+    }));
 
     const handleSearch = () => {
         setFilters(filterValues);
@@ -114,10 +160,10 @@ const Page = () => {
     const [showCommitteeDropdown, setShowCommitteeDropdown] = useState(false);
     const [selectedCommittee, setSelectedCommittee] = useState<string[]>([]);
     const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
-    const [applicantData, setApplicantData] = useState(applicant);
+    const [applicantData, setApplicantData] = useState(allApp);
     const [isGrouped, setIsGrouped] = useState(false);
     const [showEditPopup, setShowEditPopup] = useState(false);
-    const [editingApplicant, setEditingApplicant] = useState<typeof applicant[0] | null>(null);
+    const [editingApplicant, setEditingApplicant] = useState<typeof allApp[0] | null>(null);
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
 
@@ -129,7 +175,7 @@ const Page = () => {
             const totalCommittees = selectedCommittee.length;
 
             const fullCommitteeNames = selectedCommittee.map(label => {
-                const found = committeeOptions.find(opt => opt.label === label);
+                const found = comOp.find(opt => opt.label === label);
                 return found ? found.value : label;
             });
 
@@ -151,6 +197,7 @@ const Page = () => {
             setIsGrouped(true);
         }
     };
+    
     const canSaveGrouping = isGrouped;
     const handleSaveGrouping = () => {
         const updatedData = applicantData.map((app) => {
@@ -171,8 +218,8 @@ const Page = () => {
         setShowSuccessAlert(true);
     };
 
-    const handleEditGrouping = (applicant: Applicant) => {
-        setEditingApplicant(applicant);
+    const handleEditGrouping = (allApp: Applicant) => {
+        setEditingApplicant(allApp);
         setShowEditPopup(true);
     };
 
@@ -438,7 +485,7 @@ const Page = () => {
                                                     setFilterValues({ ...filterValues, committee: "" });
                                                 }
                                             }}
-                                            options={committeeOptions}
+                                            options={comOp}
                                             placeholder="เลือกกรรมการ"
                                         />
                                     </div>
@@ -514,7 +561,7 @@ const Page = () => {
 
                                                         {showCommitteeDropdown && (
                                                             <div className="absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-[200px] overflow-y-auto shadow-md">
-                                                                {committeeOptions
+                                                                {comOp
                                                                     .filter((opt) => !selectedCommittee.includes(opt.label))
                                                                     .map((opt) => (
                                                                         <div

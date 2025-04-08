@@ -3,6 +3,10 @@ import { useState } from "react";
 
 import React from 'react';
 import Sidebar from "@components/components/SideBar";
+import AdminNavbar from "@components/components/adminNavbar";
+import Image from 'next/image';
+
+
 
 const applicant = [
   { round: 'DST01', applicantId: '0000001', name: 'กันต์ชนก แก้วโมลา', course: 'DST', admitStatus: '01-ยังไม่ยื่นใบสมัคร', docStatus: '01-ยังไม่มีเอกสาร', paymentStatus: '01-ยังไม่ได้ชำระเงิน', email: 'kanchanok.kae@study.mu.edu', phoneNumber: '0675934787' },
@@ -120,102 +124,93 @@ const Page = () => {
 
   return (
     <div>
+      <AdminNavbar
+        isCollapsed={isCollapsed}
+      />
       <Sidebar
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
         userRole="admin"
       />
-      <div className={`${isCollapsed ? "ml-[100px] p-4" : "ml-[325px] p-4"
+      <div className={`mt-[100px] ${isCollapsed ? "ml-[100px] p-4" : "ml-[325px] p-4"
         }`}>
         {/* Search and Filter Box */}
         <div className="bg-white p-4 shadow-md rounded-md">
-          <h2 className="text-lg font-semibold mb-8">ค้นหาผู้สมัคร</h2>
+          <h2 className="text-lg mb-8 font-bold text-[#565656]">ค้นหาผู้สมัคร</h2>
           <div className="border border-bottom mb-5"></div>
           <div className="flex justify-start gap-4">
             {/* Course */}
             <div>
-              <label className="block text-sm"><strong>หลักสูตร</strong></label>
-              <select className="w-[150px] border border-gray-300 p-2 rounded-md" value={filterValues.course || ""} onChange={(e) => setFilterValues({ ...filterValues, course: e.target.value })}>
+              <label className="block text-sm font-bold text-[#565656] "><strong>หลักสูตร</strong></label>
+              <select className="w-[155px] border border-gray-300 text-gray-300 p-2 rounded-md" value={filterValues.course || ""} onChange={(e) => setFilterValues({ ...filterValues, course: e.target.value })}>
                 <option value="" className="text-gray-700">กรุณากรอกข้อมูล</option>
                 {courseOptions.map(course => <option key={course} value={course}>{course}</option>)}
               </select>
             </div>
             {/* Round */}
             <div>
-              <label className="block text-sm"><strong>รอบรับสมัคร</strong></label>
-              <select className="w-[255px] border border-gray-300 p-2 rounded-md" value={filterValues.round || ""} onChange={(e) => setFilterValues({ ...filterValues, round: e.target.value })}>
+              <label className="block text-sm font-bold text-[#565656]"><strong>รอบรับสมัคร</strong></label>
+              <select className="w-[255px] border border-gray-300 text-gray-300 p-2 rounded-md" value={filterValues.round || ""} onChange={(e) => setFilterValues({ ...filterValues, round: e.target.value })}>
                 <option value="">กรุณากรอกข้อมูล</option>
                 {roundOptions.map(round => <option key={round} value={round}>{round}</option>)}
               </select>
             </div>
             {/* Admit Status */}
             <div>
-              <label className="block text-sm"><strong>สถานะการสมัคร</strong></label>
-              <select className="w-full border border-gray-300 p-2 rounded-md" value={filterValues.admitStatus || ""} onChange={(e) => setFilterValues({ ...filterValues, admitStatus: e.target.value })}>
+              <label className="block text-sm font-bold text-[#565656]"><strong>สถานะการสมัคร</strong></label>
+              <select className="w-full border border-gray-300 text-gray-300 p-2 rounded-md" value={filterValues.admitStatus || ""} onChange={(e) => setFilterValues({ ...filterValues, admitStatus: e.target.value })}>
                 <option value="">กรุณากรอกข้อมูล</option>
                 {admitStatusOptions.map(status => <option key={status} value={status}>{status}</option>)}
               </select>
             </div>
             {/* Document Status */}
             <div>
-              <label className="block text-sm"><strong>สถานะเอกสาร</strong></label>
-              <select className="w-full border border-gray-300 p-2 rounded-md" value={filterValues.docStatus || ""} onChange={(e) => setFilterValues({ ...filterValues, docStatus: e.target.value })}>
+              <label className="block text-sm font-bold text-[#565656]"><strong>สถานะเอกสาร</strong></label>
+              <select 
+              
+              className="`w-full border border-gray-300 text-gray-300 p-2 rounded-md`" value={filterValues.docStatus || ""} onChange={(e) => setFilterValues({ ...filterValues, docStatus: e.target.value })}>
                 <option value="">กรุณากรอกข้อมูล</option>
                 {docStatusOptions.map(status => <option key={status} value={status}>{status}</option>)}
               </select>
             </div>
             {/* Payment Status */}
             <div>
-              <label className="block text-sm"><strong>สถานะการชำระเงิน</strong></label>
-              <select className="w-full border border-gray-300 p-2 rounded-md" value={filterValues.paymentStatus || ""} onChange={(e) => setFilterValues({ ...filterValues, paymentStatus: e.target.value })}>
+              <label className="block text-sm font-bold text-[#565656]"><strong>สถานะการชำระเงิน</strong></label>
+              <select className="w-full border border-gray-300 text-gray-300 p-2 rounded-md" value={filterValues.paymentStatus || ""} onChange={(e) => setFilterValues({ ...filterValues, paymentStatus: e.target.value })}>
                 <option value="">กรุณากรอกข้อมูล</option>
                 {paymentStatusOptions.map(status => <option key={status} value={status}>{status}</option>)}
               </select>
             </div>
             {/* Search and Reset Buttons */}
-            <div className="mt-4 flex justify-end space-x-1">
+            <div className="mt-5 flex justify-end space-x-1">
               <button
-                className="border border-black px-3 py-2 my-1 rounded-md"
                 onClick={() => setIsExpanded(!isExpanded)}
+                className="w-[40px] h-[40px] flex items-center justify-center border border-[#565656] rounded-md"
               >
-                {isExpanded ? "▲" : "▼"}
+                <Image
+                  src={
+                    isExpanded
+                      ? "/images/admin/searchBar/show_less_icon.svg"
+                      : "/images/admin/searchBar/show_more_icon.svg"
+                  }
+                  alt={isExpanded ? "แสดงน้อยลง" : "แสดงเพิ่มเติม"}
+                  width={37}
+                  height={37}
+                />
               </button>
               <button
-                className="bg-white px-1 my-1 rounded-md border border-black"
+                className="px-1.5 h-[40px] border border-gray-400 rounded-md text-[#565656] bg-white flex items-center gap-1"
                 onClick={handleReset}
               >
-                <div className="flex flex-row gap-1">
-                  <div className="pt-1">
-                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <g clipPath="url(#clip0_2138_869)">
-                        <path d="M14.375 2.50047V6.25047M14.375 6.25047H10.625M14.375 6.25047L11.475 3.52547C10.8033 2.85342 9.97227 2.36248 9.05949 2.09846C8.14672 1.83444 7.18194 1.80594 6.25518 2.01564C5.32842 2.22533 4.46988 2.66637 3.75967 3.29761C3.04946 3.92885 2.51073 4.72972 2.19375 5.62547M0.625 12.5005V8.75047M0.625 8.75047H4.375M0.625 8.75047L3.525 11.4755C4.19672 12.1475 5.02773 12.6385 5.94051 12.9025C6.85328 13.1665 7.81806 13.195 8.74482 12.9853C9.67158 12.7756 10.5301 12.3346 11.2403 11.7033C11.9505 11.0721 12.4893 10.2712 12.8062 9.37547" stroke="#565656" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_2138_869">
-                          <rect width="15" height="15" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
-                  </div>
-                  <div>ล้างค่า</div>
-                </div>
+                <Image src="/images/admin/searchBar/clear_icon.svg" alt="reset" width={16} height={16} className="w-4 h-4" />
+                ล้างค่า
               </button>
-              <button className="bg-[#008A90] text-white px-1 my-1 rounded-md" onClick={handleSearch}>
-                <div className="flex flex-row gap-1">
-                  <div className="pt-1">
-                    <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <g clipPath="url(#clip0_2138_873)">
-                        <path d="M13 7C13 8.43437 12.5344 9.75938 11.75 10.8344L15.7063 14.7937C16.0969 15.1844 16.0969 15.8188 15.7063 16.2094C15.3156 16.6 14.6812 16.6 14.2906 16.2094L10.3344 12.25C9.25938 13.0375 7.93437 13.5 6.5 13.5C2.90937 13.5 0 10.5906 0 7C0 3.40937 2.90937 0.5 6.5 0.5C10.0906 0.5 13 3.40937 13 7ZM6.5 11.5C7.09095 11.5 7.67611 11.3836 8.22208 11.1575C8.76804 10.9313 9.26412 10.5998 9.68198 10.182C10.0998 9.76412 10.4313 9.26804 10.6575 8.72208C10.8836 8.17611 11 7.59095 11 7C11 6.40905 10.8836 5.82389 10.6575 5.27792C10.4313 4.73196 10.0998 4.23588 9.68198 3.81802C9.26412 3.40016 8.76804 3.06869 8.22208 2.84254C7.67611 2.6164 7.09095 2.5 6.5 2.5C5.90905 2.5 5.32389 2.6164 4.77792 2.84254C4.23196 3.06869 3.73588 3.40016 3.31802 3.81802C2.90016 4.23588 2.56869 4.73196 2.34254 5.27792C2.1164 5.82389 2 6.40905 2 7C2 7.59095 2.1164 8.17611 2.34254 8.72208C2.56869 9.26804 2.90016 9.76412 3.31802 10.182C3.73588 10.5998 4.23196 10.9313 4.77792 11.1575C5.32389 11.3836 5.90905 11.5 6.5 11.5Z" fill="white" />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_2138_873">
-                          <path d="M0 0.5H16V16.5H0V0.5Z" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
-                  </div>
-                  <div>ค้นหารายการ</div>
-                </div>
+              <button
+                className="px-2 h-[40px] rounded-md bg-[#008A90] hover:bg-[#009198] text-white flex items-center gap-1"
+                onClick={handleSearch}
+              >
+                <Image src="/images/admin/searchBar/search_icon.svg" alt="search" width={16} height={16} className="w-4 h-4" />
+                ค้นหารายการ
               </button>
             </div>
           </div>
@@ -225,7 +220,7 @@ const Page = () => {
               <div className="flex justify-start gap-4 mt-4">
                 {/* Applicant ID */}
                 <div>
-                  <label className="block text-sm"><strong>เลขที่สมัคร</strong></label>
+                  <label className="block text-sm font-bold text-[#565656]"><strong>เลขที่สมัคร</strong></label>
                   <input
                     type="text"
                     className="w-[150px] border border-gray-300 p-2 rounded-md"
@@ -236,7 +231,7 @@ const Page = () => {
                 </div>
                 {/* Name */}
                 <div>
-                  <label className="block text-sm"><strong>ชื่อผู้สมัคร</strong></label>
+                  <label className="block text-sm font-bold text-[#565656]"><strong>ชื่อผู้สมัคร</strong></label>
                   <input
                     type="text"
                     className="w-[255px] border border-gray-300 p-2 rounded-md"
