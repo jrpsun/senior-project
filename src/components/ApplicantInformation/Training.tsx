@@ -13,53 +13,118 @@ import { useLanguage } from "../../hooks/LanguageContext";
 import { trainingTexts, trainingYearOptions, trainingModeOptions } from "../../translation/TrainingInfo";
 import Popup from '../../components/common/popup'; // เพิ่ม import popup
 
-const Training = () => {
+const Training = ({ setTrain }: any) => {
   const { language } = useLanguage();
   const currentTexts = trainingTexts[language] || trainingTexts["ENG"];
   const [isPopupOpen, setPopupOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [countries, setCountries] = useState([]); //
+  const [formData, setFormData] = useState([{
+    trainingId: "",
+    applicantId: "",
+    nameOfCourse: "",
+    institution: "",
+    trainingYear: "",
+    trainingMode: "",
+    trainingCountry: "",
+    trainingCer: "",
+    trainingCerName: "",
+    trainingCerSize: "",
+  }])
 
-  const [containers, setContainers] = useState([{
-    id: Date.now(), formData: {
-      programName: "",
-      institution: "",
-      trainingYear: "",
-      trainingMode: "",
-      country: ""
+  useEffect(() => {
+    fetchTrining();
+  }, [])
+
+  useEffect(() => {
+      console.log("Updated Training formData:", formData);
+    }, [formData]); 
+
+  const fetchTrining = async() => {
+    try {
+      const res = await fetch(`${process.env.API_BASE_URL}/applicant/training/0000001`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+      const data = await res.json()
+      console.log("data Training", data)
+      setFormData(data)
+
+    } catch (error){
+      console.error('Failed to fetch rewards:', error);
+      throw error;
     }
-  }]);
+  }
+
+  const generateLongId = () => {
+    const part1 = Date.now().toString(36); // เวลาปัจจุบันในฐาน 36
+    const part2 = Math.random().toString(36).substring(2); // สุ่มส่วนแรก
+    const part3 = Math.random().toString(36).substring(2); // สุ่มส่วนเพิ่ม
+    const part4 = performance.now().toString(36).replace('.',''); // เวลาแบบละเอียด
+    return part1 + part2 + part3 + part4;
+  }
 
   // Function to add a new container
   const addContainer = () => {
-    setContainers([...containers, {
-      id: Date.now(), formData: {
-        programName: "",
-        institution: "",
-        trainingYear: "",
-        trainingMode: "",
-        country: ""
-      }
+    const id = generateLongId()
+    setFormData([...formData, {
+      trainingId: id,
+      applicantId: "0000001",
+      nameOfCourse: "",
+      institution: "",
+      trainingYear: "",
+      trainingMode: "",
+      trainingCountry: "",
+      trainingCer: "",
+      trainingCerName: "",
+    trainingCerSize: "",
     }]);
   };
+
   // Function to open the popup before deleting
-  const confirmDelete = (id: number) => {
+  const confirmDelete = (id: string) => {
     setSelectedId(id);
     setPopupOpen(true);
   };
 
   // Function to remove a specific container
-  const removeContainer = () => {
+  const removeContainer = async () => {
     if (selectedId !== null) {
-      setContainers(containers.filter(container => container.id !== selectedId));
+      console.log("selectedId", selectedId)
+      try {
+        const res = await fetch(`${process.env.API_BASE_URL}/applicant/training/${selectedId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (res.ok) {
+          const result = await res.json();
+          console.log('Delete successful:', result);
+        } else {
+          console.log('Delete failed:', res.status);
+        }
+        setFormData(formData.filter(container => container.trainingId !== selectedId));
+        setTrain(formData.filter(container => container.trainingId !== selectedId))
+      } catch (error) {
+        console.error('Error deleting data:', error);
+      }
       setPopupOpen(false); // ปิด popup หลังลบ
     }
   };
 
-  const handleChange = (id: number, field: string, value: string | File | null) => {
-    setContainers(containers.map(container =>
-      container.id === id ? { ...container, formData: { ...container.formData, [field]: value } } : container
-    ));
+  const handleChange = (trainingId: string, field: string, value: string) => {
+    const updatedFormData = formData.map(container =>
+      container.trainingId === trainingId ? { ...container, [field]: value } : container
+    );
+
+    setFormData(updatedFormData);
+    
+    setTrain(updatedFormData)
   };
 
   useEffect(() => {
@@ -88,17 +153,78 @@ const Training = () => {
     fetchCountries();
   }, [language]);
 
+  
+  const handleFileUpload = (trainingId: string, field: string, file: File) => {
+    if (!file) return;
+
+    const isImage = file.type.match('image.*');
+    const isPDF = file.type === 'application/pdf';
+
+    if (!isImage && !isPDF) {
+        alert('กรุณาเลือกไฟล์ภาพหรือ PDF เท่านั้น');
+        return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('ขนาดไฟล์ไม่ควรเกิน 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = async (event) => {
+      const base64String = event.target?.result as string;
+      try {
+        const fileTrain = new FormData();
+        fileTrain.append("file", file);
+        console.log("loading...")
+        const res = await fetch(`${process.env.API_BASE_URL}/upload/certificate/training`, {
+          method: 'POST',
+          body: fileTrain
+        });
+        console.log("ok")
+        if (!res.ok) {throw new Error(`OCR Award failed`);}
+
+        const result = await res.json()
+        console.log("result:", result)
+
+        const updatedData = formData.map(item =>
+          item.trainingId === trainingId
+            ? {
+              ...item,
+              nameOfCourse: result[0].nameOfCourse || "",
+              institution: result[0].institution || "",
+              trainingYear: result[0].trainingYear || "",
+              trainingMode: result[0].trainingMode || "",
+              trainingCer: base64String || "",
+              trainingCerName: file.name,
+              trainingCerSize: String(file.size)
+              }
+            : item
+        );
+        
+        setFormData(updatedData);
+        setTrain(updatedData);
+
+      } catch (error) {
+        console.error('OCR Error:', error);
+        alert('การอ่านข้อมูล Award ล้มเหลว');
+      }
+    }
+    reader.readAsDataURL(file);
+  }
+
   return (
     <div>
-      {containers.map(container => (
-        <div key={container.id}>
+      {formData.map(container => (
+        <div key={container.trainingId}>
           <div className="flex justify-center pt-10 bg-[#FFFFFF] p-6">
             <div className="w-[1100px] max-w-none bg-white rounded-lg p-6 border border-gray-300">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-semibold text-[#008A90] mb-4">
                   {currentTexts.trainingTitle}
                 </h2>
-                <button onClick={() => confirmDelete(container.id)}>
+                <button onClick={() => confirmDelete(container.trainingId)}>
                   <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="11" cy="11" r="10" stroke="#D92D20" strokeWidth="2" fill="none" />
                     <path d="M15.5833 11.9173H6.41667C5.86667 11.9173 5.5 11.5507 5.5 11.0007C5.5 10.4507 5.86667 10.084 6.41667 10.084H15.5833C16.1333 10.084 16.5 10.4507 16.5 11.0007C16.5 11.5507 16.1333 11.9173 15.5833 11.9173Z" fill="#D92D20" />
@@ -108,7 +234,7 @@ const Training = () => {
               <div className="mb-6">
                 <FileUpload
                   label={currentTexts.trainingCertificate}
-                  onChange={(file) => handleChange(container.id, "document", file)}
+                  onChange={(file) => handleFileUpload(container.trainingId, "trainingCer", file)}
                   fileType="jpg., png., jpeg., pdf."
                   maxSize="5 MB"
                   accept="jpg., png., jpeg., pdf."
@@ -121,16 +247,16 @@ const Training = () => {
                   <div className="w-[325px]">
                     <FormField
                       label={currentTexts.programName}
-                      value={container.formData.programName}
-                      onChange={(value) => handleChange(container.id, "programName", value)}
+                      value={container.nameOfCourse}
+                      onChange={(value) => handleChange(container.trainingId, "nameOfCourse", value)}
                       placeholder={currentTexts.enterProgramName}
                     />
                   </div>
                   <div className="w-[325px]">
                     <FormField
                       label={currentTexts.institution}
-                      value={container.formData.institution}
-                      onChange={(value) => handleChange(container.id, "institution", value)}
+                      value={container.institution}
+                      onChange={(value) => handleChange(container.trainingId, "institution", value)}
                       placeholder={currentTexts.enterInstitution}
                     />
                   </div>
@@ -140,8 +266,8 @@ const Training = () => {
                     <CustomSelect
                       label={currentTexts.trainingYear}
                       options={trainingYearOptions[language] || trainingYearOptions["ENG"]}
-                      value={container.formData.trainingYear}
-                      onChange={(selectedOption) => handleChange(container.id, "trainingYear", selectedOption ? selectedOption.value : "")}
+                      value={container.trainingYear}
+                      onChange={(selectedOption) => handleChange(container.trainingId, "trainingYear", selectedOption ? selectedOption.value : "")}
                       placeholder={currentTexts.selectYear}
                       width="100%"
                       required={false}
@@ -152,8 +278,8 @@ const Training = () => {
                     <CustomSelect
                       label={currentTexts.trainingMode}
                       options={trainingModeOptions[language] || trainingModeOptions["ENG"]}
-                      value={container.formData.trainingMode}
-                      onChange={(selectedOption) => handleChange(container.id, "trainingMode", selectedOption ? selectedOption.value : "")}
+                      value={container.trainingMode}
+                      onChange={(selectedOption) => handleChange(container.trainingId, "trainingMode", selectedOption ? selectedOption.value : "")}
                       placeholder={currentTexts.selectMode}
                       width="100%"
                       required={false}
@@ -161,12 +287,12 @@ const Training = () => {
                   </div>
                   {/* แสดงช่องเลือกประเทศเมื่อเลือก Offline */}
                   <div className="w-full">
-                    {container.formData.trainingMode === "offline" && (
+                    {container.trainingMode === "offline" && (
                       <CustomSelect
                         label={currentTexts.country}
                         options={countries} // aใช้ข้อมูลประเทศจาก JSON
-                        value={container.formData.country}
-                        onChange={(selectedOption) => handleChange(container.id, "country", selectedOption ? selectedOption.value : "")}
+                        value={container.trainingCountry}
+                        onChange={(selectedOption) => handleChange(container.trainingId, "trainingCountry", selectedOption ? selectedOption.value : "")}
                         placeholder={currentTexts.selectCountry}
                         width="100%"
                         required={false}
@@ -191,11 +317,6 @@ const Training = () => {
         </button>
       </div>
 
-      {/* ปุ่ม Back และ Next */}
-      <div className="flex justify-center mt-6 mb-6 gap-x-4">
-        <BackButton>{currentTexts.back}</BackButton>
-        <NextButton>{currentTexts.next}</NextButton>
-      </div>
       <Popup
         type="deleteConfirmation"
         isOpen={isPopupOpen}

@@ -10,6 +10,7 @@ import axios from "axios";
 import { formatGPAValue, validateTestScore, preventInvalidTestScoreInput, validateCreditInput } from "../../../utils/validation";
 import DateInput from "../../common/date";
 import { useSearchParams } from "next/navigation";
+import { EducationBackground, OCRTranscriptICTResponse } from "@components/types/educationInfoType";
 
 
 const generateGraduationYears = (language: string) => {
@@ -26,63 +27,110 @@ const generateGraduationYears = (language: string) => {
 
 const DEFAULT_DEGREE = "Mathayom6";
 
-const EducationLevel: React.FC = () => {
+interface EducationLevelProps {
+    data: EducationBackground;
+    onChange: (data: any) => void;
+}
+
+const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
     const searchParams = useSearchParams(); // ใช้สำหรับดึงค่าจาก URL
     const programParam = searchParams.get("program"); // ดึงค่าจาก query params
+    const [program, setProgram] = useState("ICT")
 
     const [formData, setFormData] = useState({
-        program: "ICT", //ลองเทสโดยเปลี่ยนเป็น DST หรือ ICT
         currentStatus: "studying", // ตั้งค่าเริ่มต้นให้เป็น "กำลังศึกษา"
-        graduationDate: null,
-        graduationYear: "",
-        mathScore: "",
-        scienceScore: "",
-        socialStudiesScore: "",
-        languageArtsScore: "",
-        EducationLevel: "",
-        transcript: null as File | null, // ใช้สำหรับอัปโหลดไฟล์
-        degree: "Mathayom6",
-        customDegree: "",
-        country: "Thailand",
-        province: "",
-        schoolName: "",
-        major: "",
-        customMajor: "",
-        cumulativeGPA: "",
-        gpaMath: "",
-        gpaEnglish: "",
-        gpaScience: "",
-        computerTotalCredit: "",
-        computerSubject: "",
-        ComputerScienceSubject: "",
-        mathTotalCredit: "",
-        mathSubject: "",
-        scienceTotalCredit: "",
-        scienceSubject: "",
-        englishTotalCredit: "",
-        englishSubject: "",
-
-
+        graduateDate: "", //
+        graduateYear: "", //
+        gedMathematics: "", // ged
+        gedScience: "", // ged
+        gedSocialStudies: "", // ged
+        gedLanguageArts: "", // ged
+        docCopyTrans: "", // ใช้สำหรับอัปโหลดไฟล์
+        docCopyName: "",
+        docCopySize: "",
+        academicType: "Mathayom6",//
+        customAcademicType: "", //
+        academicCountry: "Thailand", //
+        academicProvince: "", //
+        schoolName: "", //
+        studyPlan: "", //
+        customStudyPlan: "",//
+        cumulativeGPA: "", // m6 ปวช 
+        dstMathematics: "", // dst
+        dstEnglish: "", // dst
+        dstScitech: "", // dst
+        comSciCredit: "", // ปวช
+        comSciTitle: "", // ปวช
+        g12MathCredit: "", // g12 
+        g12MathTitle: "", // g12
+        g12SciCredit: "", // g12
+        g12SciTitle: "", // g12
+        g12EnCredit: "", // g12
+        g12EnTitle: "", // g12
     });
+
+    useEffect(() =>{
+        if (data) {
+            if (data?.graduateDate) {
+                setDisplayDate(new Date(data.graduateDate))
+            }
+            setFormData({
+                currentStatus: data?.currentStatus || "studying",
+                graduateDate: data?.graduateDate || "",
+                graduateYear: data?.graduateYear || "",
+                gedMathematics: data?.gedMathematics || "",
+                gedScience: data?.gedScience || "",
+                gedSocialStudies: data?.gedSocialStudies || "",
+                gedLanguageArts: data?.gedLanguageArts || "",
+                docCopyTrans: data?.docCopyTrans || "",
+                docCopyName: data?.docCopyName || "",
+                docCopySize: data?.docCopySize || "",
+                academicType: data?.academicType || "Mathayom6",
+                customAcademicType: data?.customAcademicType || "",
+                academicCountry: data?.academicCountry || "Thailand",
+                academicProvince: data?.academicProvince || "",
+                schoolName: data?.schoolName || "",
+                studyPlan: data?.studyPlan || "",
+                customStudyPlan: data?.customStudyPlan || "",
+                cumulativeGPA: data?.cumulativeGPA || "",
+                dstMathematics: data?.dstMathematics || "",
+                dstEnglish: data?.dstEnglish || "",
+                dstScitech: data?.dstScitech || "",
+                comSciCredit: data?.comSciCredit || "",
+                comSciTitle: data?.comSciTitle || "",
+                g12MathCredit: data?.g12MathCredit || "",
+                g12MathTitle: data?.g12MathTitle || "",
+                g12SciCredit: data?.g12SciCredit || "",
+                g12SciTitle: data?.g12SciTitle || "",
+                g12EnCredit: data?.g12EnCredit || "",
+                g12EnTitle: data?.g12EnTitle || "",
+            })
+        }
+    },[data])
+
     const { language } = useLanguage();
-    const isDST = formData.degree === "Mathayom6" && formData.program === "DST";
-   //const isICT = formData.degree === "Mathayom6" && formData.program === "ICT";
+    const isDST = formData.academicType === "Mathayom6" && program === "DST";
+    //const isICT = formData.academicType === "Mathayom6" && program === "ICT";
     const currentLanguage = language || "ENG";
+    const [displayDate, setDisplayDate] = useState<Date | null>(null);
     const currentTexts = educationInfoTexts[currentLanguage] || educationInfoTexts["ENG"];
     const [provinceOptions, setProvinceOptions] = useState([]);
     const graduationYearOptions = generateGraduationYears(language);
-    const isHighSchoolOrVocational = ["Mathayom6", "Grade12/13", "VocCert"].includes(formData.degree);
-    const hasMajorField = ["Mathayom6", "VocCert"].includes(formData.degree);
-    const shouldShowGraduationDate = ["Mathayom6", "VocCert"].includes(formData.degree) && formData.currentStatus === "graduated";
-    const shouldShowSubjectFields = formData.degree === "Grade12/13";
-    const shouldShowGPAX = ["Mathayom6", "VocCert"].includes(formData.degree);
+    const isHighSchoolOrVocational = ["Mathayom6", "Grade12/13", "VocCert"].includes(formData.academicType);
+    const hasMajorField = ["Mathayom6", "VocCert"].includes(formData.academicType);
+    const shouldShowGraduationDate = ["Mathayom6", "VocCert"].includes(formData.academicType) && formData.currentStatus === "graduated";
+    const shouldShowSubjectFields = formData.academicType === "Grade12/13";
+    const shouldShowGPAX = ["Mathayom6", "VocCert"].includes(formData.academicType);
     const safeLanguage = (language === "ENG" ? "ENG" : language) as keyof typeof majorOptions;
-    const majorType = formData.degree === "VocCert" ? "vocational" : "highSchool";
+    const majorType = formData.academicType === "VocCert" ? "vocational" : "highSchool";
     const majorList = majorOptions[safeLanguage]?.[majorType] || [];
-    const isVocCert = formData.degree === "VocCert";
-    const isThaiEducation = ["Mathayom6", "VocCert"].includes(formData.degree);
+    const isVocCert = formData.academicType === "VocCert";
+    const isThaiEducation = ["Mathayom6", "VocCert"].includes(formData.academicType);
     const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
-    const shouldShowProvince = formData.degree !== "Grade12/13" || (formData.degree === "Grade12/13" && formData.country === "TH");
+    const shouldShowProvince = formData.academicType !== "Grade12/13" || (formData.academicType === "Grade12/13" && formData.academicCountry === "TH");
+    const [changedData, setChangedData] = useState({});
+    const [transcriptData, setTranscriptData] = useState<OCRTranscriptICTResponse | null>(null);
+
 
     const renderRadioButton = (value: string, label: string, disabled = false) => (
         <label className={`flex items-center cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}>
@@ -109,7 +157,7 @@ const EducationLevel: React.FC = () => {
             return (
                 <FileUpload
                     label={currentTexts.transcript}
-                    onChange={(file) => console.log(file)}
+                    onChange={(file) => handletranscript(file)}
                     fileType="pdf"
                     maxSize="5 MB"
                     accept=".pdf"
@@ -159,12 +207,80 @@ const EducationLevel: React.FC = () => {
             <p className="text-sm text-[#B3B3B3] mt-1">{currentTexts?.[infoKey as keyof typeof currentTexts]}</p>
         </div>
     );
+
+    const handletranscript = async (file: File) => {
+        if (!file) return;
+        console.log("file", file)
+        
+        if (file.type !== "application/pdf") {
+            alert("กรุณาอัปโหลดไฟล์ PDF เท่านั้น");
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('ขนาดไฟล์ไม่ควรเกิน 5MB');
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = async (event) => {
+            const base64String = event.target?.result as string;
+            
+            try {
+                const fileTranscriptICT = new FormData();
+                fileTranscriptICT.append("file", file);
+                console.log("📤 กำลังอัปโหลดไฟล์ไป API...");
+                const response = await fetch(`${process.env.API_BASE_URL}/upload/transcript-ict`, {
+                    method: 'POST',
+                    body: fileTranscriptICT
+                });
+                console.log("📥 ได้รับ Response:", response.status, response.statusText);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("🚨 API Error:", errorText);
+                    throw new Error(`OCR failed: ${errorText}`);
+                }
+                // ส่วนที่เหลือเหมือนเดิม...
+                const result = await response.json();
+                console.log("result OCR transcript:", result)
+                setTranscriptData(result[0]);
+                console.log("transcriptData", transcriptData)
+            
+                setFormData({
+                    ...formData,
+                    docCopyTrans: base64String,
+                    docCopyName: file.name,
+                    docCopySize: String(file.size),
+                    academicProvince: result[0].academicProvince,
+                    schoolName: result[0].schoolName,
+                    cumulativeGPA: result[0].cumulativeGPA,
+                });
+
+                const newChangedData = { 
+                    ...changedData,
+                    docCopyTrans: base64String,
+                    docCopyName: file.name,
+                    docCopySize: String(file.size),
+                    academicProvince: result[0].academicProvince,
+                    schoolName: result[0].schoolName,
+                    cumulativeGPA: result[0].cumulativeGPA,
+                };
+                setChangedData(newChangedData);
+                onChange(newChangedData);  
+            } catch (error) {
+              console.error('OCR Error:', error);
+              alert('การอ่านข้อมูล Transcript ล้มเหลว');
+            }
+          };     
+          reader.readAsDataURL(file);
+    }
     // กรองตัวเลือกระดับการศึกษา ตามโปรแกรมที่เลือก
     const filteredDegreeOptions = (degreeOptions[language] || degreeOptions["ENG"]).filter(option => {
-        if (formData.program === "DST") {
+        if (program === "DST") {
             return ["Mathayom6", "VocCert", "other"].includes(option.value); // DST แสดงเฉพาะ ม.6, ปวช., และ อื่นๆ
         }
-        if (formData.program === "ICT") {
+        if (program === "ICT") {
             return option.value !== "VocCert"; // ICT แสดงทุกตัวเลือก ยกเว้น ปวช.
         }
         return true; // กรณีไม่มี program แสดงทั้งหมด
@@ -173,24 +289,34 @@ const EducationLevel: React.FC = () => {
     const formatInputValue = (field: string, value: string) => {
         const formatRules: Record<string, (val: string) => string> = {
             cumulativeGPA: formatGPAValue,
-            gpaEnglish: formatGPAValue,
-            gpaScience: formatGPAValue,
-            gpaMath: formatGPAValue,
-            mathTotalCredit: validateCreditInput,
-            scienceTotalCredit: validateCreditInput,
-            englishTotalCredit: validateCreditInput,
-            computerTotalCredit: validateCreditInput,
+            dstEnglish: formatGPAValue,
+            dstScitech: formatGPAValue,
+            dstMathematics: formatGPAValue,
+            g12MathCredit: validateCreditInput,
+            g12SciCredit: validateCreditInput,
+            g12EnCredit: validateCreditInput,
+            comSciCredit: validateCreditInput,
         };
 
         return formatRules[field] ? formatRules[field](value) : value;
     };
 
-    const handleChange = (field: string, value: string) => {
-        setFormData((prev) => ({
-            ...prev,
-            [field]: formatInputValue(field, value) ?? "",
-        }));
-    };
+    const handleChange = (field: string, value: string | Date) => {
+        let formattedValue = value;
+
+        if (value instanceof Date) {
+            formattedValue = value.toISOString().split("T")[0]; // "2025-04-09"
+            setDisplayDate(value)
+        }
+        const updatedData = { ...formData, [field]: formattedValue };
+
+        setFormData(updatedData);
+        const newChangedData = { ...changedData, [field]: value };
+        setChangedData(newChangedData);
+        onChange(newChangedData);
+      };
+
+
     useEffect(() => {
         if (programParam) {
             setFormData((prev) => ({ ...prev, program: programParam }));
@@ -200,17 +326,17 @@ const EducationLevel: React.FC = () => {
     useEffect(() => {
         setFormData((prev) => ({
             ...prev,
-            degree: DEFAULT_DEGREE,
+            academicType: data?.academicType || DEFAULT_DEGREE,
         }));
     }, []);
     useEffect(() => {
-        if (formData.degree === "GED") {
+        if (formData.academicType === "GED") {
             setFormData((prev) => ({
                 ...prev,
                 currentStatus: "graduated", // บังคับเป็นสำเร็จการศึกษา
             }));
         }
-    }, [formData.degree]);
+    }, [formData.academicType]);
 
     useEffect(() => {
         const fetchCountries = async () => {
@@ -244,7 +370,7 @@ const EducationLevel: React.FC = () => {
                 }));
 
                 setProvinceOptions(provincesData.map((p: { id: number; name_th: string; name_en: string }) => ({
-                    value: p.id.toString(),
+                    value: p.id, // .toString() error
                     label: language === "TH" ? p.name_th : p.name_en,
                 })));
             } catch (error) {
@@ -269,7 +395,7 @@ const EducationLevel: React.FC = () => {
                             {currentTexts.currentStatus} <span className="text-red-500">*</span>
                         </label>
                         <div className="flex flex-col gap-2 sm:flex-row sm:gap-x-4">
-                            {renderRadioButton("studying", currentTexts.studyingStatus, formData.degree === "GED")}
+                            {renderRadioButton("studying", currentTexts.studyingStatus, formData.academicType === "GED")}
                             {renderRadioButton("graduated", currentTexts.graduatedStatus)}
                         </div>
                     </div>
@@ -283,21 +409,21 @@ const EducationLevel: React.FC = () => {
                             <CustomSelect
                                 label={currentTexts.degree}
                                 options={filteredDegreeOptions} // ใช้ตัวเลือกที่ผ่านการกรองแล้ว
-                                value={formData.degree}
+                                value={formData.academicType}
                                 onChange={(selectedOption) =>
-                                    handleChange("degree", selectedOption ? selectedOption.value : "")
+                                    handleChange("academicType", selectedOption ? selectedOption.value : "")
                                 }
                                 placeholder={currentTexts.degreePlaceholder}
                             />
                         </div>
 
                         {/* แสดงฟิลด์ระบุเพิ่มเติมเมื่อเลือก "อื่นๆ" */}
-                        {formData.degree === "other" && (
+                        {formData.academicType === "other" && (
                             <div className="w-full sm:w-[350px]">
                                 <FormField
                                     label={currentTexts.other}
-                                    value={formData.customDegree || ""}
-                                    onChange={(value) => handleChange("customDegree", value)}
+                                    value={formData.customAcademicType || ""}
+                                    onChange={(value) => handleChange("customAcademicType", value)}
                                     type="text"
                                     placeholder={currentTexts.other}
                                     required
@@ -307,14 +433,14 @@ const EducationLevel: React.FC = () => {
                     </div>
                     {/* แสดงฟิลด์ปีที่สำเร็จการศึกษา กรณีที่เลือกจบการศึกษา */}
                     {formData.currentStatus === "graduated" &&
-                        (["GED", "Grade12/13", "other"].includes(formData.degree)) && (
+                        (["GED", "Grade12/13", "other"].includes(formData.academicType)) && (
                             <div className="mb-4 sm:w-[350px]">
                                 <CustomSelect
                                     label={currentTexts.graduationYear}
                                     options={graduationYearOptions}
-                                    value={formData.graduationYear}
+                                    value={formData.graduateYear}
                                     onChange={(selectedOption) =>
-                                        handleChange("graduationYear", selectedOption ? selectedOption.value : "")
+                                        handleChange("graduateYear", selectedOption ? selectedOption.value : "")
                                     }
                                     placeholder={currentTexts.graduationYearPlaceholder}
                                 />
@@ -339,8 +465,8 @@ const EducationLevel: React.FC = () => {
                                         <CustomSelect
                                             label={currentTexts.country}
                                             options={countries}
-                                            value={formData.country}
-                                            onChange={(selectedOption) => handleChange("country", selectedOption?.value || "")}
+                                            value={formData.academicCountry}
+                                            onChange={(selectedOption) => handleChange("academicCountry", selectedOption?.value || "")}
                                             placeholder={currentTexts.countryPlaceholder}
                                         />
                                     </div>
@@ -349,11 +475,10 @@ const EducationLevel: React.FC = () => {
                                 {/* จังหวัดที่ตั้งสถานศึกษา (แสดงเฉพาะเมื่อเป็นไทย) */}
                                 {shouldShowProvince && (
                                     <div className="w-full sm:w-[350px]">
-                                        <CustomSelect
+                                        <FormField
                                             label={currentTexts.province}
-                                            options={provinceOptions}
-                                            value={formData.province}
-                                            onChange={(selectedOption) => handleChange("province", selectedOption ? selectedOption.value : "")}
+                                            value={formData.academicProvince}
+                                            onChange={(value) => handleChange("academicProvince", value)}
                                             placeholder={currentTexts.provincePlaceholder}
                                         />
                                     </div>
@@ -364,8 +489,8 @@ const EducationLevel: React.FC = () => {
                                     <div className="mb-4 w-sm:w-[350px]">
                                         <label className="block text-[#565656] mb-1">{currentTexts.graduationDate} <span className="text-red-500">*</span></label>
                                         <DateInput
-                                            selected={formData.graduationDate}
-                                            onChange={(date) => handleChange("graduationDate", date ? date.toISOString() : "")}
+                                            selected={displayDate}
+                                            onChange={(date) => handleChange("graduateDate", date)}
                                             placeholderText={currentTexts.graduationDatePlaceholder}
                                             mode="expiry"
                                         />
@@ -392,21 +517,21 @@ const EducationLevel: React.FC = () => {
                                         <CustomSelect
                                             label={currentTexts.major}
                                             options={[...majorList]}
-                                            value={formData.major}
+                                            value={formData.studyPlan}
                                             onChange={(selectedOption) =>
-                                                handleChange("major", selectedOption ? selectedOption.value : "")
+                                                handleChange("studyPlan", selectedOption ? selectedOption.value : "")
                                             }
                                             placeholder={currentTexts.majorPlaceholder}
                                         />
                                     </div>
 
                                     {/* ฟิลด์ระบุเพิ่มเติมเมื่อเลือก "อื่นๆ" */}
-                                    {formData.major === "other" && (
+                                    {formData.studyPlan === "other" && (
                                         <div className="w-full sm:w-[350px]">
                                             <FormField
                                                 label={currentTexts.other}
-                                                value={formData.customMajor || ""}
-                                                onChange={(value) => handleChange("customMajor", value)}
+                                                value={formData.customStudyPlan || ""}
+                                                onChange={(value) => handleChange("customStudyPlan", value)}
                                                 type="text"
                                                 placeholder={currentTexts.other}
                                                 required
@@ -436,9 +561,9 @@ const EducationLevel: React.FC = () => {
                             {shouldShowGPAX && isDST && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6 w-full">
                                     {[
-                                        { key: "gpaMath", textKey: "mathematicsGPA", placeholderKey: "mathematicsGPAPlaceholder", infoKey: "mathematicsGPAInfo" },
-                                        { key: "gpaEnglish", textKey: "englishGPA", placeholderKey: "englishGPAPlaceholder", infoKey: "englishGPAInfo" },
-                                        { key: "gpaScience", textKey: "scienceGPA", placeholderKey: "scienceGPAPlaceholder", infoKey: "scienceGPAInfo" }
+                                        { key: "dstMathematics", textKey: "mathematicsGPA", placeholderKey: "mathematicsGPAPlaceholder", infoKey: "mathematicsGPAInfo" },
+                                        { key: "dstEnglish", textKey: "englishGPA", placeholderKey: "englishGPAPlaceholder", infoKey: "englishGPAInfo" },
+                                        { key: "dstScitech", textKey: "scienceGPA", placeholderKey: "scienceGPAPlaceholder", infoKey: "scienceGPAInfo" }
                                     ].map(({ key, textKey, placeholderKey, infoKey }) => (
                                         <div key={key} className="w-full sm:w-[320px]">
                                             <FormField
@@ -460,20 +585,20 @@ const EducationLevel: React.FC = () => {
                     )}
                     {isVocCert && (
                         <div className="mt-2">
-                            {renderSubjectField("ComputerScienceSubject", "computerTotalCredit", "infoComputerScienceSubject")}
+                            {renderSubjectField("comSciTitle", "comSciCredit", "infoComputerScienceSubject")}
                         </div>
                     )}
 
                     {/* หมวดหมู่วิชาตามเกณฑ์ (เฉพาะ Grade 12/Year 13) */}
                     {shouldShowSubjectFields && (
                         <>
-                            {renderSubjectField("mathSubject", "mathTotalCredit", "infoMathtotalCredit")}
-                            {renderSubjectField("scienceSubject", "scienceTotalCredit", "infoSciencetotalCredit")}
-                            {renderSubjectField("englishSubject", "englishTotalCredit", "infoEnglishtotalCredit")}
+                            {renderSubjectField("g12MathTitle", "g12MathCredit", "infoMathtotalCredit")}
+                            {renderSubjectField("g12SciTitle", "g12SciCredit", "infoSciencetotalCredit")}
+                            {renderSubjectField("g12EnTitle", "g12EnCredit", "infoEnglishtotalCredit")}
                         </>
                     )}
                     {/* แสดงฟอร์มเฉพาะเมื่อเลือก GED*/}
-                    {formData.degree === "GED" && (
+                    {formData.academicType === "GED" && (
                         <>
                             <div >
                                 <label className="text-[#565656]">
@@ -500,18 +625,18 @@ const EducationLevel: React.FC = () => {
                             {/* กล่องกรอกคะแนน (4 วิชา) */}
                             <div className="grid grid-cols-1 lg:grid-cols-[350px_350px] lg:gap-x-[100px] gap-y-1 mb-1">
                                 {[
-                                    { key: "mathScore", label: currentTexts.mathScore, placeholder: currentTexts.mathScorePlaceholder },
-                                    { key: "scienceScore", label: currentTexts.scienceScore, placeholder: currentTexts.scienceScorePlaceholder },
-                                    { key: "socialStudiesScore", label: currentTexts.socialStudiesScore, placeholder: currentTexts.socialStudiesScorePlaceholder },
-                                    { key: "languageArtsScore", label: currentTexts.languageArtsScore, placeholder: currentTexts.languageArtsScorePlaceholder }
+                                    { key: "gedMathematics", label: currentTexts.mathScore, placeholder: currentTexts.mathScorePlaceholder },
+                                    { key: "gedScience", label: currentTexts.scienceScore, placeholder: currentTexts.scienceScorePlaceholder },
+                                    { key: "gedSocialStudies", label: currentTexts.socialStudiesScore, placeholder: currentTexts.socialStudiesScorePlaceholder },
+                                    { key: "gedLanguageArts", label: currentTexts.languageArtsScore, placeholder: currentTexts.languageArtsScorePlaceholder }
                                 ].map(({ key, label, placeholder }) => (
                                     <div key={key} className="flex justify-center sm:justify-start w-full">
                                         <div className="w-full sm:w-[350px]">
                                             <FormField
                                                 label={label}
                                                 value={formData[key]}
-                                                onChange={(value) => handleChange(key, validateTestScore(value, formData.degree, formData[key]))}
-                                                onKeyDown={(event) => preventInvalidTestScoreInput(event, formData[key], formData.degree)}
+                                                onChange={(value) => handleChange(key, validateTestScore(value, formData.academicType, formData[key]))}
+                                                onKeyDown={(event) => preventInvalidTestScoreInput(event, formData[key], formData.degacademicTyperee)}
                                                 type="text"
                                                 placeholder={placeholder}
                                                 required

@@ -2,17 +2,10 @@ import React from "react";
 import { useLanguage } from "../../../../../hooks/LanguageContext";
 import { awardTexts } from "../../../../../translation/AwardInfo";
 import ReportProb from "@components/components/common/admin/reportProb";
+import { AwardResponse } from "@components/types/AwardType";
 
 interface AwardSummaryProps {
-    awards: {
-        competitionName: string;
-        competitionYear: string;
-        competitionLevel: string;
-        awardsReceived: string;
-        projectWorks: string;
-        document: string;
-        documentSize: string;
-    }[];
+    awards: AwardResponse[];
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
 }
@@ -69,26 +62,26 @@ const AwardSummary: React.FC<AwardSummaryProps> = ({ awards, isVisible, setIsVis
                                 {awards.map((award, index) => (
                                     <tr key={index} className="text-center text-[#565656]">
                                         <td className="border border-[#B9B9B9] px-4 py-2 font-bold">{index + 1}</td>
-                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{award.competitionName}</td>
-                                        <td className="border border-[#B9B9B9] px-4 py-2 ">{award.competitionYear}</td>
-                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{award.competitionLevel}</td>
-                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{award.awardsReceived}</td>
-                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{award.projectWorks}</td>
+                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{award?.nameOfCompetition}</td>
+                                        <td className="border border-[#B9B9B9] px-4 py-2 ">{award?.rewardYear}</td>
+                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{award?.rewardLevel}</td>
+                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{award?.rewardAwards}</td>
+                                        <td className="border border-[#B9B9B9] px-4 py-2 text-left">{award?.project}</td>
                                         <td className="border border-[#B9B9B9] px-4 py-2 text-left">
                                             <div className="flex items-center gap-2">
                                                 <div className="mt-2">
                                                     <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6" />
                                                 </div>
                                                 <a
-                                                    href={award.document}
+                                                    href={award?.rewardCer}
                                                     download
                                                     className="text-[#008A90] hover:underline truncate max-w-[150px] sm:max-w-[200px] inline-block"
-                                                    title={award.document.split("/").pop()}
+                                                    title={award?.rewardCerName}
                                                 >
-                                                    {award.document.split("/").pop()}
+                                                    {award?.rewardCerName}
                                                 </a>
                                             </div>
-                                            <span className="text-[#565656] text-sm block mt-1 px-8">{award.documentSize}</span>
+                                            <span className="text-[#565656] text-sm block mt-1 px-8">{award?.rewardCerSize}</span>
                                         </td>
                                     </tr>
                                 ))}
@@ -99,22 +92,22 @@ const AwardSummary: React.FC<AwardSummaryProps> = ({ awards, isVisible, setIsVis
                     <div className="md:hidden block space-y-4">
                         {awards.map((award, index) => (
                             <div key={index} className="border border-[#B9B9B9] rounded-lg p-4 shadow-sm">
-                                <p className="text-[#565656] font-semibold">{texts.competitionName}: <span className="font-normal">{award.competitionName}</span></p>
-                                <p className="text-[#565656] font-semibold">{texts.competitionYear}: <span className="font-normal">{award.competitionYear}</span></p>
-                                <p className="text-[#565656] font-semibold">{texts.competitionLevel}: <span className="font-normal">{award.competitionLevel}</span></p>
-                                <p className="text-[#565656] font-semibold">{texts.awardsReceived}: <span className="font-normal">{award.awardsReceived}</span></p>
-                                <p className="text-[#565656] font-semibold">{texts.projectWorks}: <span className="font-normal">{award.projectWorks}</span></p>
+                                <p className="text-[#565656] font-semibold">{texts.competitionName}: <span className="font-normal">{award?.nameOfCompetition}</span></p>
+                                <p className="text-[#565656] font-semibold">{texts.competitionYear}: <span className="font-normal">{award?.rewardYear}</span></p>
+                                <p className="text-[#565656] font-semibold">{texts.competitionLevel}: <span className="font-normal">{award?.rewardLevel}</span></p>
+                                <p className="text-[#565656] font-semibold">{texts.awardsReceived}: <span className="font-normal">{award?.rewardAwards}</span></p>
+                                <p className="text-[#565656] font-semibold">{texts.projectWorks}: <span className="font-normal">{award?.project}</span></p>
                                 <p className="text-[#565656] font-semibold flex items-center">
                                     {texts.attachment}:
                                     <a
-                                        href={award.document}
+                                        href={award?.rewardCer}
                                         download
                                         className="text-[#008A90] font-medium hover:underline ml-2 truncate max-w-[200px] sm:max-w-[300px] inline-block"
-                                        title={award.document.split("/").pop()}
+                                        title={award?.rewardCerName}
                                     >
-                                        {award.document.split("/").pop()}
+                                        {award?.rewardCerName}
                                     </a>
-                                    <span className="text-[#565656] text-sm ml-2">({award.documentSize})</span>
+                                    <span className="text-[#565656] text-sm ml-2">({award?.rewardCerSize})</span>
                                 </p>
                             </div>
                         ))}

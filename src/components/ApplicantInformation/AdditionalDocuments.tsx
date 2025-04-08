@@ -1,17 +1,99 @@
 //additional Documents Page
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import FileUpload from '../../components/form/FileUpload';
-import { BackButton, NextButton } from "../common/button";
 import { useLanguage } from "../../hooks/LanguageContext";
 import { additionalDocumentsTexts } from "../../translation/AdditionalDocsInfo";
 import Image from "next/image";
 
-const AdditionalDocuments = () => {
+const AdditionalDocuments = ({ setDoc }: any) => {
   const { language } = useLanguage();
   const currentTexts = additionalDocumentsTexts[language] || additionalDocumentsTexts["ENG"];
-  const [videoLink, setVideoLink] = useState("");
+  const [formData, setFormData] = useState({
+    stateOfPurpose: "",
+    stateOfPurposeName: "",
+    stateOfPurposeSize: "",
+    portfolio: "",
+    portfolioName: "",
+    portfolioSize: "",
+    vdo: "",
+    applicantResume: "",
+    applicantResumeName: "",
+    applicantResumeSize: "",
+    additional: "",
+    additionalName: "",
+    additionalSize: "",
+  })
+
+  useEffect(() => {
+    console.log("Doc FormData", formData)
+  },[formData])
+
+  useEffect(() => {
+    fetchDocuments();
+  },[])
+
+  const fetchDocuments = async() => {
+    try {
+      const res = await fetch(`${process.env.API_BASE_URL}/applicant/document/0000001`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+      const data = await res.json()
+      console.log("data Document", data)
+      setFormData(data)
+
+    } catch (error){
+      console.error('Failed to fetch rewards:', error);
+      throw error;
+    }
+  }
+
+  const handleUploadFile = (file : File, field: string) => {
+    if (!file) return;
+    console.log("file", file)
+    
+    if (file.type !== "application/pdf") {
+      alert("กรุณาอัปโหลดไฟล์ PDF เท่านั้น");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('ขนาดไฟล์ไม่ควรเกิน 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      const base64String = event.target?.result as string;
+
+      const updated = {
+        ...formData,
+        [field]: base64String,
+        [`${field}Name`]: file.name,
+        [`${field}Size`]: String(file.size)
+      };
+  
+      setFormData(updated);
+      setDoc(updated);
+    }
+    reader.readAsDataURL(file);
+  }
+
+  const handleVideoLink = (value: string) => {
+    const updated = {
+      ...formData,
+      vdo: value,
+    };
+    setFormData(updated);
+    setDoc(updated);
+  }
 
   return (
     <>
@@ -25,7 +107,7 @@ const AdditionalDocuments = () => {
           <div className="mb-6">
             <FileUpload
               label={`${currentTexts.statementOfPurpose} `}
-              onChange={(file) => console.log(file)}
+              onChange={(file) => handleUploadFile(file, "stateOfPurpose")}
               fileType="pdf"
               maxSize="5 MB"
               accept=".pdf"
@@ -37,7 +119,7 @@ const AdditionalDocuments = () => {
           <div className="mb-6">
             <FileUpload
               label={`${currentTexts.portfolio} `}
-              onChange={(file) => console.log(file)}
+              onChange={(file) => handleUploadFile(file, "portfolio")}
               fileType="pdf"
               maxSize="5 MB"
               accept=".pdf"
@@ -62,8 +144,8 @@ const AdditionalDocuments = () => {
             </div>
             <input
               type="text"
-              value={videoLink}
-              onChange={(e) => setVideoLink(e.target.value)}
+              value={formData?.vdo || ""}
+              onChange={(e) => handleVideoLink(e.target.value)}
               placeholder={currentTexts.enterVideoLink}
               className={`w-full px-3 py-2 border rounded-[10px] text-[#565656]
               }`}
@@ -74,7 +156,7 @@ const AdditionalDocuments = () => {
           <div className="mb-6">
             <FileUpload
               label={currentTexts.resume}
-              onChange={(file) => console.log(file)}
+              onChange={(file) => handleUploadFile(file, "applicantResume")}
               fileType="pdf"
               maxSize="5 MB"
               accept=".pdf"
@@ -87,7 +169,7 @@ const AdditionalDocuments = () => {
           <div className="mb-6">
             <FileUpload
               label={currentTexts.otherDocuments}
-              onChange={(file) => console.log(file)}
+              onChange={(file) => handleUploadFile(file, "additional")}
               fileType="pdf"
               maxSize="5 MB"
               accept=".pdf"
@@ -96,11 +178,6 @@ const AdditionalDocuments = () => {
             />
           </div>
         </div>
-      </div>
-
-      <div className="flex justify-center mt-6 mb-6 gap-x-4">
-        <BackButton>{currentTexts.back}</BackButton>
-        <NextButton>{currentTexts.next}</NextButton>
       </div>
     </>
   );

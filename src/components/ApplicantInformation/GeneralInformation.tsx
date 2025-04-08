@@ -14,7 +14,7 @@ import {
 } from "@components/types/generalInfoType";
 
 
-const GeneralInformation = ({ onUpdate }) => {
+const GeneralInformation = ({ onUpdate }: any) => {
   const [data, setData] = useState<ApplicantGeneralInformationResponse | null>(null);
   
   const [allChanges, setAllChanges] = useState({
@@ -37,12 +37,13 @@ const GeneralInformation = ({ onUpdate }) => {
     
     // รวมข้อมูลจากทุก component
     const combinedChanges = {
-      ...updatedChanges.personalInfo,
       ...updatedChanges.contactInfo,
       ...updatedChanges.emergencyContact,
-      ...updatedChanges.newsSubscription
+      ...updatedChanges.newsSubscription,
+      ...updatedChanges.personalInfo
     };
     
+    console.log("general conbine", combinedChanges)
     // ส่งข้อมูลทั้งหมดที่รวมแล้วขึ้นไป
     onUpdate('generalInfo', combinedChanges);
   };
@@ -56,10 +57,10 @@ const GeneralInformation = ({ onUpdate }) => {
         },
       })
 
-      if (!res.ok) throw new Error("Failed to fetch data");
+      if (!res.ok) throw new Error("Failed to fetch general data");
 
       const result = await res.json();
-      console.log("result:", result)
+      console.log("general result:", result)
       setData(result)
     } catch (error) {
       console.error("Error fetching general information:", error);

@@ -1,26 +1,30 @@
 import React from "react";
 import { useLanguage } from "../../../../../hooks/LanguageContext";
 import { educationInfoTexts } from "../../../../../translation/educationInfo";
+import { EducationMathExam } from "@components/types/educationInfoType";
+
+// interface MathTestScoreSummaryProps {
+//     testType?: string;
+//     score?: string;
+//     testDate?: string;
+//     document?: string;
+//     documentSize?: string;
+// }
 
 interface MathTestScoreSummaryProps {
-    testType?: string;
-    score?: string;
-    testDate?: string;
-    document?: string;
-    documentSize?: string;
+    props: EducationMathExam;
+    isVisible: boolean;
+    setIsVisible: (value: boolean) => void;
 }
 
+
 const MathTestScoreSummary: React.FC<MathTestScoreSummaryProps> = ({
-    testType,
-    score,
-    testDate,
-    document,
-    documentSize,
+    props, isVisible, setIsVisible
 }) => {
     const { language } = useLanguage();
     const texts = educationInfoTexts[language] || educationInfoTexts["ENG"];
 
-    if (!testType) return null; // ถ้าไม่มีประเภทคะแนนสอบ ไม่ต้องแสดงอะไร
+    if (!props?.mathType) return null; // ถ้าไม่มีประเภทคะแนนสอบ ไม่ต้องแสดงอะไร
 
     return (
         <div className="flex justify-center py-5 bg-white">
@@ -32,35 +36,37 @@ const MathTestScoreSummary: React.FC<MathTestScoreSummaryProps> = ({
                     </h2>
 
                     {/* อัปโหลดไฟล์ผลสอบ */}
-                    {document && (
+                    {props?.mathCerName && (
                         <div className="mt-4">
                             <p className="text-[#565656] font-bold">{texts.uploadMathTestScore}</p>
-                            <a href={document} download className="text-[#008A90] font-medium hover:underline">
-                                {document.split("/").pop()}
+                            <a href={props?.mathCer}
+                                download
+                                className="text-[#008A90] font-medium hover:underline">
+                                {props?.mathCerName}
                             </a>
-                            {documentSize && <span className="text-gray-500 text-sm ml-2">{documentSize}</span>}
+                            {props?.mathCerSize && <span className="text-gray-500 text-sm ml-2">{props?.mathCerSize}</span>}
                         </div>
                     )}
 
                     {/* ประเภทการสอบ */}
                     <div className="mb-4">
                         <p className="text-[#565656] font-bold">{texts.mathTestType}</p>
-                        <p className="text-gray-900">{testType}</p>
+                        <p className="text-gray-900">{props?.mathType}</p>
                     </div>
 
                     {/* วันที่สอบ */}
-                    {testDate && (
+                    {props?.mathExamDate && (
                         <div className="mb-4">
                             <p className="text-[#565656] font-bold">{texts.testDate}</p>
-                            <p className="text-gray-900">{testDate}</p>
+                            <p className="text-gray-900">{props?.mathExamDate}</p>
                         </div>
                     )}
 
                     {/* คะแนนสอบ */}
-                    {score && (
+                    {props?.mathScore && (
                         <div className="mb-4">
                             <p className="text-[#565656] font-bold">{texts.score}</p>
-                            <p className="text-gray-900">{score}</p>
+                            <p className="text-gray-900">{props?.mathScore}</p>
                         </div>
                     )}
                 </div>
