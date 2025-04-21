@@ -1,27 +1,60 @@
 "use client";
-import React, { useState, useRef, useEffect,useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import SideBar from "../../../../components/SideBar";
 import AdminNavbar from "../../../../components/adminNavbar";
 import Image from "next/image";
 import SearchField from "../../../../components/form/searchField";
 import { PopupAdmin, PopupMenu } from "../../../../components/common/admin/popupAdmin";
 import AlertAdmin from "../../../../components/common/admin/alertAdmin";
+import { AdminPermission } from "@components/types/adminPermission";
+import { generateAdmissionBody } from "@components/utils/apiBody";
 
 
 const PermissionPage = () => {
+  const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+  const [admins, setAdmins] = useState<AdminPermission[]>([]);
+  const [loading, setLoading] = useState(true);
+
+
+  async function fetchData() {
+    try {
+      const [res_admins] = await Promise.all([
+        fetch(`${API_BASE_URL}/education-department/get-all-admins`)
+      ]);
+
+      if (!res_admins.ok) {
+        throw new Error("Failed to fetch one or more resources");
+      }
+
+      const data_admins = await res_admins.json();
+
+      setAdmins(data_admins.admins || []);
+
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isOpen, setIsOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false);
   const [isEditRoleOpen, setIsEditRoleOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<{
-    id: number;
-    title: string;
-    username: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    role: string[];
-    lastUsed: string;
+    adminId?: string;
+    prefix?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phoneNumber?: string;
+    roles?: string[];
+    lastSeen?: string;
   } | null>(null);
   const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -53,7 +86,7 @@ const PermissionPage = () => {
 
     return new Date(`${year}-${month}-${day}T${hour}:${minute}:00`);
   }, []);
-  
+
 
 
   // Removed duplicate declaration of sortOrder
@@ -71,42 +104,42 @@ const PermissionPage = () => {
     { id: 10, title: "นางสาว", username: "นรินทร์พร", lastName: "สุขประเสริฐ", email: "narin.porn@university.ac.th", phone: "083-456-7890", role: ["ฝ่ายการศึกษา"], lastUsed: "14 ม.ค. 2568 17.25 น." },
   ]);
   const [sortOrder, setSortOrder] = useState("recent");
-  
+
   const handleSearch = useCallback(() => {
     const filteredData = permissions.filter(user => {
       const nameMatch = searchData.username
         ? user.username?.toLowerCase().includes(searchData.username.toLowerCase())
         : true;
-  
+
       const lastNameMatch = searchData.lastName
         ? user.lastName?.toLowerCase().includes(searchData.lastName.toLowerCase())
         : true;
-  
+
       const emailMatch = searchData.email
         ? user.email?.toLowerCase().includes(searchData.email.toLowerCase())
         : true;
-  
+
       const roleMatch = searchData.role
         ? user.role.some(role => role.includes(searchData.role))
         : true;
-  
+
       return nameMatch && lastNameMatch && emailMatch && roleMatch;
     });
-  
+
     const updatedPermissions = filteredData.map(user => ({
       ...user,
       lastUsedDate: parseThaiDate(user.lastUsed)
     }));
-  
+
     updatedPermissions.sort((a, b) =>
       sortOrder === "recent"
         ? (b.lastUsedDate?.getTime() || 0) - (a.lastUsedDate?.getTime() || 0)
         : (a.lastUsedDate?.getTime() || 0) - (b.lastUsedDate?.getTime() || 0)
     );
-  
+
     setSortedPermissions(updatedPermissions);
   }, [permissions, searchData, sortOrder, parseThaiDate]);
-  
+
 
 
   const toggleSortOrder = () => {
@@ -114,6 +147,7 @@ const PermissionPage = () => {
   };
   // เปิด PopupMenu ตรงตำแหน่งของปุ่ม
   const handleOpenMenu = (event: React.MouseEvent, user: typeof permissions[number]) => {
+
     event.stopPropagation();
     const rect = event.currentTarget.getBoundingClientRect();
     const menuHeight = 150; // ปรับตามขนาดของเมนูจริง
@@ -152,34 +186,55 @@ const PermissionPage = () => {
   };
 
   // ฟังก์ชันบันทึกข้อมูลเมื่อเพิ่มผู้ใช้ใหม่
-  const handleSaveAddUser = (newUser: {
-    id?: number;
-    title: string;
-    username: string;
+  const handleSaveAddUser = async (newUser: {
+    adminId?: string;
+    prefix: string;
+    firstName: string;
     lastName: string;
     email: string;
-    phone: string;
-    role: string[];
-    lastUsed?: string;
+    phoneNumber: string;
+    roles: string[];
+    lastSeen?: string;
+    username: string;
+    password: string;
   }) => {
-    if (!newUser) return;
+    console.log('new user', newUser)
+    try {
+      for (const role of newUser.roles) {
+        let userType = "";
 
-    setPermissions((prev) => [...prev, { ...newUser, id: prev.length + 1, lastUsed: newUser.lastUsed || "" }]);
-    setSortedPermissions((prev) => [
-      ...prev,
-      { 
-        ...newUser, 
-        id: prev.length + 1, 
-        lastUsed: newUser.lastUsed || "", 
-        lastUsedDate: parseThaiDate(newUser.lastUsed || "") 
-      },
-    ]);
+        if (role === "กรรมการหลักสูตร") {
+          userType = "course-committee";
+        } else if (role === "กรรมการสัมภาษณ์") {
+          userType = "interview-committee";
+        } else if (role === "เจ้าหน้าที่งานการศึกษา") {
+          userType = "education-department";
+        } else {
+          userType = "public-relations";
+        }
 
-    handleShowAlert(`เพิ่มผู้ใช้ "${newUser.title} ${newUser.username} ${newUser.lastName}" สำเร็จ!`);
+        const response = await fetch(`${API_BASE_URL}/${userType}/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(generateAdmissionBody(newUser, role, "create")),
+        });
 
-    setIsOpen(false); // ปิด popup หลังเพิ่มผู้ใช้
+        if (!response.ok) {
+          throw new Error("Failed to add new user round.");
+        }
+      }
+
+      setAlertMessage("เพิ่มผู้ใช้สำเร็จ!");
+      window.location.reload();
+    } catch (error) {
+      console.error("Error adding new user, details:", error);
+      alert("สร้างข้อมูลล้มเหลว กรุณาลองใหม่");
+    }
   };
-  ;
+
+
 
   const handleEditUser = () => {
     setIsEditMode(true);
@@ -188,95 +243,196 @@ const PermissionPage = () => {
   };
 
   // ฟังก์ชันบันทึกข้อมูลเมื่อแก้ไขผู้ใช้
-  const handleSaveEditUser = (updatedUser: {
-    id: number;
-    title: string;
-    username: string;
+  const handleSaveEditUser = async (updatedUser: {
+    adminId: string;
+    prefix: string;
+    firstName: string;
     lastName: string;
     email: string;
-    phone: string;
-    role: string[];
-    lastUsed?: string;
+    phoneNumber: string;
+    roles: string[];
+    lastSeen?: string;
+    username: string;
+    password: string;
   }) => {
-    if (!selectedUser) return;
+    try {
+      for (const role of updatedUser.roles) {
+        let userType = "";
 
-    setPermissions((prev) =>
-      prev.map((user) =>
-        user.id === selectedUser.id
-          ? { ...updatedUser, lastUsed: updatedUser.lastUsed || "" }
-          : user
-      )
-    );
+        if (role === "Course Committee") {
+          userType = "course-committee";
+        } else if (role === "Interview Committee") {
+          userType = "interview-committee";
+        } else if (role === "Education Department") {
+          userType = "education-department";
+        } else {
+          userType = "public-relations";
+        }
 
-    handleShowAlert(`ข้อมูล "${updatedUser.title} ${updatedUser.username} ${updatedUser.lastName}" อัปเดตเรียบร้อย`);
-    setIsOpen(false); // ปิด Popup
-    setSelectedUser(null);
+        const response = await fetch(`${API_BASE_URL}/${userType}/${updatedUser.adminId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(generateAdmissionBody(updatedUser, role, "edit")),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to edit user round.");
+        }
+      }
+
+      setAlertMessage("แก้ไขผู้ใช้สำเร็จ!");
+      window.location.reload();
+    } catch (error) {
+      console.error("Error editing new user, details:", error);
+      alert("แก้ไขข้อมูลล้มเหลว กรุณาลองใหม่");
+    }
   };
 
 
   // เปิด Popup แก้ไขบทบาท (ลบ handleShowAlert ออก)
   const handleEditRole = (user: typeof permissions[number]) => {
     setSelectedUser(user);
+    console.log('edit role user', user)
     setIsEditRoleOpen(true);
     handleCloseMenu();
   };
 
 
   // ฟังก์ชันบันทึกข้อมูลเมื่อแก้ไขบทบาท
-  const handleSaveRole = (updatedRoles: string[]) => {
-    if (!selectedUser) return;
-
-    setPermissions((prev) =>
-      prev.map((user) =>
-        user.id === selectedUser.id ? { ...user, role: updatedRoles } : user
-      )
-    );
-
-    handleShowAlert(`บทบาทของ "${selectedUser.title} ${selectedUser.username} ${selectedUser.lastName}" อัปเดตเรียบร้อย`);
-    setIsEditRoleOpen(false);
-    setSelectedUser(null);
+  const mapRoleToUserType = (role: string) => {
+    switch (role) {
+      case "กรรมการหลักสูตร":
+      case "Course Committee":
+        return "course-committee";
+      case "กรรมการสัมภาษณ์":
+      case "Interview Committee":
+        return "interview-committee";
+      case "เจ้าหน้าที่งานการศึกษา":
+      case "Education Department":
+        return "education-department";
+      case "ประชาสัมพันธ์":
+      case "Public Relations":
+      default:
+        return "public-relations";
+    }
   };
+
+  const handleSaveRole = async (roleEditUser: {
+    adminId: string;
+    prefix: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    roles: string[];
+    lastSeen?: string;
+    username: string;
+    password: string;
+  }) => {
+    console.log('this is role edited user', roleEditUser)
+    try {
+      for (const role of selectedUser.roles) {
+        const userType = mapRoleToUserType(role);
+        const response = await fetch(`${API_BASE_URL}/${userType}/${selectedUser?.adminId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to delete user from ${userType}`);
+        }
+      }
+
+      for (const role of roleEditUser.roles) {
+        const userType = mapRoleToUserType(role);
+        const response = await fetch(`${API_BASE_URL}/${userType}/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(generateAdmissionBody(roleEditUser, role, "role")),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to create user in ${userType}`);
+        }
+      }
+
+      setAlertMessage("ปรับปรุงบทบาทของผู้ใช้สำเร็จ!");
+      window.location.reload();
+    } catch (error) {
+      console.error("Error handling user roles:", error);
+      alert("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+    }
+  };
+
 
   // เปิด Popup ลบผู้ใช้
   const handleDeleteUser = (user: typeof permissions[number]) => {
     setSelectedUser(user);
     setIsDeletePopupOpen(true);
-    handleCloseMenu();
   };
 
   //  ลบผู้ใช้และแสดง Alert
-  const confirmDeleteUser = () => {
+  const confirmDeleteUser = async () => {
     if (!selectedUser) return;
+    console.log('select for delete', selectedUser)
+    try {
+      for (const role of selectedUser.roles) {
+        let userType = "";
 
-    handleShowAlert(`ลบผู้ใช้งาน "${selectedUser.username} ${selectedUser.lastName}" เรียบร้อย`);
+        if (role === "Course Committee") {
+          userType = "course-committee";
+        } else if (role === "Interview Committee") {
+          userType = "interview-committee";
+        } else if (role === "Education Department") {
+          userType = "education-department";
+        } else {
+          userType = "public-relations";
+        }
 
-    setIsDeletePopupOpen(false);
-    setSelectedUser(null);
+        const response = await fetch(`${API_BASE_URL}/${userType}/${selectedUser.adminId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete user round.");
+        }
+      }
+
+      setAlertMessage("ลบผู้ใช้สำเร็จ!");
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting new user, details:", error);
+      alert("ลบข้อมูลล้มเหลว กรุณาลองใหม่");
+    }
   };
 
-  const [sortedPermissions, setSortedPermissions] = useState<Array<{
-    lastUsedDate: Date;
-    id: number;
-    title: string;
-    username: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    role: string[];
-    lastUsed: string;
-  }>>([]);
-  useEffect(() => {
-    const updatedPermissions = permissions.map(user => ({
-      ...user,
-      lastUsedDate: parseThaiDate(user.lastUsed)
-    }));
-    updatedPermissions.sort((a, b) =>
-      sortOrder === "recent" ? b.lastUsedDate.getTime() - a.lastUsedDate.getTime() : a.lastUsedDate.getTime() - b.lastUsedDate.getTime()
-    );
+  const [sortedPermissions, setSortedPermissions] = useState<AdminPermission[]>([]);
 
-    setSortedPermissions(updatedPermissions);
-  }, [sortOrder, parseThaiDate, permissions])
-    ;
+  // useEffect(() => {
+  //   const updatedPermissions = permissions.map(user => ({
+  //     ...user,
+  //     lastUsedDate: parseThaiDate(user.lastUsed)
+  //   }));
+  //   updatedPermissions.sort((a, b) =>
+  //     sortOrder === "recent" ? b.lastUsedDate.getTime() - a.lastUsedDate.getTime() : a.lastUsedDate.getTime() - b.lastUsedDate.getTime()
+  //   );
+
+  //   setSortedPermissions(updatedPermissions);
+  // }, [sortOrder, parseThaiDate, permissions]);
+  useEffect(() => {
+    setSortedPermissions(admins)
+  })
+
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -299,7 +455,7 @@ const PermissionPage = () => {
       <div className="flex flex-row flex-1 relative">
         {/* Sidebar */}
         <div className="relative z-50">
-          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin"/>
+          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin" />
         </div>
 
         {/* Main Content */}
@@ -352,7 +508,7 @@ const PermissionPage = () => {
                         : ""
                   })
                 }
-                
+
                 options={[
                   { value: "กรรมการหลักสูตร", label: "กรรมการหลักสูตร" },
                   { value: "ประชาสัมพันธ์ (PR)", label: "ประชาสัมพันธ์ (PR)" },
@@ -407,12 +563,12 @@ const PermissionPage = () => {
               isEditRole={false}
               onSave={(formData) => {
                 if (isEditMode) {
-                  handleSaveEditUser({ ...formData, id: selectedUser?.id || 0 }); // เซฟข้อมูลที่แก้ไข
+                  handleSaveEditUser({ ...formData, id: selectedUser?.adminId || 0 }); // เซฟข้อมูลที่แก้ไข
                 } else {
                   handleSaveAddUser(formData); // เซฟผู้ใช้ใหม่
                 }
               }}
-              onDelete={() => {}} // Provide a placeholder or appropriate function
+              onDelete={() => { }} // Provide a placeholder or appropriate function
               userData={selectedUser || undefined} // ถ้าเป็นโหมดเพิ่ม userData จะเป็น undefined
             />
           )}
@@ -423,8 +579,8 @@ const PermissionPage = () => {
               onClose={() => setIsEditRoleOpen(false)}
               isEdit={false}
               isEditRole={true}
-              onSave={(formData) => handleSaveRole(formData.role)}
-              onDelete={() => {}} // Add a placeholder or appropriate function for onDelete
+              onSave={(formData) => handleSaveRole(formData)}
+              onDelete={() => { }} // Add a placeholder or appropriate function for onDelete
               userData={selectedUser} // ใช้ข้อมูลผู้ใช้ที่ถูกเลือก
             />
           )}
@@ -441,7 +597,7 @@ const PermissionPage = () => {
           )}
 
           {/* ตารางแสดงรายการสิทธิ์ */}
-          
+
           <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
             <table className="w-full min-w-[1200px] border-collapse">
               <thead className="bg-[#F3F5F6] text-[#565656] text-left">
@@ -468,28 +624,28 @@ const PermissionPage = () => {
               </thead>
               <tbody>
                 {sortedPermissions.map((user, index) => (
-                  <tr key={user.id} className="border-b hover:bg-gray-50">
+                  <tr key={index} className="border-b hover:bg-gray-50">
                     <td className="px-6 py-3 text-[#565656] whitespace-nowrap">{index + 1}</td>
                     <td className="px-6 py-3 text-[#565656] whitespace-nowrap">
-                      {user.title} {user.username} {user.lastName}
+                      {user.prefix} {user.firstName} {user.lastName}
                     </td>
                     <td className="px-6 py-3 text-[#565656] whitespace-nowrap">{user.email}</td>
-                    <td className="px-6 py-3 text-[#565656] whitespace-nowrap">{user.phone}</td>
+                    <td className="px-6 py-3 text-[#565656] whitespace-nowrap">{user.phoneNumber}</td>
                     <td className="px-6 py-3 text-[#565656] whitespace-nowrap">
-                      {user.role.map((role, idx) => (
+                      {user.roles?.map((role, idx) => (
                         <span
-                          key={`${user.id}-${idx}`}
+                          key={`${user.adminId}-${idx}`}
                           className={`mr-2 
-              ${role === "กรรมการหลักสูตร" ? "text-[#008A90]" : ""}
-              ${role === "กรรมการสัมภาษณ์" ? "text-[#4F46E5]" : ""}
-              ${role === "ประชาสัมพันธ์ (PR)" ? "text-[#DAA520]" : ""}
-              ${role === "ฝ่ายการศึกษา" ? "text-[#166534]" : ""}`}
+              ${role === "Course Committee" ? "text-[#008A90]" : ""}
+              ${role === "Interview Committee" ? "text-[#4F46E5]" : ""}
+              ${role === "Public Relations" ? "text-[#DAA520]" : ""}
+              ${role === "Education Department" ? "text-[#166534]" : ""}`}
                         >
                           {role}
                         </span>
                       ))}
                     </td>
-                    <td className="px-6 py-3 text-[#565656] whitespace-nowrap">{user.lastUsed}</td>
+                    <td className="px-6 py-3 text-[#565656] whitespace-nowrap">{user.lastSeen}</td>
                     <td className="px-6 py-3 text-center relative whitespace-nowrap">
                       <button
                         className="text-[#565656] hover:text-gray-900 flex items-center justify-center"
