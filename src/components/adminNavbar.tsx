@@ -14,7 +14,7 @@ const pageTitles = {
     "/admin/reports": "รายงานระบบ",
     "/admin/settings": "ตั้งค่าระบบ",
     "/admin/applicant": "รายการใบสมัคร",
-    "/admin/screening/grouping": "จัดกลุ่มผู้สมัครสำหรับการคัดกรองเบื้องต้น",
+    "/admin/screening/group": "จัดกลุ่มผู้สมัครสำหรับการคัดกรองเบื้องต้น",
     "/admin/screening/tracking": "ติดตามความคืบหน้าการคัดกรองเบื้องต้น",
     "/admin/screening/candidates": "รายการผู้สมัครสำหรับพิจารณาคัดกรองเบื้องต้น",
     "/admin/screening/summary": "สรุปผลการคัดกรองเบื้องต้น",
@@ -36,7 +36,7 @@ interface AdminNavbarProps {
     backToPage?: { href: string; label: string };
 }
 
-const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed }) => {
+const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed, backToPage }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [langDropdownOpen, setLangDropdownOpen] = useState(false);
     const pathname = usePathname();
@@ -49,7 +49,7 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed }) => {
 
             {/* Title ชิด Sidebar */}
             {!isKnownPage ? (
-                <Link href="/camp">
+                <Link href={backToPage?.href || "/camp"}>
                     <span className="text-[16px] hover:underline cursor-pointer text-[#565656] pl-6 flex items-center gap-2">
                         <Image src="/images/admin/adminNavbar/back_icon.svg" alt="Back" width={10} height={10} />
                         กลับสู่หน้ารายการ

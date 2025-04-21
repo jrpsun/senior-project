@@ -11,16 +11,69 @@ import PopupEditInterviewRoom from "@components/components/common/admin/intervie
 import PopupDeleteConfirm from "@components/components/common/admin/interview/interviewSchedule/PopupDeleteConfirm";
 import AlertAdmin from "@components/components/common/admin/alertAdmin";
 import Image from "next/image";
+import { InterviewRound } from "@components/types/interviewRound";
+import { InterviewCom } from "@components/types/interviewCom";
+import { InterviewCommitteeMember, InterviewRoundDetailResponse } from "@components/types/roomDetails";
+import { RoomCommittee } from "@components/types/roomCommittee";
 
 const InterviewSchedulePage = () => {
-  interface InterviewRound {
-    course: string;
-    round: string;
-    date: string;
-    startTime: string;
-    endTime: string;
-    duration: number;
+  const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+  const [committees, setCommittees] = useState<InterviewCom[]>([]);
+  const [interviewRound, setInterviewRound] = useState<InterviewRound[]>([]);
+  const [roomDetails, setRoomDetails] = useState<InterviewRoundDetailResponse[][]>([]);
+  const [roomCom, setRoomCom] = useState<RoomCommittee[]>([]);
+  const [loading, setLoading] = useState(true);
+
+
+  async function fetchData() {
+    try {
+      const [res_com, res_round, res_room_details, res_room_com] = await Promise.all([
+        fetch(`${API_BASE_URL}/interview-committee/get-all-interviewC`),
+        fetch(`${API_BASE_URL}/education-department/get-interview-round`),
+        fetch(`${API_BASE_URL}/education-department/get-interview-room-details`),
+        fetch(`${API_BASE_URL}/education-department/get-all-interview-room-committee`)
+      ]);
+
+      if (!res_com.ok || !res_round.ok || !res_room_details.ok || !res_room_com.ok) {
+        throw new Error("Failed to fetch one or more resources");
+      }
+
+      const data_com = await res_com.json();
+      const data_round = await res_round.json();
+      const data_room_details = await res_room_details.json()
+      const data_room_com = await res_room_com.json()
+
+      setCommittees(data_com || []);
+      setInterviewRound(data_round.interviewRound || []);
+      setRoomDetails(data_room_details.details || []);
+      setRoomCom(data_room_com || []);
+
+
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    } finally {
+      setLoading(false);
+    }
   }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+  console.log("committees", committees)
+  //console.log("round", interviewRound[0].admissionRoundName)
+  console.log('rooms details', roomDetails)
+  console.log('room com', roomCom)
+
+
+  const availableCommittees = committees.filter(com =>
+    !roomCom.some(room => room.interviewComId === com.interviewComId)
+  ).map(com => ({
+    interviewComId: com.interviewComId || "",
+    prefix: com.prefix || "",
+    firstName: com.firstName || "",
+    lastName: com.lastName || ""
+  }));
+  console.log('available com', availableCommittees)
 
   const [interviewRounds, setInterviewRounds] = useState<InterviewRound[]>([]);
   const [isEdit, setIsEdit] = useState(false);
@@ -39,27 +92,30 @@ const InterviewSchedulePage = () => {
     interviewRoundIndex?: number;
   }
 
-  const [roomDetails, setRoomDetails] = useState<RoomDetail[]>([]);
-  const [selectedRoom, setSelectedRoom] = useState<RoomDetail | null>(null);
+
+  const [selectedRoom, setSelectedRoom] = useState<InterviewRoundDetailResponse | null>(null);
   const [isRoomMenuOpen, setIsRoomMenuOpen] = useState(false);
   const [roomMenuPosition, setRoomMenuPosition] = useState({ top: 0, left: 0 });
   const [showEditRoomPopup, setShowEditRoomPopup] = useState(false);
-  const [editingRoom, setEditingRoom] = useState<RoomDetail | null>(null);
+  const [editingRoom, setEditingRoom] = useState<InterviewRoundDetailResponse | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [roomToDelete, setRoomToDelete] = useState<RoomDetail | null>(null);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const [currentRoundId, setCurrentRoundId] = useState("");
+  console.log('current round id', currentRoundId)
 
   const roomMenuRef = useRef<HTMLDivElement | null>(null);
 
 
   const [lastInterviewDetail, setLastInterviewDetail] = useState({
-    course: "",
-    round: "",
-    date: "",
-    startTime: "",
+    admissionProgram: "",
+    admissionRoundName: "",
+    duration: "20",
     endTime: "",
-    duration: 0,
+    interviewDate: "",
+    interviewRoundId: "",
+    startTime: ""
   });
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -79,11 +135,11 @@ const InterviewSchedulePage = () => {
 
   const getFilteredRoomDetails = () => {
     return roomDetails.filter((item) => {
-      const courseMatch = !filters.course || item.course === filters.course;
-      const roundMatch = !filters.round || item.round === filters.round;
-      const dateMatch = !filters.date || item.date === filters.date;
-      const interviewerMatch = !filters.interviewer || item.interviewers.includes(filters.interviewer);
-      return courseMatch && roundMatch && dateMatch && interviewerMatch;
+      const courseMatch = !filters.course || item.admissionProgram === filters.admissionProgram;
+      const roundMatch = !filters.round || item.admissionRoundName === filters.admissionRoundName;
+      const dateMatch = !filters.date || item.interviewDate === filters.interviewDate;
+      //const interviewerMatch = !filters.interviewer || item.interviewers.includes(filters.interviewer);
+      return courseMatch && roundMatch && dateMatch; //&& interviewerMatch;
     });
   };
 
@@ -101,69 +157,208 @@ const InterviewSchedulePage = () => {
   };
 
   const [interviewDetail, setInterviewDetail] = useState({
-    course: "",
-    round: "",
-    date: "",
-    startTime: "",
+    admissionProgram: "",
+    admissionRoundName: "",
+    duration: "20",
     endTime: "",
-    duration: 20,
+    interviewDate: "",
+    interviewRoundId: "",
+    startTime: ""
   });
+
+
   const getRoundFromCourse = (course: string) => {
     if (course === "ITDS/B") return "1/68 - MU – Portfolio (TCAS 1)";
     if (course === "ITCS/B") return "1/68 - ICT Portfolio";
     return "";
   };
 
-  const handleSave = () => {
-    const course = interviewDetail.course;
-    const newRound = {
-      course,
-      round: getRoundFromCourse(course),
-
-      date: interviewDetail.date,
+  console.log("current interviewDetail", interviewDetail)
+  const handleSave = async () => {
+    const body = {
+      admissionProgram: interviewDetail.admissionProgram,
+      admissionRoundName: interviewDetail.admissionRoundName,
+      interviewDate: interviewDetail.interviewDate,
       startTime: interviewDetail.startTime,
       endTime: interviewDetail.endTime,
       duration: interviewDetail.duration,
-    };
-
-    if (isEdit && editIndex !== null) {
-      // แก้ไขรายการเดิมใน interviewRounds
-      const updatedRounds = [...interviewRounds];
-      updatedRounds[editIndex] = newRound;
-      setInterviewRounds(updatedRounds);
-
-      // แก้ไขรายการที่เกี่ยวข้องใน roomDetails
-      const updatedRoomDetails = roomDetails.map((room) => {
-        if (room.interviewRoundIndex === editIndex) {
-          return {
-            ...room,
-            date: interviewDetail.date,
-            time: `${interviewDetail.startTime} - ${interviewDetail.endTime}`,
-            course: interviewDetail.course,
-            round: interviewDetail.round,
-            duration: interviewDetail.duration,
-          };
-        }
-        return room;
-      });
-
-      setRoomDetails(updatedRoomDetails);
-    } else {
-      // เพิ่มใหม่
-      setInterviewRounds((prev) => [...prev, newRound]);
     }
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/interview-committee/update-interview-round?round_id=${interviewDetail.interviewRoundId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        }
+      );
 
-    setLastInterviewDetail({ ...interviewDetail, duration: Number(interviewDetail.duration) });
+      if (!response.ok) throw new Error('Failed to update interview round.');
 
-    // reset
-    setInterviewDetail({ course: "", round: "", date: "", startTime: "", endTime: "", duration: 20 });
-    setIsEdit(false);
-    setEditIndex(null);
-    setShowForm(false);
-    setAlertMessage(isEdit ? "แก้ไขข้อมูลรอบสัมภาษณ์สำเร็จ" : "เพิ่มข้อมูลรอบสัมภาษณ์สำเร็จ");
-    setShowAlert(true);
+      window.location.reload();
 
+    } catch (error) {
+      console.error('Error saving interview details:', error);
+      alert("การบันทึกข้อมูลล้มเหลว กรุณาลองใหม่");
+    }
   };
+
+  const handleCreate = async () => {
+    const body = {
+      admissionProgram: interviewDetail.admissionProgram,
+      admissionRoundName: interviewDetail.admissionRoundName,
+      interviewDate: interviewDetail.interviewDate,
+      startTime: interviewDetail.startTime,
+      endTime: interviewDetail.endTime,
+      duration: interviewDetail.duration,
+    }
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/interview-committee/create-interview-round`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to create interview round.');
+
+      window.location.reload();
+
+    } catch (error) {
+      console.error('Error saving interview details:', error);
+      alert("สร้างข้อมูลล้มเหลว กรุณาลองใหม่");
+    }
+  };
+
+
+  const handleEditRoomDetails = async (updatedData: {
+    interviewRoundId?: string;
+    interviewDate?: string;
+    interviewStartTime?: string;
+    interviewEndTime?: string;
+    admissionProgram?: string;
+    admissionRoundName?: string;
+    interviewRoomId?: string;
+    interviewRoom?: string;
+    interviewType?: string;
+    interviewComs: InterviewCommitteeMember[];
+  }) => {
+    if (!updatedData.interviewRoomId) {
+      alert("ไม่พบข้อมูลห้องสัมภาษณ์");
+      return;
+    }
+  
+    const comIdList = updatedData.interviewComs.map((com) => com.interviewComId);
+    const headers = {
+      "Content-Type": "application/json",
+    };
+  
+    console.log("update data", updatedData);
+  
+    try {
+      const responseRoom = await fetch(
+        `${API_BASE_URL}/education-department/update-interview-room-detail`,
+        {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            interviewRoomId: updatedData.interviewRoomId,
+            interviewRoundId: updatedData.interviewRoundId,
+            interviewRoom: updatedData.interviewRoom,
+            interviewType: updatedData.interviewType,
+          }),
+        }
+      );
+  
+      if (!responseRoom.ok) {
+        throw new Error("ไม่สามารถอัปเดตรายละเอียดห้องได้");
+      }
+  
+      const responseDeleteCom = await fetch(
+        `${API_BASE_URL}/education-department/delete-interview-room-committee?interview_room_id=${updatedData.interviewRoomId}`,
+        {
+          method: "DELETE",
+          headers,
+        }
+      );
+  
+      if (!responseDeleteCom.ok) {
+        throw new Error("ไม่สามารถลบกรรมการเก่าได้");
+      }
+  
+      const responseAddCom = await fetch(
+        `${API_BASE_URL}/education-department/create-interview-room-committee`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            interviewRoomId: updatedData.interviewRoomId,
+            interviewComId: comIdList,
+          }),
+        }
+      );
+  
+      if (!responseAddCom.ok) {
+        throw new Error("ไม่สามารถเพิ่มกรรมการใหม่ได้");
+      }
+  
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      alert("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+    }
+  };
+  
+  const handleDeleteRoomDetails = async () => {
+    console.log("room to delete", roomToDelete);
+  
+    try {
+      // First delete: delete-interview-room-committee
+      const deleteCommitteeRes = await fetch(
+        `${API_BASE_URL}/education-department/delete-interview-room-committee?interview_room_id=${roomToDelete.interviewRoomId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      if (!deleteCommitteeRes.ok) {
+        const errorData = await deleteCommitteeRes.json();
+        throw new Error(errorData.detail || "Failed to delete interview room committee");
+      }
+  
+      // Second delete: delete-interview-room-detail
+      const deleteDetailRes = await fetch(
+        `${API_BASE_URL}/education-department/delete-interview-room-detail?round_id=${roomToDelete.interviewRoundId}&room_id=${roomToDelete.interviewRoomId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      if (!deleteDetailRes.ok) {
+        const errorData = await deleteDetailRes.json();
+        throw new Error(errorData.detail || "Failed to delete interview room detail");
+      }
+  
+      console.log("Room deleted successfully");
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting interview room:", error);
+    }
+  };
+  
+  
 
   const courseOptions = [
     { label: "ITDS/B", value: "ITDS/B" },
@@ -171,23 +366,23 @@ const InterviewSchedulePage = () => {
   ];
 
   const roundOptions = [
-    { label: "1/68 - MU – Portfolio (TCAS 1)", value: "1/68 - MU – Portfolio (TCAS 1)" },
+    { label: "1/68 - MU - Portfolio (TCAS 1)", value: "1/68 - MU - Portfolio (TCAS 1)" },
     { label: "1/68 - ICT Portfolio", value: "1/68 - ICT Portfolio" },
   ];
 
-  const allInterviewers = ["อ. พิสุทธิ์ธร", "อ. อารดา", "อ. จินต์พิชชา", "อ. คธากร"];
-
-  const interviewerOptions = allInterviewers.map((name) => ({
-    label: name,
-    value: name,
+  const interviewerOptions = committees.map((com) => ({
+    label: `อ. ${com.firstName}`,
+    value: com.interviewComId,
   }));
 
   const handleEdit = (item: InterviewRound, index: number) => {
+    console.log("item", item)
+    setIsEdit(true);
+    setShowForm(true);
     setInterviewDetail(item);
     setLastInterviewDetail(item);
     setEditIndex(index);
-    setIsEdit(true);
-    setShowForm(true);
+
   };
 
   const formatThaiDate = (dateStr: string) => {
@@ -202,19 +397,69 @@ const InterviewSchedulePage = () => {
     const monthName = monthsThai[parseInt(month) - 1];
     return `${parseInt(day)} ${monthName} ${thaiYear}`;
   };
-  const handleSaveRoomDetail = (data: RoomDetail) => {
-    const roundIndex = editIndex !== null ? editIndex : interviewRounds.length - 1;
-
-    const updatedRoom = {
-      ...data,
-      interviewRoundIndex: roundIndex,
+  
+  const handleSaveRoomDetail = async (updatedData: {
+    mode: string;
+    room: string;
+    interviewers: string[];
+  }) => {
+    console.log('updated',updatedData)
+    const body = {
+      interviewRoundId: currentRoundId,
+      interviewRoom: updatedData.room,
+      interviewType: updatedData.mode,
     };
-    setRoomDetails((prev) => [...prev, updatedRoom]);
-    setAlertMessage("เพิ่มห้องสัมภาษณ์สำเร็จ");
-    setShowAlert(true);
+  
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/education-department/create-interview-room-detail`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error('Failed to create interview room detail.');
+      }
+  
+      const data = await response.json();
+  
+      const interviewRoomId = data?.interviewRoomId;
+      if (!interviewRoomId) {
+        throw new Error('Missing interviewRoomId in response.');
+      }
+      const interviewerArray = updatedData.interviewers.split(',').map((id) => id.trim());
 
+      const response_com = await fetch(
+        `${API_BASE_URL}/education-department/create-interview-room-committee`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            interviewRoomId: `${interviewRoomId}`,
+            interviewComId: interviewerArray,
+          }),
+        }
+      );
+  
+      if (!response_com.ok) {
+        throw new Error('Failed to assign interviewers to the room.');
+      }
+  
+      window.location.reload();
+    } catch (error) {
+      console.error('Error saving interview room details:', error);
+      alert("สร้างข้อมูลล้มเหลว กรุณาลองใหม่");
+    }
   };
-  const handleOpenRoomMenu = (event: React.MouseEvent, room: RoomDetail) => {
+  
+  const handleOpenRoomMenu = (event: React.MouseEvent, room: InterviewRoundDetailResponse) => {
     event.stopPropagation();
     const rect = event.currentTarget.getBoundingClientRect();
     const menuHeight = 120; // ความสูงของ popup menu
@@ -264,8 +509,8 @@ const InterviewSchedulePage = () => {
         <AdminNavbar isCollapsed={isCollapsed} />
       </div>
       <div className="flex flex-row flex-1 relative">
-      <div className="relative z-50">
-        <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}  userRole="admin"/>
+        <div className="relative z-50">
+          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin" />
         </div>
         <div
           className={`flex flex-col w-full p-6 mt-[64px] transition-all bg-white ${isCollapsed ? "ml-[80px]" : "ml-[300px]"
@@ -379,7 +624,7 @@ const InterviewSchedulePage = () => {
                   </tr>
                 </thead>
                 <tbody className="text-[#565656]">
-                  {interviewRounds.length === 0 ? (
+                  {interviewRound.length === 0 ? (
                     <tr>
                       <td colSpan={8}>
                         <div className="text-center text-gray-400 py-6 text-xl">
@@ -388,12 +633,12 @@ const InterviewSchedulePage = () => {
                       </td>
                     </tr>
                   ) : (
-                    interviewRounds.map((item, index) => (
+                    interviewRound.map((item, index) => (
                       <tr key={index} className="border-b">
                         <td className="p-2 w-[60px] text-center whitespace-nowrap">{index + 1}</td>
-                        <td className="p-2 w-[80px] whitespace-nowrap">{item.course}</td>
-                        <td className="p-2 w-[250px] whitespace-nowrap">{item.round}</td>
-                        <td className="p-2 w-[130px] whitespace-nowrap">{formatThaiDate(item.date)}</td>
+                        <td className="p-2 w-[80px] whitespace-nowrap">{item.admissionProgram}</td>
+                        <td className="p-2 w-[250px] whitespace-nowrap">{item.admissionRoundName}</td>
+                        <td className="p-2 w-[130px] whitespace-nowrap">{item.interviewDate}</td>
                         <td className="p-2 w-[100px] whitespace-nowrap">{item.startTime}</td>
                         <td className="p-2 w-[100px] whitespace-nowrap">{item.endTime}</td>
                         <td className="p-2 w-[200px] whitespace-nowrap  ">{item.duration} นาที</td>
@@ -408,7 +653,10 @@ const InterviewSchedulePage = () => {
                             </button>
                             <button
                               className="bg-[#008A90] hover:bg-[#009198] text-white rounded-[8px] px-3 py-1 flex items-center gap-2 whitespace-nowrap"
-                              onClick={() => setShowRoomPopup(true)}
+                              onClick={() => (
+                                setShowRoomPopup(true),
+                                setCurrentRoundId(`${item.interviewRoundId}`)
+                              )}
                             >
                               <Image src="/images/admin/interview/plus_icon.svg" alt="add" width={16} height={16} />
                               เพิ่มห้องสัมภาษณ์
@@ -452,16 +700,20 @@ const InterviewSchedulePage = () => {
                     getFilteredRoomDetails().map((item, index) => (
                       <tr key={index} className="border-b hover:bg-gray-50">
                         <td className="p-2 text-center whitespace-nowrap">{index + 1}</td>
-                        <td className="p-2 whitespace-nowrap">{formatThaiDate(item.date)}</td>
-                        <td className="p-2 whitespace-nowrap">{item.time}</td>
-                        <td className="p-2 whitespace-nowrap">{item.course}</td>
-                        <td className="p-2 whitespace-nowrap">{item.round}</td>
+                        <td className="p-2 whitespace-nowrap">{formatThaiDate(item.interviewDate)}</td>
+                        <td className="p-2 whitespace-nowrap">{item.interviewTime}</td>
+                        <td className="p-2 whitespace-nowrap">{item.admissionProgram}</td>
+                        <td className="p-2 whitespace-nowrap">{item.admissionRoundName}</td>
                         <td className="p-2 whitespace-nowrap">
-                          {item.mode === "on-site" ? "ออนไซต์ (On-site)" : "ออนไลน์ (Online)"}
+                          {item.interviewType === "On-site" ? "ออนไซต์ (On-site)" : "ออนไลน์ (Online)"}
                         </td>
-                        <td className="p-2 whitespace-nowrap">{item.room}</td>
-                        <td className="p-2 whitespace-nowrap">{item.duration} นาที</td>
-                        <td className="p-2 whitespace-nowrap">{item.interviewers}</td>
+                        <td className="p-2 whitespace-nowrap">{item.interviewRoom}</td>
+                        <td className="p-2 whitespace-nowrap">20 นาที</td>
+                        <td className="p-2 whitespace-nowrap flex flex-row space-x-1">
+                          {item.interviewComs.map((com, index) => (
+                            <div key={index}>อ. {com.firstName} |</div>
+                          ))}
+                        </td>
                         <td className="text-center">
                           <button
                             onClick={(event) => handleOpenRoomMenu(event, item)}
@@ -492,13 +744,17 @@ const InterviewSchedulePage = () => {
                 setShowForm(false);
                 setIsEdit(false); // reset โหมดหลังจากบันทึก
               }}
+              handleCreate={() => {
+                handleCreate();
+                setShowForm(false);
+              }}
               courseOptions={courseOptions}
               roundOptions={
-                interviewDetail.course
-                  ? [{ label: getRoundFromCourse(interviewDetail.course), value: getRoundFromCourse(interviewDetail.course) }]
+                interviewDetail.admissionRoundName
+                  ? [{ label: getRoundFromCourse(interviewDetail.admissionProgram), value: getRoundFromCourse(interviewDetail.admissionProgram) }]
                   : []
               }
-              isRoundDisabled={!interviewDetail.course}
+              isRoundDisabled={!interviewDetail.admissionProgram}
 
               onCancel={() => {
                 setInterviewDetail({ course: "", round: "", date: "", startTime: "", endTime: "", duration: 20 });
@@ -512,6 +768,7 @@ const InterviewSchedulePage = () => {
       )}
       {showRoomPopup && (
         <PopupAddRoom
+          allInterviewers={availableCommittees}
           onCancel={() => setShowRoomPopup(false)}
           onSaveRoom={handleSaveRoomDetail}
           interviewDetail={
@@ -533,21 +790,9 @@ const InterviewSchedulePage = () => {
       )}
       {showEditRoomPopup && editingRoom && (
         <PopupEditInterviewRoom
+          allInterviewers={availableCommittees}
           roomData={editingRoom}
-          onSave={(updatedRoom) => {
-            // อัปเดต roomDetails
-            setRoomDetails(prev =>
-              prev.map(r =>
-                r === editingRoom
-                  ? { ...r, ...updatedRoom, mode: updatedRoom.mode as "on-site" | "online" }
-                  : r
-              )
-            );
-            setShowEditRoomPopup(false);
-            setAlertMessage("แก้ไขข้อมูลห้องสัมภาษณ์สำเร็จ");
-            setShowAlert(true);
-
-          }}
+          onSave={(updatedRoom) => handleEditRoomDetails(updatedRoom)}
           onCancel={() => setShowEditRoomPopup(false)}
         />
       )}
@@ -557,14 +802,7 @@ const InterviewSchedulePage = () => {
             setShowDeleteConfirm(false);
             setRoomToDelete(null);
           }}
-          onConfirm={() => {
-            setRoomDetails(prev => prev.filter(r => r !== roomToDelete));
-            setShowDeleteConfirm(false);
-            setRoomToDelete(null);
-            setAlertMessage("ลบข้อมูลการสัมภาษณ์สำเร็จ");
-            setShowAlert(true);
-
-          }}
+          onConfirm={() => handleDeleteRoomDetails()}
         />
       )}
       {showAlert && (

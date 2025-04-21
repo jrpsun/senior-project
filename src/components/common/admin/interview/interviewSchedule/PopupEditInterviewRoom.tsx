@@ -1,57 +1,88 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { InterviewCommitteeMember } from "@components/types/roomDetails";
 
 const PopupEditInterviewRoom = ({
     roomData,
     onCancel,
     onSave,
+    allInterviewers
 }: {
     roomData: {
-        date: string;
-        time: string;
-        course: string;
-        round: string;
-        mode: string;
-        room: string;
-        duration: number;
-        interviewers: string;
+        interviewRoundId?: string;
+        interviewDate?: string;
+        interviewStartTime?: string;
+        interviewEndTime?: string;
+        admissionProgram?: string;
+        admissionRoundName?: string;
+        interviewRoomId?: string;
+        interviewRoom?: string;
+        interviewType?: string;
+        interviewComs: InterviewCommitteeMember[];
     };
     onCancel: () => void;
     onSave: (updatedData: typeof roomData) => void;
+    allInterviewers: {
+        firstName: string;
+        interviewComId: string;
+        lastName: string;
+        prefix: string;
+    }[];
 }) => {
-    const [room, setRoom] = useState(roomData.room);
-    const [mode, setMode] = useState(roomData.mode);
-    const [duration, setDuration] = useState(roomData.duration);
-    const [interviewers, setInterviewers] = useState<string[]>(roomData.interviewers.split(", "));
-    const allInterviewers = ["อ. พิสุทธิ์ธร", "อ. อารดา", "อ. จินต์พิชชา", "อ. คธากร"];
+    const [room, setRoom] = useState(roomData.interviewRoom || "");
+    const [mode, setMode] = useState<string>("");
+    const [interviewers, setInterviewers] = useState<InterviewCommitteeMember[]>(roomData.interviewComs || []);
     const [showDropdown, setShowDropdown] = useState(false);
-    const [startTime, setStartTime] = useState(roomData.time.split(" - ")[0]);
-    const [endTime, setEndTime] = useState(roomData.time.split(" - ")[1]);
-    const [date, setDate] = useState(roomData.date);
+    const combineInterviewers = [...roomData.interviewComs, ...allInterviewers]
+    useEffect(() => {
+        if (roomData?.interviewType) {
+            setMode(roomData.interviewType);
+        }
+    }, [roomData?.interviewType]);
 
-
-
-    const toggleInterviewer = (name: string) => {
-        if (interviewers.includes(name)) {
-            setInterviewers(interviewers.filter((n) => n !== name));
+    const toggleInterviewer = (person: InterviewCommitteeMember) => {
+        const exists = interviewers.find((i) => i.interviewComId === person.interviewComId);
+        if (exists) {
+            setInterviewers(interviewers.filter((i) => i.interviewComId !== person.interviewComId));
         } else {
-            setInterviewers([...interviewers, name]);
+            setInterviewers([...interviewers, person]);
         }
     };
 
     const handleSave = () => {
         onSave({
             ...roomData,
-            room,
-            mode,
-            duration,
-            date,
-            time: `${startTime} - ${endTime}`,
-            interviewers: interviewers.join(", "),
+            interviewRoom: room,
+            interviewType: mode,
+            interviewComs: interviewers
         });
     };
 
-
+    function renderRadioButton(value: string, label: string) {
+        return (
+            <label className="flex items-center cursor-pointer">
+                <input
+                    type="radio"
+                    name="mode"
+                    value={value}
+                    checked={mode === value}
+                    onChange={() => setMode(value)}
+                    className="hidden"
+                />
+                <div
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${mode === value ? "border-[#008A90] bg-[#008A90]" : "border-gray-400 bg-white"
+                        }`}
+                >
+                    {mode === value && <div className="w-2.5 h-2.5 bg-white rounded-full" />}
+                </div>
+                <span className="ml-2 text-[#565656]">{label}</span>
+            </label>
+        );
+    }
+    
+    console.log('edit coms', interviewers)
+    console.log('edit room', room),
+    console.log('edit type', mode)
     return (
         <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-lg p-6 max-w-[800px] w-full shadow-lg relative">
@@ -69,50 +100,19 @@ const PopupEditInterviewRoom = ({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
                         <label className="block font-medium text-[#565656] mb-1">หลักสูตร</label>
-                        <div className=" px-3 py-2 ">{roomData.course}</div>
+                        <div className=" px-3 py-2 ">{roomData.admissionProgram}</div>
                     </div>
                     <div>
                         <label className="block font-medium text-[#565656] mb-1">รอบรับสมัคร</label>
-                        <div className="px-3 py-2">{roomData.round}</div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <label className="block font-medium text-[#565656] mb-1">วันที่สัมภาษณ์</label>
-                        <input
-                            type="date"
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block font-medium text-[#565656] mb-1">เวลาเริ่มต้น</label>
-                        <input
-                            type="time"
-                            value={startTime}
-                            onChange={(e) => setStartTime(e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                        />
-                    </div>
-                    <div>
-                        <label className="block font-medium text-[#565656] mb-1">เวลาสิ้นสุด</label>
-                        <input
-                            type="time"
-                            value={endTime}
-                            onChange={(e) => setEndTime(e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                        />
+                        <div className="px-3 py-2">{roomData.admissionRoundName}</div>
                     </div>
                 </div>
 
                 <div className="mb-4">
                     <label className="block font-medium text-[#565656] mb-1">รูปแบบการสัมภาษณ์</label>
                     <div className="flex items-center gap-6">
-                        {renderRadioButton("on-site", "ออนไซต์ (On-site)")}
-                        {renderRadioButton("online", "ออนไลน์ (Online)")}
+                        {renderRadioButton("On-site", "ออนไซต์ (On-site)")}
+                        {renderRadioButton("Online", "ออนไลน์ (Online)")}
                     </div>
                 </div>
 
@@ -126,18 +126,6 @@ const PopupEditInterviewRoom = ({
                             onChange={(e) => setRoom(e.target.value)}
                         />
                     </div>
-                    <div className="max-w-[200px]">
-                        <label className="block font-medium text-[#565656] mb-1">ระยะเวลาสัมภาษณ์ (ต่อคน)</label>
-                        <div className="flex items-center">
-                            <input
-                                type="number"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                value={duration}
-                                onChange={(e) => setDuration(Number(e.target.value))}
-                            />
-                            <span className="ml-2">นาที</span>
-                        </div>
-                    </div>
                 </div>
 
                 <div className="mt-4 w-full relative">
@@ -149,17 +137,17 @@ const PopupEditInterviewRoom = ({
                         {interviewers.length === 0 ? (
                             <span className="text-[#C4C4C4]">กรุณาเลือกผู้สัมภาษณ์</span>
                         ) : (
-                            interviewers.map((name) => (
+                            interviewers.map((item) => (
                                 <div
-                                    key={name}
+                                    key={item.interviewComId}
                                     className="flex items-center bg-gray-100 text-[#565656] rounded-xl px-3 py-0.5"
                                 >
-                                    {name}
+                                    {item.prefix} {item.firstName}
                                     <button
                                         className="ml-2 text-[#565656] hover:text-gray-700 text-2xl"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            toggleInterviewer(name);
+                                            toggleInterviewer(item);
                                         }}
                                     >
                                         ×
@@ -187,15 +175,15 @@ const PopupEditInterviewRoom = ({
 
                     {showDropdown && (
                         <div className="absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-[200px] overflow-y-auto shadow-md">
-                            {allInterviewers
-                                .filter((name) => !interviewers.includes(name))
-                                .map((name) => (
+                            {combineInterviewers
+                                .filter((item) => !interviewers.find((i) => i.interviewComId === item.interviewComId))
+                                .map((item) => (
                                     <div
-                                        key={name}
+                                        key={item.interviewComId}
                                         className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-[#565656]"
-                                        onClick={() => toggleInterviewer(name)}
+                                        onClick={() => toggleInterviewer(item)}
                                     >
-                                        {name}
+                                        {item.prefix} {item.firstName} {item.lastName}
                                     </div>
                                 ))}
                         </div>
@@ -221,28 +209,6 @@ const PopupEditInterviewRoom = ({
             </div>
         </div>
     );
-
-    function renderRadioButton(value: string, label: string) {
-        return (
-            <label className="flex items-center cursor-pointer">
-                <input
-                    type="radio"
-                    name="mode"
-                    value={value}
-                    checked={mode === value}
-                    onChange={() => setMode(value)}
-                    className="hidden"
-                />
-                <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${mode === value ? "border-[#008A90] bg-[#008A90]" : "border-gray-400 bg-white"
-                        }`}
-                >
-                    {mode === value && <div className="w-2.5 h-2.5 bg-white rounded-full" />}
-                </div>
-                <span className="ml-2 text-[#565656]">{label}</span>
-            </label>
-        );
-    }
 };
 
 export default PopupEditInterviewRoom;

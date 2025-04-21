@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import CustomSelect from "@components/components/form/CustomSelect";
 import Image from "next/image";
 
@@ -7,6 +7,7 @@ import Image from "next/image";
 const PopupInterview = ({
     interviewDetail,
     setInterviewDetail,
+    handleCreate,
     handleSave,
     courseOptions,
     roundOptions,
@@ -31,13 +32,32 @@ const PopupInterview = ({
         endTime: string;
         duration: number;
     }) => void;
+    handleCreate: () => void;
     handleSave: () => void;
     courseOptions: { value: string; label: string }[];
     roundOptions: { value: string; label: string }[];
     isRoundDisabled: boolean;
     onCancel: () => void;
     isEdit?: boolean;
+
+
 }) => {
+    const [roundOption, setRoundOption] = useState([
+        { label: "1/68 - ICT Portfolio", value: "1/68 - ICT Portfolio" },
+    ]);
+
+    useEffect(() => {
+        if (interviewDetail.admissionProgram === "ITDS/B") {
+            setRoundOption([
+                { label: "1/68 - MU – Portfolio (TCAS 1)", value: "1/68 - MU – Portfolio (TCAS 1)" }
+            ]);
+        } else {
+            setRoundOption([
+                { label: "1/68 - ICT Portfolio", value: "1/68 - ICT Portfolio" }
+            ]);
+        }
+    }, [interviewDetail.admissionProgram]);
+
     return (
         <div className="rounded-xl p-6 max-w-6xl w-full px-2 py-1">
             <div className="flex items-center justify-between mb-4">
@@ -66,9 +86,9 @@ const PopupInterview = ({
                 <CustomSelect
                     label="หลักสูตร"
                     options={courseOptions}
-                    value={interviewDetail.course}
+                    value={interviewDetail.admissionProgram}
                     onChange={(selectedOption: { value: string; label: string } | null) =>
-                        setInterviewDetail({ ...interviewDetail, course: selectedOption?.value || "" })
+                        setInterviewDetail({ ...interviewDetail, admissionProgram: selectedOption?.value || "" })
                     }
                     placeholder="เลือกหลักสูตร"
                     required={false}
@@ -77,10 +97,10 @@ const PopupInterview = ({
                 {/* รอบรับสมัคร */}
                 <CustomSelect
                     label="รอบรับสมัคร"
-                    options={roundOptions}
-                    value={interviewDetail.round}
+                    options={roundOption}
+                    value={interviewDetail.admissionRoundName}
                     onChange={(selectedOption: { value: string; label: string } | null) =>
-                        setInterviewDetail({ ...interviewDetail, round: selectedOption?.value || "" })
+                        setInterviewDetail({ ...interviewDetail, admissionRoundName: selectedOption?.value || "" })
                     }
                     placeholder="เลือกรอบรับสมัคร"
                     required={false}
@@ -94,8 +114,8 @@ const PopupInterview = ({
                     <input
                         type="date"
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none"
-                        value={interviewDetail.date}
-                        onChange={(e) => setInterviewDetail({ ...interviewDetail, date: e.target.value })}
+                        value={interviewDetail.interviewDate}
+                        onChange={(e) => setInterviewDetail({ ...interviewDetail, interviewDate: e.target.value })}
                     />
                 </div>
             </div>
@@ -132,7 +152,7 @@ const PopupInterview = ({
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none"
                             value={interviewDetail.duration}
                             onChange={(e) =>
-                                setInterviewDetail({ ...interviewDetail, duration: Number(e.target.value) })
+                                setInterviewDetail({ ...interviewDetail, duration: e.target.value })
                             }
                         />
                     </div>
@@ -147,14 +167,24 @@ const PopupInterview = ({
                 >
                     ยกเลิก
                 </button>
+                {isEdit ? (
+                    <button
+                        onClick={handleSave}
+                        className="w-[120px] px-6 py-2 bg-[#008A90] text-white rounded-lg flex items-center gap-2"
+                    >
+                        <Image src="/images/admin/save_icon.svg" alt="Save" width={18} height={18} />
+                        บันทึก
+                    </button>
+                ) : (
+                    <button
+                        onClick={handleCreate}
+                        className="w-[120px] px-6 py-2 bg-[#008A90] text-white rounded-lg flex items-center gap-2"
+                    >
+                        <Image src="/images/admin/save_icon.svg" alt="Save" width={18} height={18} />
+                        บันทึก
+                    </button>
+                )}
 
-                <button
-                    onClick={handleSave}
-                    className="w-[120px] px-6 py-2 bg-[#008A90] text-white rounded-lg flex items-center gap-2"
-                >
-                    <Image src="/images/admin/save_icon.svg" alt="Save" width={18} height={18} />
-                    บันทึก
-                </button>
             </div>
         </div>
     );
