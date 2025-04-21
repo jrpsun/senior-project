@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useLanguage } from "@components/hooks/LanguageContext";
 import { loginTexts } from "../../translation/login";
 import Image from "next/image";
+import { login } from "@components/lib/auth";
 
 export default function LoginPage() {
   const [citizenId, setCitizenId] = useState("");
@@ -22,13 +23,20 @@ export default function LoginPage() {
       setError(loginTexts[language].errorMessage);
       return;
     }
-
-    if (citizenId === "1234567890123" && password === "test1234") {
+    
+    try {
+      await login(citizenId, password)
       setError(null);
-      router.push("/dashboard");
-    } else {
-      setError(loginTexts[language].invalidCredentials);
+      router.push("/apply");
+    } catch (err: any) {
+      console.log("error", err)
     }
+    // if (citizenId === "1234567890123" && password === "test1234") {
+    //   setError(null);
+    //   router.push("/dashboard");
+    // } else {
+    //   setError(loginTexts[language].invalidCredentials);
+    // }
   };
 
   return (

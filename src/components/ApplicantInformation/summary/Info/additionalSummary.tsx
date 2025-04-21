@@ -8,8 +8,9 @@ interface AdditionalDocumentsProps {
   documents: AdditionalDoc;
   isVisible: boolean;
   setIsVisible: (value: boolean) => void;
+  setReport: any
 }
-const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ documents, isVisible, setIsVisible }) => {
+const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ documents, isVisible, setIsVisible, setReport }) => {
   const { language } = useLanguage();
   const texts = additionalDocumentsTexts[language] || additionalDocumentsTexts["ENG"];
 
@@ -22,10 +23,12 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
             {/* Statement of Purpose */}
             {documents?.stateOfPurposeName && (
               <div className="mb-4">
-                <h3 className="text-[#565656] font-semibold mb-2">
-                  {texts.statementOfPurpose}
-                </h3>
-                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+                <div className="flex flex-cols gap-4">
+                  <h3 className="text-[#565656] font-semibold mb-2">
+                    {texts.statementOfPurpose}
+                  </h3>
+                  <ReportProb isVisible={isVisible} problem={texts.statementOfPurpose} setReport={setReport} reportColumn={"sop"}/>
+                </div>
                 <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
@@ -46,10 +49,12 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
             {/* Portfolio */}
             {documents?.portfolioName && (
               <div className="mb-4">
-                <h3 className="text-[#565656] font-semibold mb-2 ">
-                  {texts.portfolio}
-                </h3>
-                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+                <div className="flex flex-cols gap-4">
+                  <h3 className="text-[#565656] font-semibold mb-2 ">
+                    {texts.portfolio}
+                  </h3>
+                  <ReportProb isVisible={isVisible} problem={texts.portfolio} setReport={setReport} reportColumn={"portfolio"}/>
+                </div>
                 <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
@@ -70,8 +75,10 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
             {/* Video Link */}
             {documents?.vdo && (
               <div className="mb-4">
-                <h3 className="text-[#565656] font-semibold mb-2 ">{texts.video}</h3>
-                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+                <div className="flex flex-cols gap-4">
+                  <h3 className="text-[#565656] font-semibold mb-2 ">{texts.video}</h3>
+                  <ReportProb isVisible={isVisible} problem={texts.video} setReport={setReport} reportColumn={"video"}/>
+                </div>  
                 <a href={documents?.vdo} target="_blank" rel="noopener noreferrer" className="text-[#008A90] hover:underline break-all">
                   {documents?.vdo}
                 </a>
@@ -81,10 +88,12 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
             {/* Resume */}
             {documents?.applicantResumeName && (
               <div className="mb-4">
-                <h3 className="text-[#565656] font-semibold mb-2 ">
-                  {texts.resume}
-                </h3>
-                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+                <div className="flex flex-cols gap-4">
+                   <h3 className="text-[#565656] font-semibold mb-2 ">
+                    {texts.resume}
+                  </h3>
+                  <ReportProb isVisible={isVisible} problem={texts.resume} setReport={setReport} reportColumn={"resume"}/>
+                </div>
                 <div className="border border-gray-300 rounded-lg p-2 flex flex-wrap items-center gap-4 shadow-sm">
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
@@ -105,10 +114,12 @@ const AdditionalDocumentsSummary: React.FC<AdditionalDocumentsProps> = ({ docume
             {/* Other Documents */}
             {documents?.additionalName && (
               <div className="mb-4">
-                <h3 className="text-[#565656] font-semibold mb-2">
-                  {texts.otherDocuments}
-                </h3>
-                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+                <div className="flex flex-cols gap-4">
+                  <h3 className="text-[#565656] font-semibold mb-2">
+                    {texts.otherDocuments}
+                  </h3>
+                  <ReportProb isVisible={isVisible} problem={texts.otherDocuments} setReport={setReport} reportColumn={"addDoc"}/>
+                </div>
                 <div className="border border-gray-300 rounded-lg p-2 flex flex-wrap items-center gap-4 shadow-sm">
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">

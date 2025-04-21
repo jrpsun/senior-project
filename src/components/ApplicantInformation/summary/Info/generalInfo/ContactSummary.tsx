@@ -16,9 +16,10 @@ interface ContactSummaryProps {
   props: ContactInfoInterface;
   isVisible: boolean;
   setIsVisible: (value: boolean) => void;
+  setReport: any;
 }
 
-const ContactSummary: React.FC<ContactSummaryProps> = ({ props, isVisible, setIsVisible }) => {
+const ContactSummary: React.FC<ContactSummaryProps> = ({ props, isVisible, setIsVisible, setReport }) => {
   const { language } = useLanguage();
   const texts = generalInfoTexts[language] ?? generalInfoTexts["ENG"];
 
@@ -33,8 +34,10 @@ const ContactSummary: React.FC<ContactSummaryProps> = ({ props, isVisible, setIs
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* หมายเลขโทรศัพท์ */}
             <div>
-              <p className="text-[#565656] font-bold">{texts.phone}</p>
-              <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+              <div className="flex flex-cols gap-2">
+                <p className="text-[#565656] font-bold">{texts.phone}</p>
+                <ReportProb isVisible={isVisible} problem={texts.phone} setReport={setReport} reportColumn={"phoneApplicant"}/>
+              </div>
               <p className="text-[#565656] text-left pl-6">{props?.applicantPhone}</p>
             </div>
             

@@ -8,11 +8,14 @@ declare global {
   }
 }
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // ใช้ตรวจสอบหน้าเว็บปัจจุบัน
+import { usePathname, useRouter } from "next/navigation"; // ใช้ตรวจสอบหน้าเว็บปัจจุบัน
 import { useLanguage } from "../hooks/LanguageContext";
+import { jwtDecode } from "jwt-decode";
+import { TokenApplicantPayload } from "@components/types/token";
+import { logout } from "@components/lib/auth";
 
 // ฟังก์ชันสำหรับคืนค่า SVG ไอคอนของแต่ละเมนู
 const getMenuIcon = (label: string) => {
@@ -54,13 +57,24 @@ const menuItems = {
   ],
 };
 
+
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const pathname = usePathname();
   const isPrivacyPolicyPage = pathname === "/privacy-policy";
   const { language, setLanguage } = useLanguage() as { language: "TH" | "EN"; setLanguage: (lang: "TH" | "EN") => void };
-  const userName = language === "TH" ? "ทดลอง ระบบสมัคร" : "Test Raboobsamak";
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const decoded: TokenApplicantPayload = jwtDecode(token || "");
+        setUserName(decoded?.sub)
+      } catch {
+        localStorage.removeItem("access_token");
+      }
+    }, []);
 
   return (
     <div className="bg-white text-black">
@@ -107,16 +121,34 @@ const Navbar = () => {
 
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white border rounded-[5px] shadow-lg p-2">
-                  {menuItems[language].map((item, index) => (
-                    <Link
-                      key={index}
-                      href={item.href}
-                      className="grid grid-cols-[30px_auto] items-center gap-[1px] px-2 py-2 font-light hover:bg-gray-100 rounded"
-                    >
-                      {getMenuIcon(item.label)}
-                      <span className="whitespace-nowrap font-light">{item.label}</span>
-                    </Link>
-                  ))}
+                  {menuItems[language].map((item, index) => {
+                    if (item.label === "ออกจากระบบ" || item.label === "Logout") {
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            logout(); // เรียกฟังก์ชัน logout
+                            window.location.href = "/login"; // redirect ไปหน้า login
+                          }}
+                          className="w-full text-left grid grid-cols-[30px_auto] items-center gap-[1px] px-2 py-2 font-light hover:bg-gray-100 rounded"
+                        >
+                          {getMenuIcon(item.label)}
+                          <span className="whitespace-nowrap font-light">{item.label}</span>
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <Link
+                        key={index}
+                        href={item.href}
+                        className="grid grid-cols-[30px_auto] items-center gap-[1px] px-2 py-2 font-light hover:bg-gray-100 rounded"
+                      >
+                        {getMenuIcon(item.label)}
+                        <span className="whitespace-nowrap font-light">{item.label}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>

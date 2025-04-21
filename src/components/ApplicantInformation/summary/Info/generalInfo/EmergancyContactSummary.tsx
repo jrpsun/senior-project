@@ -20,9 +20,10 @@ interface EmergencyContactProps {
     props:EmergencyContactInterface;
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
+    setReport: any;
 }
 
-const EmergencyContactSummary: React.FC<EmergencyContactProps> = ({ props, isVisible, setIsVisible }) => {
+const EmergencyContactSummary: React.FC<EmergencyContactProps> = ({ props, isVisible, setIsVisible, setReport }) => {
     const { language } = useLanguage();
     const texts = generalInfoTexts[language] ?? generalInfoTexts["ENG"];
 
@@ -74,8 +75,10 @@ const EmergencyContactSummary: React.FC<EmergencyContactProps> = ({ props, isVis
                             <p className="text-[#565656] text-left pl-6">{props?.relationship}</p>
                         </div>
                         <div>
-                            <p className="text-[#565656] font-bold">{texts.phone}</p>
-                            <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+                            <div className="flex flex-cols gap-2">
+                                <p className="text-[#565656] font-bold">{texts.phone}</p>
+                                <ReportProb isVisible={isVisible} problem={texts.phone} setReport={setReport} reportColumn={"phoneEmer"}/>
+                            </div>
                             <p className="text-[#565656] text-left pl-6">{props?.contactPhone}</p>
                         </div>
                         <div>

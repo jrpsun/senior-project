@@ -4,6 +4,7 @@ import { useLanguage } from "../../../hooks/LanguageContext";
 import { summaryTexts } from "@components/translation/summary";
 import AwardSummary from "./Info/awardInfo/awardSummary";
 import TalentSummary from "./Info/awardInfo/talentSummary"; 
+import { authFetch } from "@components/lib/auth";
 
 // const awardsData = [
 //   {
@@ -55,7 +56,7 @@ import TalentSummary from "./Info/awardInfo/talentSummary";
 //     },
 //   ];
 
-const AwardPage = () => {
+const AwardPage = ({appId}: any) => {
   const { language } = useLanguage();
   const texts = summaryTexts[language] || summaryTexts["ENG"];
   const [isVisible, setIsVisible] = useState(false)
@@ -71,66 +72,47 @@ const AwardPage = () => {
       rewardCerName: "",
       rewardCerSize: "",
     }])
-    const [talentsData, setTalentsData] = useState([{
-        talentId: "",
-        applicantId: "",
-        kindOfTalent: "",
-        nameOfCompetition: "",
-        talentYear: "",
-        talentAwards: "",
-        url: "",
-        moreDetails: "",
-        talentCer: "",
-        talentCerName: "",
-        talentCerSize: "",
-      }])
+  const [talentsData, setTalentsData] = useState([{
+      talentId: "",
+      applicantId: "",
+      kindOfTalent: "",
+      nameOfCompetition: "",
+      talentYear: "",
+      talentAwards: "",
+      url: "",
+      moreDetails: "",
+      talentCer: "",
+      talentCerName: "",
+      talentCerSize: "",
+    }])
 
   const fetchAward = async () => {
-    try {
-      const res = await fetch(`${process.env.API_BASE_URL}/applicant/reward/0000001`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/reward/${appId}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    });
 
-      const data = await res.json()
-      setAwardsData(data)
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-    } catch (error){
-      console.error('Failed to fetch rewards:', error);
-      throw error;
-    }
+    const data = await response.json()
+    setAwardsData(data)
   }
 
   const fetchTalent = async() => {
-    try {
-      const res = await fetch(`${process.env.API_BASE_URL}/applicant/talent/0000001`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/talent/${appId}`, {
+      method: 'GET',
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
-      const data = await res.json()
-      console.log("talent: ", data)
-      setTalentsData(data)
-    } catch (error) {
-      console.error("Error Fetch :", error)
-    }
+    const data = await response.json()
+    setTalentsData(data)
   }
 
   useEffect(() => {
-    fetchAward();
-    fetchTalent();
-  },[])
-
-  useEffect(() => {
-    console.log("summary reward:", awardsData)
-  },[awardsData, talentsData])
+    if (appId) {
+      fetchAward();
+      fetchTalent();
+    }
+  },[appId])
 
   const hasAwards = awardsData.length > 0;
   const hasTalents = talentsData.length > 0;

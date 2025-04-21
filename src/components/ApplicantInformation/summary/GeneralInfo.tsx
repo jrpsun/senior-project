@@ -7,8 +7,9 @@ import ContactSummary from "./Info/generalInfo/ContactSummary";
 import EmergencyContactSummary from "./Info/generalInfo/EmergancyContactSummary";
 import SubscriptionSummary from "./Info/generalInfo/SubscriptionSummary";
 import { ApplicantGeneralInformationResponse, ContactInfoInterface, EmergencyContactInterface, GeneralInfoInterface } from "@components/types/generalInfoType";
+import { authFetch } from "@components/lib/auth";
 
-const GeneralInfo = () => {
+const GeneralInfo = ({appId}: any) => {
     const { language } = useLanguage();
     const texts = generalInfoTexts[language] || generalInfoTexts["ENG"];
     const titletexts = summaryTexts[language] || summaryTexts["ENG"];
@@ -20,44 +21,34 @@ const GeneralInfo = () => {
         dateStr ? new Date(dateStr).toISOString().split("T")[0] : "";
 
     const fetchGeneralData = async () => {
-        try {
-            const res = await fetch(`${process.env.API_BASE_URL}/applicant/general/0000001`, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            })
-      
-            if (!res.ok) throw new Error("Failed to fetch general data");
-      
-            const result = await res.json();
-            const parsedData = {
-                ...result,
-                general_info: {
-                    ...result.general_info,
-                    birthDate: formatDate(result?.general_info?.birthDate),
-                    idCardExpDate: formatDate(result?.general_info?.idCardExpDate),
-                    passportExpDate: formatDate(result?.general_info?.passportExpDate),
-                },
-                admission_channel: {
-                  onlineChannel: JSON.parse(result?.admission_channel?.onlineChannel || "[]"),
-                  offlineChannel: JSON.parse(result?.admission_channel?.offlineChannel || "[]"),
-                },
-              };
-            
-              setGeneralData(parsedData);
-          } catch (error) {
-            console.error("Error fetching general information:", error);
-          }
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/general/${appId}`, {
+            method: 'GET',
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch general data");
+        const result = await response.json();
+        const parsedData = {
+            ...result,
+            general_info: {
+                ...result.general_info,
+                birthDate: formatDate(result?.general_info?.birthDate),
+                idCardExpDate: formatDate(result?.general_info?.idCardExpDate),
+                passportExpDate: formatDate(result?.general_info?.passportExpDate),
+            },
+            admission_channel: {
+                onlineChannel: JSON.parse(result?.admission_channel?.onlineChannel || "[]"),
+                offlineChannel: JSON.parse(result?.admission_channel?.offlineChannel || "[]"),
+            },
+        };
+        setGeneralData(parsedData);
     }
 
     useEffect(() => {
-        fetchGeneralData();
-    },[])
+        if (appId) {
+            fetchGeneralData();
+        }
+    },[appId])
 
-    useEffect(() => {
-        console.log("general summary:", generalData);
-    },[generalData])
 
     return (
         <div className="space-y-6">

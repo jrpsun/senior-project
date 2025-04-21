@@ -10,8 +10,9 @@ import { useLanguage } from "../hooks/LanguageContext";
 import { talentTexts, talentTypeOptions, YearOptions } from "../translation/AwardInfo";
 import Popup from '../components/common/popup'; // เพิ่ม import popup
 import { TalentResponse } from '@components/types/TalentTypes';
+import { authFetch } from '@components/lib/auth';
 
-const Talent = ({ setTalent }: any) => {
+const Talent = ({ setTalent, appId }: any) => {
   const { language } = useLanguage();
   const currentTexts = talentTexts[language] || talentTexts["ENG"];
   const currentTalentOptions = talentTypeOptions[language] || talentTypeOptions["ENG"];
@@ -45,27 +46,20 @@ const Talent = ({ setTalent }: any) => {
   }
 
   const fetchTalent = async() => {
-    try {
-      const res = await fetch(`${process.env.API_BASE_URL}/applicant/talent/0000001`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/talent/${appId}`, {
+      method: 'GET',
+    });
 
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
-      const data = await res.json()
-      console.log("talent: ", data)
-      setFormData(data)
-    } catch (error) {
-      console.error("Error Fetch :", error)
-    }
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json()
+    setFormData(data)
   }
 
   useEffect(() => {
-    fetchTalent()
-  },[])
+    if (appId) {
+      fetchTalent();
+    }
+  },[appId])
 
 
   // Function to add a new container
@@ -73,7 +67,7 @@ const Talent = ({ setTalent }: any) => {
     const id = generateLongId()
     setFormData([...formData, {
       talentId: id,
-      applicantId: "0000001",
+      applicantId: appId,
       kindOfTalent: "",
       nameOfCompetition: "",
       talentYear: "",

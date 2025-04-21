@@ -12,8 +12,9 @@ import CustomSelect from "../form/CustomSelect";
 import { useLanguage } from "../../hooks/LanguageContext";
 import { trainingTexts, trainingYearOptions, trainingModeOptions } from "../../translation/TrainingInfo";
 import Popup from '../../components/common/popup'; // เพิ่ม import popup
+import { authFetch } from '@components/lib/auth';
 
-const Training = ({ setTrain }: any) => {
+const Training = ({ setTrain, appId }: any) => {
   const { language } = useLanguage();
   const currentTexts = trainingTexts[language] || trainingTexts["ENG"];
   const [isPopupOpen, setPopupOpen] = useState(false);
@@ -33,31 +34,24 @@ const Training = ({ setTrain }: any) => {
   }])
 
   useEffect(() => {
-    fetchTrining();
-  }, [])
+    if (appId) {
+      fetchTrining();
+    }
+  }, [appId])
 
   useEffect(() => {
       console.log("Updated Training formData:", formData);
     }, [formData]); 
 
   const fetchTrining = async() => {
-    try {
-      const res = await fetch(`${process.env.API_BASE_URL}/applicant/training/0000001`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/training/${appId}`, {
+      method: 'GET',
+    });
 
-      const data = await res.json()
-      console.log("data Training", data)
-      setFormData(data)
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-    } catch (error){
-      console.error('Failed to fetch rewards:', error);
-      throw error;
-    }
+    const data = await response.json()
+    setFormData(data)
   }
 
   const generateLongId = () => {
@@ -73,7 +67,7 @@ const Training = ({ setTrain }: any) => {
     const id = generateLongId()
     setFormData([...formData, {
       trainingId: id,
-      applicantId: "0000001",
+      applicantId: appId,
       nameOfCourse: "",
       institution: "",
       trainingYear: "",

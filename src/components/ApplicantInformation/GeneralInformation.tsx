@@ -12,9 +12,10 @@ import {
   EmergencyContactInterface,
   AdmissionChannelInterface
 } from "@components/types/generalInfoType";
+import { authFetch } from "@components/lib/auth";
 
 
-const GeneralInformation = ({ onUpdate }: any) => {
+const GeneralInformation = ({ onUpdate, appId }: { onUpdate: any, appId: string }) => {
   const [data, setData] = useState<ApplicantGeneralInformationResponse | null>(null);
   
   const [allChanges, setAllChanges] = useState({
@@ -49,27 +50,19 @@ const GeneralInformation = ({ onUpdate }: any) => {
   };
 
   const fetchGeneralInfoData = async () => {
-    try {
-      const res = await fetch(`${process.env.API_BASE_URL}/applicant/general/0000001`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (!res.ok) throw new Error("Failed to fetch general data");
-
-      const result = await res.json();
-      console.log("general result:", result)
-      setData(result)
-    } catch (error) {
-      console.error("Error fetching general information:", error);
-    }
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/general/${appId}`, {
+      method: 'GET',
+    });
+    if (!response.ok) throw new Error("Failed to fetch general data");
+    const result = await response.json();
+    setData(result)
   }
 
   useEffect(() => {
-    fetchGeneralInfoData()
-  }, []);
+    if (appId) {
+      fetchGeneralInfoData()
+    }
+  }, [appId]);
 
   return (
     <div className="flex flex-col gap-4 pb-10">

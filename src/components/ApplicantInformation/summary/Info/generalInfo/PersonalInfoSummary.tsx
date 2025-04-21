@@ -49,9 +49,10 @@ interface PersonalInfoProps {
     props: GeneralInfoInterface;
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
+    setReport: any
 }
 
-const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, setIsVisible }) => {
+const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, setIsVisible, setReport }) => {
     const { language } = useLanguage(); // ดึงภาษาปัจจุบันจาก Context
     const texts = generalInfoTexts[language] ?? generalInfoTexts["ENG"];
 
@@ -116,8 +117,10 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                         {/*สำเนาบัตรประชาชน */}
                         {props?.docCopyIdCardName && (
                             <div className="mb-4">
-                                <h3 className="text-[#565656] font-semibold">{texts.uploadIdCard}</h3>
-                                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible} />
+                                <div className="flex flex-cols gap-2">
+                                    <h3 className="text-[#565656] font-semibold">{texts.uploadIdCard}</h3>
+                                    <ReportProb isVisible={isVisible} problem={texts.uploadIdCard} setReport={setReport} reportColumn={"idCardDoc"}/>
+                                </div>
                                 <div className="border border-gray-300 rounded-lg p-3 flex items-center gap-4 shadow-sm">
                                     <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                                     <div className="flex flex-col">
@@ -137,8 +140,10 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                         {/* กรณีเป็นชาวต่างชาติ แสดงสำเนาพาสปอร์ต */}
                         {props?.nationality !== "Thai" && props?.docCopyPassportName && (
                             <div className="mb-4">
-                                <h3 className="text-[#565656] font-semibold">{texts.uploadPassport}</h3>
-                                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible} />
+                                <div className="flex flex-cols gap-2">
+                                    <h3 className="text-[#565656] font-semibold">{texts.uploadPassport}</h3>
+                                    <ReportProb isVisible={isVisible} problem={texts.uploadPassport} setReport={setReport} reportColumn={"passportDoc"}/> 
+                                </div>
                                 <div className="border border-gray-300 rounded-lg p-3 flex items-center gap-4 shadow-sm">
                                     <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                                     <div className="flex flex-col">
@@ -160,13 +165,17 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                                 <>
                                     {/* กรณีเป็นคนไทย แสดงเลขบัตรประชาชน */}
                                     <div>
-                                        <p className="text-[#565656] font-bold">{texts.idCardNumber}</p>
-                                        <ReportProb isVisible={isVisible} setIsVisible={setIsVisible} />
+                                        <div className="flex flex-cols gap-2">
+                                            <p className="text-[#565656] font-bold">{texts.idCardNumber}</p>
+                                            <ReportProb isVisible={isVisible} problem={texts.idCardNumber} setReport={setReport} reportColumn={"idCardNumber"}/>
+                                        </div>
                                         <p className="text-[#565656] text-left pl-6">{props?.idCardNumber || "-"}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[#565656] font-bold">{texts.idCardExpiry}</p>
-                                        <ReportProb isVisible={isVisible} setIsVisible={setIsVisible} />
+                                        <div className="flex flex-cols gap-2">
+                                            <p className="text-[#565656] font-bold">{texts.idCardExpiry}</p>
+                                            <ReportProb isVisible={isVisible} problem={texts.idCardExpiry} setReport={setReport} reportColumn={"idCardExp"}/>
+                                        </div>
                                         <p className="text-[#565656] text-left pl-6">{props?.idCardExpDate || "-"}</p>
                                     </div>
                                 </>
@@ -174,13 +183,17 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                                 <>
                                     {/* กรณีเป็นชาวต่างชาติ แสดงเลขพาสปอร์ต */}
                                     <div>
-                                        <p className="text-[#565656] font-bold">{texts.passportNumber}</p>
-                                        <ReportProb isVisible={isVisible} setIsVisible={setIsVisible} />
+                                        <div className="flex flex-cols gap-2">
+                                            <p className="text-[#565656] font-bold">{texts.passportNumber}</p>
+                                            <ReportProb isVisible={isVisible} problem={texts.passportNumber} setReport={setReport} reportColumn={"passportNumber"}/>
+                                        </div>
                                         <p className="text-[#565656] text-left pl-6">{props?.passportId || "-"}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[#565656] font-bold">{texts.passportExpiry}</p>
-                                        <ReportProb isVisible={isVisible} setIsVisible={setIsVisible} />
+                                        <div className="flex flex-cols gap-2">
+                                            <p className="text-[#565656] font-bold">{texts.passportExpiry}</p>
+                                            <ReportProb isVisible={isVisible} problem={texts.passportExpiry} setReport={setReport} reportColumn={"passportExp"}/>
+                                        </div>
                                         <p className="text-[#565656] text-left pl-6">{props?.passportExpDate || "-"}</p>
                                     </div>
                                 </>
@@ -218,8 +231,10 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                         {/* 🔹 สำเนาทะเบียนบ้าน */}
                         {props?.docCopyHouseRegisName && (
                             <div className="mb-4">
-                                <h3 className="text-[#565656] font-semibold">{texts.uploadHouseReg}</h3>
-                                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible} />
+                                <div className="flex flex-cols gap-2">
+                                    <h3 className="text-[#565656] font-semibold">{texts.uploadHouseReg}</h3>
+                                    <ReportProb isVisible={isVisible} problem={texts.uploadHouseReg} setReport={setReport} reportColumn={"houseRegisDoc"}/>
+                                </div>
                                 <div className="border border-gray-300 rounded-lg p-3 flex items-center gap-4 shadow-sm">
                                     <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                                     <div className="flex flex-col">

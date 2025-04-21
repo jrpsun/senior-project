@@ -47,10 +47,11 @@ interface EducationBackgroundProps {
     props: EducationBackground;
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
+    setReport: any;
 }
 
 const EducationLevelSummary: React.FC<EducationBackgroundProps> = ({
-    props, isVisible, setIsVisible
+    props, isVisible, setIsVisible, setReport
 }) => {
     const { language } = useLanguage();
     const texts = educationInfoTexts[language] || educationInfoTexts["ENG"]; // ใช้ ENG เป็นค่าเริ่มต้น
@@ -73,8 +74,10 @@ const EducationLevelSummary: React.FC<EducationBackgroundProps> = ({
                     {/* Transcript */}
                     {props?.docCopyName && (
                         <div className="mb-4">
-                            <h3 className="text-[#565656] font-semibold mb-2">{texts.transcript}</h3>
-                            <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+                            <div className="flex flex-cols gap-2">
+                                <h3 className="text-[#565656] font-semibold mb-2">{texts.transcript}</h3>
+                                <ReportProb isVisible={isVisible} problem={texts.transcript} setReport={setReport} reportColumn={"transcipt"}/>
+                            </div>
                             <div className="border border-gray-300 rounded-lg p-3 flex items-center gap-4 shadow-sm">
                                 <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                                 <div className="flex flex-col max-w-full">
@@ -121,8 +124,10 @@ const EducationLevelSummary: React.FC<EducationBackgroundProps> = ({
                         {!isGED && (
                             <>
                                 <div className="col-span-1">
-                                    <p className="text-[#565656] font-bold">{texts.school}</p>
-                                    <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+                                    <div className="flex flex-cols gap-2">
+                                        <p className="text-[#565656] font-bold">{texts.school}</p>
+                                        <ReportProb isVisible={isVisible} problem={texts.school} setReport={setReport} reportColumn={"schoolName"}/>
+                                    </div>
                                     <p className="text-[#565656] text-left pl-6">{props?.schoolName}</p>
                                 </div>
                                 <div className="col-span-1">
@@ -151,8 +156,10 @@ const EducationLevelSummary: React.FC<EducationBackgroundProps> = ({
                         {/* GPAX รวม (เฉพาะ ม.6 และ ปวช.) */}
                         {["Mathayom6", "VocCert"].includes(props?.academicType || "") && props?.cumulativeGPA && (
                             <div className="col-span-1">
-                                <p className="text-[#565656] font-bold">{texts.cumulativeGPA}</p>
-                                <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+                                <div className="flex flex-cols gap-2">
+                                    <p className="text-[#565656] font-bold">{texts.cumulativeGPA}</p>
+                                    <ReportProb isVisible={isVisible} problem={texts.cumulativeGPA} setReport={setReport} reportColumn={"GPAX"}/>
+                                </div>
                                 <p className="text-[#565656] text-left pl-6">{props?.cumulativeGPA}</p>
                             </div>
                         )}

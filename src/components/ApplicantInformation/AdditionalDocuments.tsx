@@ -6,8 +6,9 @@ import FileUpload from '../../components/form/FileUpload';
 import { useLanguage } from "../../hooks/LanguageContext";
 import { additionalDocumentsTexts } from "../../translation/AdditionalDocsInfo";
 import Image from "next/image";
+import { authFetch } from '@components/lib/auth';
 
-const AdditionalDocuments = ({ setDoc }: any) => {
+const AdditionalDocuments = ({ setDoc, appId }: any) => {
   const { language } = useLanguage();
   const currentTexts = additionalDocumentsTexts[language] || additionalDocumentsTexts["ENG"];
   const [formData, setFormData] = useState({
@@ -31,27 +32,20 @@ const AdditionalDocuments = ({ setDoc }: any) => {
   },[formData])
 
   useEffect(() => {
-    fetchDocuments();
-  },[])
+    if (appId) {
+      fetchDocuments();
+    }
+  },[appId])
 
   const fetchDocuments = async() => {
-    try {
-      const res = await fetch(`${process.env.API_BASE_URL}/applicant/document/0000001`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/document/${appId}`, {
+      method: 'GET',
+    });
 
-      const data = await res.json()
-      console.log("data Document", data)
-      setFormData(data)
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-    } catch (error){
-      console.error('Failed to fetch rewards:', error);
-      throw error;
-    }
+    const data = await response.json()
+    setFormData(data)
   }
 
   const handleUploadFile = (file : File, field: string) => {
