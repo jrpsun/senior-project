@@ -8,6 +8,7 @@ import SearchField from "@components/components/form/searchField";
 import { mockApplicants } from "@components/data/admin/Interview/candidates/mockApplicants";
 import Image from 'next/image';
 import { InterviewComScreeningInterface } from "@components/types/screening";
+import Link from "next/link";
 
 const courseOptions = ["ITDS/B", "ITCS/B"];
 const roundOptions = [
@@ -18,7 +19,7 @@ const roundOptions = [
 const Page = () => {
 
     const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
-    const committee_id = "100001"
+    const committee_id = "000001"
     const [applicants, setApplicants] = useState<InterviewComScreeningInterface[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -398,16 +399,32 @@ const Page = () => {
                                                 </td>
 
                                                 <td className="py-2 text-center whitespace-nowrap w-[80px]">
-                                                    <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] ">
-                                                        <div className="flex flex-row gap-1">
-                                                            <div className="pt-1">
-                                                                <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path d="M18.6438 16.6993L14.5879 12.6365C15.6817 11.3031 16.335 9.59495 16.335 7.73621C16.335 3.46403 12.8738 0 8.60502 0C4.33626 0 0.875 3.46403 0.875 7.73621C0.875 12.0084 4.33626 15.4724 8.60502 15.4724C10.4696 15.4724 12.1801 14.8112 13.5161 13.7092L17.572 17.7683C18.0455 18.2018 18.4896 17.9226 18.6438 17.7683C18.9521 17.4634 18.9521 17.0042 18.6438 16.6993ZM2.38356 7.73621C2.38356 4.29789 5.16945 1.50977 8.60502 1.50977C12.0406 1.50977 14.8301 4.29789 14.8301 7.73621C14.8301 11.1745 12.0442 13.9626 8.60869 13.9626C5.17312 13.9626 2.38356 11.1745 2.38356 7.73621Z" fill="#008A91" />
-                                                                </svg>
+                                                <Link
+                                                            key='view'
+                                                            href={{
+                                                                pathname: '/admin/applicant/view',
+                                                                query: {
+                                                                    QapplicantId: `${app.applicantId}`,
+                                                                    QinterviewComId: committee_id,
+                                                                    QapplicantFullname: `${app.firstnameEN} ${app.lastnameEN}`,
+                                                                    QroundName: `${app.roundName}`,
+                                                                    Qprogram: `${app.program}`,
+                                                                    QadmissionStatus: `${app.interviewStatus}`,
+                                                                    QdocStatus: `${app.docStatus}`,
+                                                                    Qpath: '/admin/interview/candidates'
+                                                                }
+                                                            }}
+                                                            className="bg-white text-[#008A90]"
+                                                        >
+                                                            <div className="flex justify-center flex-row border border-[#008A90] font-bold rounded-lg py-1 mt-1">
+                                                                <div className="pt-1">
+                                                                    <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M18.6438 16.6993L14.5879 12.6365C15.6817 11.3031 16.335 9.59495 16.335 7.73621C16.335 3.46403 12.8738 0 8.60502 0C4.33626 0 0.875 3.46403 0.875 7.73621C0.875 12.0084 4.33626 15.4724 8.60502 15.4724C10.4696 15.4724 12.1801 14.8112 13.5161 13.7092L17.572 17.7683C18.0455 18.2018 18.4896 17.9226 18.6438 17.7683C18.9521 17.4634 18.9521 17.0042 18.6438 16.6993ZM2.38356 7.73621C2.38356 4.29789 5.16945 1.50977 8.60502 1.50977C12.0406 1.50977 14.8301 4.29789 14.8301 7.73621C14.8301 11.1745 12.0442 13.9626 8.60869 13.9626C5.17312 13.9626 2.38356 11.1745 2.38356 7.73621Z" fill="#008A91" />
+                                                                    </svg>
+                                                                </div>
+                                                                <div>view</div>
                                                             </div>
-                                                            <div>view</div>
-                                                        </div>
-                                                    </button>
+                                                        </Link>
                                                 </td>
                                             </tr>
 
