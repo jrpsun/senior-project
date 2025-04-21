@@ -8,9 +8,42 @@ import Image from "next/image";
 import { format, parse } from "date-fns";
 import { th } from "date-fns/locale";
 import AlertAdmin from "../../../../components/common/admin/alertAdmin";
+import { Span } from "next/dist/trace";
 
 
 const AdmissionRoundsPage = () => {
+  const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+  const [admissionRound, setAdmissionRound] = useState<AdmissionRound[]>([]);
+  const [loading, setLoading] = useState(true);
+
+
+  async function fetchData() {
+    try {
+      const [res_ad] = await Promise.all([
+        fetch(`${API_BASE_URL}/admission/`)
+      ]);
+
+      if (!res_ad.ok) {
+        throw new Error("Failed to fetch one or more resources");
+      }
+
+      const data_ad = await res_ad.json();
+
+      setAdmissionRound(data_ad || []);
+
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+  console.log("ad", admissionRound)
+
+
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selectedRound, setSelectedRound] = useState<{ value: string; label: string } | null>(null);
   const [selectedYear, setSelectedYear] = useState<{ value: string; label: string } | null>(null);
@@ -78,32 +111,47 @@ const AdmissionRoundsPage = () => {
   }
 
   interface AdmissionRound {
-    id: number;
+    id: string;
     course: string;
     round: string;
     year: string;
-    period: string;
-    status: string;
+    start: string;
+    end: string;
   }
 
-  const handleSaveAddRound = (newRound: NewRound): void => {
-    setAdmissionRounds((prev: AdmissionRound[]) => {
-      const newId = prev.length > 0 ? Math.max(...prev.map(r => r.id)) + 1 : 1;
-      const startDateFormatted = formatDateToDisplay(newRound.startDate);
-      const endDateFormatted = formatDateToDisplay(newRound.endDate);
+  const handleSaveAddRound = async (newRound: NewRound) => {
+    const body = {
+      admissionId: `${Math.random().toString(36).substring(2, 11)}`,
+      program: newRound.course?.value,
+      roundName: newRound.roundName,
+      academicYear: newRound.academicYear?.value,
+      startDate: newRound.startDate,
+      endDate: newRound.endDate,
+    }
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/admission/`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        }
+      );
 
-      return [...prev, {
-        id: newId,
-        course: newRound.course?.value || "หลักสูตรไม่ระบุ",
-        round: newRound.roundName,
-        year: newRound.academicYear?.value || "ไม่ระบุ",
-        period: `${startDateFormatted} – ${endDateFormatted}`,
-        status: determineAdmissionStatus(newRound.startDate, newRound.endDate)
-      }];
-    });
+      if (!response.ok) throw new Error('Failed to create admission round.');
+      else {
+        setAlertMessage("เพิ่มรอบรับสมัครสำเร็จ!");
+        window.location.reload();
+      }
 
-    setIsAddRoundOpen(false);
-    setAlertMessage("เพิ่มรอบรับสมัครสำเร็จ!");
+
+    } catch (error) {
+      console.error('Error saving admission round details:', error);
+      alert("สร้างข้อมูลล้มเหลว กรุณาลองใหม่");
+    }
+
   };
   const [admissionRounds, setAdmissionRounds] = useState([
     {
@@ -131,7 +179,9 @@ const AdmissionRoundsPage = () => {
     })];
   }, [currentYear]);
 
-  const [filteredAdmissionRounds, setFilteredAdmissionRounds] = useState(admissionRounds);
+  const [filteredAdmissionRounds, setFilteredAdmissionRounds] = useState(admissionRound);
+  console.log("filteredAdmissionRounds", filteredAdmissionRounds)
+
   const thaiMonths = {
     "ม.ค.": "Jan", "ก.พ.": "Feb", "มี.ค.": "Mar", "เม.ย.": "Apr",
     "พ.ค.": "May", "มิ.ย.": "Jun", "ก.ค.": "Jul", "ส.ค.": "Aug",
@@ -153,69 +203,98 @@ const AdmissionRoundsPage = () => {
 
 
   useEffect(() => {
-    setFilteredAdmissionRounds(admissionRounds);
-  }, [admissionRounds]);
+    setFilteredAdmissionRounds(admissionRound);
+  }, [admissionRound]);
 
   const handleEdit = (round: AdmissionRound) => {
-    if (!round.period) return;
+    // if (!round.period) return;
 
-    // แปลง period เป็น yyyy-MM-dd
-    const periodParts = round.period.split("–").map(date => date.trim());
-    const startDate = convertThaiDateToEnglish(periodParts[0]);
-    const endDate = convertThaiDateToEnglish(periodParts[1]);
-
+    // // แปลง period เป็น yyyy-MM-dd
+    // const periodParts = round.period.split("–").map(date => date.trim());
+    // const startDate = convertThaiDateToEnglish(periodParts[0]);
+    // const endDate = convertThaiDateToEnglish(periodParts[1]);
+    setSelectedRoundId(round.admissionId)
     setSelectedEditRound({
-      id: round.id,
-      course: round.course ? { value: round.course, label: round.course } : null,
-      roundName: round.round.replace(/ ปีการศึกษา \d{4}/, "").trim(),
-      academicYear: round.year ? { value: round.year, label: round.year } : null,
-      startDate: startDate ? format(parse(startDate, "dd MMM yyyy", new Date()), "yyyy-MM-dd") : "",
-      endDate: endDate ? format(parse(endDate, "dd MMM yyyy", new Date()), "yyyy-MM-dd") : "",
+      id: round.admissionId,
+      course: round.program ? { value: round.program, label: round.program } : null,
+      roundName: round.roundName,//.replace(/ ปีการศึกษา \d{4}/, "").trim(),
+      academicYear: round.academicYear ? { value: round.academicYear, label: round.academicYear } : null,
+      startDate: round.startDate, //? format(parse(startDate, "dd MMM yyyy", new Date()), "yyyy-MM-dd") : "",
+      endDate: round.endDate //? format(parse(endDate, "dd MMM yyyy", new Date()), "yyyy-MM-dd") : "",
     });
 
     setIsEditRoundOpen(true);
   };
-  const handleSaveEditRound = (updatedRound: NewRound) => {
-    setAdmissionRounds((prev) =>
-      prev.map((round) =>
-        selectedEditRound && round.id === selectedEditRound.id
-          ? {
-            ...round,
-            course: updatedRound.course?.value || "หลักสูตรไม่ระบุ",
-            round: updatedRound.roundName.includes("ปีการศึกษา")
-              ? updatedRound.roundName
-              : `${updatedRound.roundName} ปีการศึกษา ${updatedRound.academicYear?.value || "ไม่ระบุ"}`,
-            period: `${formatDateToDisplay(updatedRound.startDate)} – ${formatDateToDisplay(updatedRound.endDate)}`,
-            status: determineAdmissionStatus(updatedRound.startDate, updatedRound.endDate) // กำหนดสถานะอัตโนมัติ
-          }
-          : round
-      )
-    );
+  console.log("selected round", selectedEditRound)
 
-    setIsEditRoundOpen(false);
-    setSelectedEditRound(null);
-    setAlertMessage("แก้ไขรอบรับสมัครสำเร็จ!");
+  const [selectedRoundId, setSelectedRoundId] = useState("")
+  console.log("selected round id", selectedRoundId)
+  const handleSaveEditRound = async (updatedRound: NewRound) => {
+    const body = {
+      program: updatedRound.course?.value,
+      roundName: updatedRound.roundName,
+      academicYear: updatedRound.academicYear?.value,
+      startDate: updatedRound.startDate,
+      endDate: updatedRound.endDate,
+    }
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/admission/${selectedRoundId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to update admission round.');
+      else {
+        setAlertMessage("แก้ไขรอบรับสมัครสำเร็จ!");
+        window.location.reload();
+      }
+
+
+    } catch (error) {
+      console.error('Error saving admission round details:', error);
+      alert("แก้ไขข้อมูลล้มเหลว กรุณาลองใหม่");
+    }
   };
 
   const handleDelete = (round: AdmissionRound) => {
+    setSelectedRoundId(round.admissionId)
     setSelectedDeleteRound(round); // กำหนดค่ารอบที่ต้องการลบ
     setIsDeleteRoundOpen(true); // เปิด Popup ยืนยันการลบ
   };
 
-  const handleDeleteRound = () => {
-    if (selectedDeleteRound) {
-      setAdmissionRounds((prev) =>
-        prev.filter((item) => item.id !== selectedDeleteRound.id)
+  const handleDeleteRound = async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/admission/${selectedRoundId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
       );
-      setIsDeleteRoundOpen(false); // ปิด Popup หลังลบเสร็จ
-      setSelectedDeleteRound(null); // รีเซ็ตค่า
-      setAlertMessage("ลบรอบรับสมัครสำเร็จ!");
 
+      if (!response.ok) throw new Error('Failed to delete admission round.');
+      else {
+        setAlertMessage("ลบรอบรับสมัครสำเร็จ!");
+        window.location.reload();
+      }
+
+
+    } catch (error) {
+      console.error('Error deleting admission round details:', error);
+      alert("ลบข้อมูลล้มเหลว กรุณาลองใหม่");
     }
   };
 
   // ตัวเลือกสำหรับ Dropdown
-  const roundOptions = admissionRounds.map((round) => ({
+  const roundOptions = admissionRound.map((round) => ({
     value: round.round,
     label: round.round,
   }));
@@ -241,17 +320,19 @@ const AdmissionRoundsPage = () => {
   }, [selectedRound, selectedYear, selectedStatus, roundOptions, statusOptions, yearOptions]);
 
   const handleSearch = () => {
-    const filteredRounds = admissionRounds.filter((round) => {
+    const filteredRounds = admissionRound.filter((round) => {
       const roundMatch = selectedRound ? round.round.includes(selectedRound.value) : true;
       const yearMatch = selectedYear ? round.year === selectedYear.value || selectedYear.value === "ทั้งหมด" : true;
-      const statusMatch = selectedStatus ? round.status === selectedStatus.value || selectedStatus.value === "ทั้งหมด" : true;
+      //const statusMatch = selectedStatus ? round.status === selectedStatus.value || selectedStatus.value === "ทั้งหมด" : true;
 
-      return roundMatch && yearMatch && statusMatch;
+      return roundMatch && yearMatch //&& statusMatch;
     });
 
     setFilteredAdmissionRounds(filteredRounds);
   };
 
+  const currentDate = new Date().toISOString().split('T')[0]; // ปี เดือน วัน ปัจจุบัน
+  console.log("current date", currentDate)
   return (
     <div className="flex flex-col h-screen bg-white">
       {alertMessage && <AlertAdmin message={alertMessage} onClose={() => setAlertMessage(null)} />}
@@ -259,7 +340,7 @@ const AdmissionRoundsPage = () => {
       <div className="flex flex-row flex-1">
         {/* Sidebar */}
         <div className="relative z-50">
-        <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}  userRole="admin"/>
+          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin" />
         </div>
         <div className={`flex flex-col w-full p-6 mt-[64px] transition-all bg-white ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}>
 
@@ -362,23 +443,29 @@ const AdmissionRoundsPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredAdmissionRounds.map((round) => (
-                  <tr key={round.id} className="border-b hover:bg-gray-50">
-                    <td className="px-6 py-3 text-[#565656]">{round.id}</td>
-                    <td className="px-6 py-3 text-[#565656]">{round.course}</td>
+                {filteredAdmissionRounds.map((round, index) => (
+                  <tr key={index} className="border-b hover:bg-gray-50">
+                    <td className="px-6 py-3 text-[#565656]">{index + 1}</td>
+                    <td className="px-6 py-3 text-[#565656]">{round.program}</td>
                     <td className="px-6 py-3 text-[#565656]">
-                      {round.round.includes("ปีการศึกษา") ? round.round : `${round.round} ปีการศึกษา ${round.year || "ไม่ระบุ"}`}
+                      {/*round.round.includes("ปีการศึกษา") ? round.round : `${round.round} ปีการศึกษา ${round.year || "ไม่ระบุ"}`*/}
+                      {round.academicYear}
                     </td>
-
-
-                    <td className="px-6 py-3 text-[#565656]">{round.period}</td>
+                    <td className="px-6 py-3 text-[#565656]">{round.startDate} {round.endDate}</td>
                     <td className="px-6 py-3 text-[#565656] text-center w-[240px]">
-                      <span className={`px-6 py-0.5 rounded-[10px] 
-    ${round.status === "เปิดรับสมัคร" ? "text-[#13522B] bg-[#E2F5E2]"
-                          : round.status === "กำลังจะเปิดรับสมัคร" ? "text-[#DAA520] bg-[#FFF4E2]"
-                            : "text-red-500 bg-red-100"}`}>
-                        {round.status}
-                      </span>
+                      {(currentDate >= round.startDate) && (currentDate <= round.endDate) ? (
+                        <span className="px-6 py-0.5 rounded-[10px] text-[#13522B] bg-[#E2F5E2]">
+                          เปิดรับสมัคร
+                        </span>
+                      ) : currentDate < round.startDate ? (
+                        <span className="px-6 py-0.5 rounded-[10px] text-[#DAA520] bg-[#FFF4E2]">
+                          กำลังจะเปิดรับสมัคร
+                        </span>
+                      ) : (
+                        <span className="px-6 py-0.5 rounded-[10px] text-red-500 bg-red-100">
+                          ปิดรับสมัคร
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-3 text-center flex justify-center gap-1">
                       {/* ปุ่มแก้ไข */}
@@ -425,7 +512,7 @@ const AdmissionRoundsPage = () => {
               onClose={() => setIsDeleteRoundOpen(false)}
               onDelete={handleDeleteRound}
               isDeleteMode={true}
-              onSave={() => {}} // Provide a dummy function or appropriate logic
+              onSave={() => { }} // Provide a dummy function or appropriate logic
               courseMapping={courseMapping}
               courseMappingReverse={courseMappingReverse}
             />
