@@ -1,11 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import React from 'react';
 import Sidebar from "@components/components/SideBar";
 import AdminNavbar from "@components/components/adminNavbar";
 import SearchField from "@components/components/form/searchField";
 import Image from 'next/image';
+import { CourseComScreeningInterface, EduScreeningGroupingAllCourseComInterface, InterviewScreeningForEduInterface } from "@components/types/screening";
+import Link from "next/link";
 
 const applicant = [
     { round: 'DST01', applicantId: '0000001', name: 'อาทิตย์ แสงจันทร์', course: 'ITDS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 09.04 น.' },
@@ -48,14 +50,6 @@ const roundOptions = [
     { label: "1/68 - ICT Portfolio", value: "ICT01" },
 ];
 
-const committeeOptions = [
-    { label: "แสดงทั้งหมด", value: '' },
-    { label: "อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์", value: "อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์" },
-    { label: "อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล", value: "อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล" },
-    { label: "อาจารย์ ดร. พรรณวดี ชัยวัฒนมงคล", value: "อาจารย์ ดร. พรรณวดี ชัยวัฒนมงคล" },
-];
-
-
 const ScreeningStatusOptions = [
     { label: "แสดงทั้งหมด", value: '' },
     { label: "ผ่านการพิจารณา", value: "04 - ผ่านการพิจารณา" },
@@ -65,6 +59,60 @@ const ScreeningStatusOptions = [
 ];
 
 const Page = () => {
+    const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+    const [committees, setCommittees] = useState<EduScreeningGroupingAllCourseComInterface[]>([]);
+    const [applicants, setApplicants] = useState<CourseComScreeningInterface[]>([]);
+    const [appTest, setAppTest] = useState<InterviewScreeningForEduInterface[]>([]);
+    const [loading, setLoading] = useState(true);
+
+
+    async function fetchData() {
+        try {
+            const [res_com, res_app, res_test] = await Promise.all([
+                fetch(`${API_BASE_URL}/course-committee/get-all-courseC`),
+                fetch(`${API_BASE_URL}/course-committee/all-applicant-courseC`),
+                fetch(`${API_BASE_URL}/education-department/get-summary-applicants-interview`)
+            ]);
+
+            if (!res_com.ok || !res_app.ok || !res_test.ok) {
+                throw new Error("Failed to fetch one or more resources");
+            }
+
+            const data_com = await res_com.json();
+            const data_app = await res_app.json();
+            const data_test = await res_test.json();
+
+            setCommittees(data_com || []);
+            setApplicants(data_app.applicants || []);
+            setAppTest(data_test.applicants || []);
+
+        } catch (err) {
+            console.error("Error fetching data:", err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+    console.log("appTest", appTest);
+
+    const committeeOptions = committees.map((com) => ({
+        label: `อ. ${com.firstName}`,
+        value: `${com.courseComId}`,
+        full: `${com.prefix} ${com.firstName} ${com.lastName}`
+    }));
+
+    const committeeOptions1 = appTest.map((com) => (
+        com.InterviewCommittee?.map((com) => ({
+            label: `${com.name}`,
+            value: `${com.id}`,
+            result: `${com.InterviewResult}`
+        }))
+    ));
+    console.log("committeeOptions1", committeeOptions1);
+
     const [isCollapsed, setIsCollapsed] = useState(false);
     interface FilterState {
         course?: string;
@@ -73,7 +121,9 @@ const Page = () => {
         docStatus?: string;
         paymentStatus?: string;
         applicantId?: string;
-        name?: string;
+        fname?: string;
+        lname?: string;
+        fullname?: string;
         committee?: string;
     }
 
@@ -90,14 +140,16 @@ const Page = () => {
         setFilters({});
     };
 
-    const filteredApplicants = applicant.filter(app =>
-        (!filters.course || app.course === filters.course) &&
-        (!filters.round || app.round === filters.round) &&
-        (!filters.admitStatus || app.admitStatus === filters.admitStatus) &&
+    console.log("applicants", applicants);
+
+    const filteredApplicants = applicants.filter(app =>
+        (!filters.course || app.program === filters.course) &&
+        (!filters.round || app.roundName === filters.round) &&
+        (!filters.admitStatus || app.admissionStatus === filters.admitStatus) &&
         (!filters.docStatus || app.docStatus === filters.docStatus) &&
-        (!filters.committee || app.committee === filters.committee) && 
-        (!filters.applicantId || app.applicantId.includes(filters.applicantId)) &&
-        (!filters.name || app.name.includes(filters.name))
+        (!filters.applicantId || app.applicantId?.includes(filters.applicantId)) &&
+        (!filters.fullname || app.fullnameEN?.includes(filters.fullname)) &&
+        (!filters.committee || app.courseComId?.includes(filters.committee))
     );
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -134,7 +186,7 @@ const Page = () => {
                 />
                 <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
                     <div className="relative z-50">
-                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin"/>
+                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin" />
                     </div>
                     <main
                         className={`w-full transition-all p-6 mt-[64px] min-h-[calc(100vh-64px)] ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}
@@ -267,13 +319,13 @@ const Page = () => {
                                     </div>
                                     <div className="w-[280px]">
                                         <SearchField
-                                            label="ชื่อ - นามสกุล ผู้สมัคร"
-                                            value={filterValues.name || ""}
+                                            label="ชื่อ-นามสกุล ผู้สมัคร"
+                                            value={filterValues.fullname || ""}
                                             onChange={(value) => {
                                                 if (typeof value === "object" && value !== null && "value" in value) {
-                                                    setFilterValues({ ...filterValues, name: value.value });
+                                                    setFilterValues({ ...filterValues, fullname: value.value });
                                                 } else {
-                                                    setFilterValues({ ...filterValues, name: value ?? undefined });
+                                                    setFilterValues({ ...filterValues, fullname: value ?? undefined });
                                                 }
                                             }}
                                             placeholder="กรุณากรอกข้อมูล"
@@ -312,34 +364,34 @@ const Page = () => {
                                             <tr
                                                 key={index}
                                                 className={`text-[#565656] h-[50px] items-center 
-                                              ${app.admitStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
-                                              ${app.admitStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
+                                              ${app.admissionStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
+                                              ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
                                             `}
                                             >
 
                                                 <td className="text-center whitespace-nowrap">{startIndex + index + 1}</td>
-                                                <td className="text-center whitespace-nowrap">{app.round}</td>
+                                                <td className="text-center whitespace-nowrap">{app.roundName}</td>
                                                 <td className="text-center whitespace-nowrap">{app.applicantId}</td>
-                                                <td className="whitespace-nowrap">{app.name}</td>
-                                                <td className="text-center whitespace-nowrap">{app.course}</td>
+                                                <td className="whitespace-nowrap">{app.firstnameEN} {app.lastnameEN}</td>
+                                                <td className="text-center whitespace-nowrap">{app.program}</td>
                                                 <td>
                                                     <div className={`mr-4 whitespace-nowrap
-          ${app.admitStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-          ${app.admitStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : "py-2"}
-          ${app.admitStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-          ${app.admitStatus === "05 - ไม่ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
-          ${app.admitStatus === "06 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520] " : "py-2"}
-          ${app.admitStatus === "07 - ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-          ${app.admitStatus === "08 - ไม่ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
-          ${app.admitStatus === "09 - ยกเลิกการสมัคร" ? "h-[30px] pt-[2px] rounded-xl text-red-600 " : "py-2"}
+          ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+          ${app.admissionStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : "py-2"}
+          ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+          ${app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
+          ${app.admissionStatus === "06 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520] " : "py-2"}
+          ${app.admissionStatus === "07 - ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+          ${app.admissionStatus === "08 - ไม่ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
+          ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "h-[30px] pt-[2px] rounded-xl text-red-600 " : "py-2"}
         `}>
-                                                        {app.admitStatus}
+                                                        {app.admissionStatus}
                                                     </div>
                                                 </td>
 
                                                 {/* Document Status with Conditional Highlight */}
                                                 <td>
-                                                    {app.admitStatus === "09 - ยกเลิกการสมัคร" ? (
+                                                    {app.admissionStatus === "09 - ยกเลิกการสมัคร" ? (
                                                         <div >ไม่ต้องดำเนินการต่อ</div>
                                                     ) : (
                                                         <div className={`mr-4 whitespace-nowrap
@@ -351,10 +403,10 @@ const Page = () => {
                                                         </div>
                                                     )}
                                                 </td>
-                                                <td className="py-2 whitespace-nowrap">{app.committee}</td>
+                                                <td className="py-2 whitespace-nowrap"><span>{app.prefix} {app.firstName} {app.lastName}</span></td>
                                                 <td className="py-2 whitespace-nowrap text-center">
-                                                    {app.evaluationDate.trim() ? (
-                                                        app.evaluationDate
+                                                    {app.preEvaDate ? (
+                                                        app.preEvaDate
                                                     ) : (
                                                         <div className="flex justify-center items-center text-[#DAA520] gap-1">
                                                             <svg
@@ -377,9 +429,30 @@ const Page = () => {
                                                 </td>
 
                                                 <td className="py-2 text-center whitespace-nowrap">
-                                                    {(app.admitStatus === "04 - ผ่านการพิจารณา" || app.admitStatus === "05 - ไม่ผ่านการพิจารณา" || app.admitStatus === "03 - รอพิจารณา") && (
-                                                        <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] ">
-                                                            <div className="flex flex-row gap-1">
+                                                    {(app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" || app.admissionStatus === "03 - รอพิจารณา") && (
+
+                                                        <Link
+                                                            key='view'
+                                                            href={{
+                                                                pathname: '/admin/applicant/view',
+                                                                query: {
+                                                                    QapplicantId: `${app.applicantId}`,
+                                                                    QapplicantFullname: `${app.firstnameEN} ${app.lastnameEN}`,
+                                                                    QroundName: `${app.roundName}`,
+                                                                    Qprogram: `${app.program}`,
+                                                                    QcourseComFullname: `${app.prefix} ${app.firstName} ${app.lastName}`,
+                                                                    QadmissionStatus: `${app.admissionStatus}`,
+                                                                    QdocStatus: `${app.docStatus}`,
+                                                                    QpaymentStatus: `${app.paymentStatus}`,
+                                                                    QpreEvaDate: `${app.preEvaDate}`,
+                                                                    QpreEva: `${app.preliminaryEva}`,
+                                                                    Qcomment: `${app.preliminaryComment}`,
+                                                                    Qpath: '/admin/screening/tracking'
+                                                                }
+                                                            }}
+                                                            className="bg-white text-[#008A90]"
+                                                        >
+                                                            <div className="flex justify-center flex-row border border-[#008A90] font-bold rounded-lg py-1 mt-1">
                                                                 <div className="pt-1">
                                                                     <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                         <path d="M18.6438 16.6993L14.5879 12.6365C15.6817 11.3031 16.335 9.59495 16.335 7.73621C16.335 3.46403 12.8738 0 8.60502 0C4.33626 0 0.875 3.46403 0.875 7.73621C0.875 12.0084 4.33626 15.4724 8.60502 15.4724C10.4696 15.4724 12.1801 14.8112 13.5161 13.7092L17.572 17.7683C18.0455 18.2018 18.4896 17.9226 18.6438 17.7683C18.9521 17.4634 18.9521 17.0042 18.6438 16.6993ZM2.38356 7.73621C2.38356 4.29789 5.16945 1.50977 8.60502 1.50977C12.0406 1.50977 14.8301 4.29789 14.8301 7.73621C14.8301 11.1745 12.0442 13.9626 8.60869 13.9626C5.17312 13.9626 2.38356 11.1745 2.38356 7.73621Z" fill="#008A91" />
@@ -387,10 +460,10 @@ const Page = () => {
                                                                 </div>
                                                                 <div>view</div>
                                                             </div>
-                                                        </button>
+                                                        </Link>
                                                     )}
 
-                                                    {app.admitStatus === "09 - ยกเลิกการสมัคร" && (
+                                                    {app.admissionStatus === "09 - ยกเลิกการสมัคร" && (
                                                         <button className="bg-red px-1 py-1 my-2 rounded-lg border border-red-500 text-red-500 text-[14px] font-bold w-[130px]">
                                                             <div className="flex flex-row gap-1">
                                                                 <div className="pt-1">
