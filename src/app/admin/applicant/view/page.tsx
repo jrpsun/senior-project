@@ -1,9 +1,11 @@
 'use client';
 import React, { useEffect, useState } from 'react'
+import { useRouter } from 'next/compat/router';
 import Sidebar from "@components/components/SideBar";
-import { useLanguage } from '@components/hooks/LanguageContext';
-import { generalInfoTexts } from '@components/translation/generalInfo';
-import { summaryTexts } from '@components/translation/summary';
+import { useSearchParams } from 'next/navigation';
+// import { useLanguage } from '@components/hooks/LanguageContext';
+// import { generalInfoTexts } from '@components/translation/generalInfo';
+// import { summaryTexts } from '@components/translation/summary';
 import PersonalInfoSummary from '@components/components/ApplicantInformation/summary/Info/generalInfo/PersonalInfoSummary';
 import ContactSummary from '@components/components/ApplicantInformation/summary/Info/generalInfo/ContactSummary';
 import EmergencyContactSummary from '@components/components/ApplicantInformation/summary/Info/generalInfo/EmergancyContactSummary';
@@ -15,6 +17,10 @@ import TrainingSummary from '@components/components/ApplicantInformation/summary
 import AdditionalDocumentsSummary from '@components/components/ApplicantInformation/summary/Info/additionalSummary';
 import ViewInfoAdmin from '@components/components/common/admin/viewInfoAdmin';
 import { ApplicantGeneralInformationResponse, GeneralInfoInterface, ContactInfoInterface, EmergencyContactInterface } from '@components/types/generalInfoType';
+import PreliminaryEvaSummary from '@components/components/ApplicantInformation/summary/Info/preEvaSummary';
+import AdminNavbar from '@components/components/adminNavbar';
+import { Inter } from 'next/font/google';
+import InterviewEvaSummary from '@components/components/ApplicantInformation/summary/Info/interviewEvaSummary';
 
 const awardsData = [
     {
@@ -110,10 +116,28 @@ const additionalDocumentsData = {
 
 
 const viewApplicantInfo = () => {
-    const { language } = useLanguage();
-    const texts = generalInfoTexts[language] || generalInfoTexts["ENG"];
-    const titletexts = summaryTexts[language] || summaryTexts["ENG"];
+    // const { language } = useLanguage();
+    // const texts = generalInfoTexts[language] || generalInfoTexts["ENG"];
+    // const titletexts = summaryTexts[language] || summaryTexts["ENG"];
     const [isVisible, setIsVisible] = useState(false)
+    const searchParams = useSearchParams();
+
+    const QapplicantId = searchParams.get('QapplicantId') ?? 'N';
+    const QapplicantFullname = searchParams.get('QapplicantFullname') ?? 'N';
+    const QroundName = searchParams.get('QroundName') ?? 'N';
+    const Qprogram = searchParams.get('Qprogram') ?? 'N';
+    const QcourseComFullname = searchParams.get('QcourseComFullname') ?? 'N';
+    const QadmissionStatus = searchParams.get('QadmissionStatus') ?? 'N';
+    const QdocStatus = searchParams.get('QdocStatus') ?? 'N';
+    const QpaymentStatus = searchParams.get('QpaymentStatus') ?? 'N';
+    const QpreEvaDate = searchParams.get('QpreEvaDate') ?? 'N';
+    const QpreEva = searchParams.get('QpreEva') ?? 'N';
+    const Qcomment = searchParams.get('Qcomment') ?? '-';
+    const Qpath = searchParams.get('Qpath') ?? 'N';
+    const QcourseComId = searchParams.get('QcourseComId') ?? 'N';
+    const QinterviewComId = searchParams.get('QinterviewComId') ?? 'N';
+
+    console.log("result", QpreEva, "comment", Qcomment)
 
 
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -125,7 +149,20 @@ const viewApplicantInfo = () => {
         { id: "awards", label: "รางวัลและผลงาน" },
         { id: "training", label: "การฝึกอบรม" },
         { id: "documents", label: "เอกสารเพิ่มเติม" },
+        { id: "preliminary", label: "ผลการคัดกรองเบื้องต้น" },
+        { id: "interview", label: "ผลการสัมภาษณ์" }
     ];
+
+    const PreEvaPathAllow = [
+        "/admin/screening/tracking",
+        "/admin/interview/tracking",
+        "/admin/screening/candidates",
+        "/admin/interview/candidates"
+    ]
+    const InterviewEvaPathAllow = [
+        "/admin/interview/tracking",
+        "/admin/interview/candidates"
+    ]
 
     const [data, setData] = useState<ApplicantGeneralInformationResponse | null>(null);
 
@@ -155,16 +192,22 @@ const viewApplicantInfo = () => {
     return (
         <div>
             <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-            <div className={`mb-5 ${isCollapsed ? "ml-[100px] p-4" : "ml-[325px] p-4"}`}>
+            <div className={`mb-5 mt-8 ${isCollapsed ? "ml-[100px] p-4" : "ml-[325px] p-4"}`}>
+                <div className='mb-[75px]'>
+                    <AdminNavbar
+                        isCollapsed={isCollapsed}
+                        backToPage={{ href: Qpath, label: "กลับไปยังหน้ารายการใบสมัคร" }}
+                    />
+                </div>
                 <ViewInfoAdmin
-                    course="ITCS/B"
-                    round="รอบ 1 ICT - Portfolio"
+                    course={Qprogram}
+                    round={QroundName}
                     year="2568"
-                    applicantNumber="0000005"
-                    fullName="กันต์ชนก แก้วโมลา"
-                    admissionStatus="02 - ยื่นใบสมัครแล้ว"
-                    docStatus="02 - รอตรวจสอบเอกสาร"
-                    paymentStatus="02 - รอตรวจการชำระเงิน"
+                    applicantNumber={QapplicantId}
+                    fullName={QapplicantFullname}
+                    admissionStatus={QadmissionStatus}
+                    docStatus={QdocStatus}
+                    paymentStatus={QpaymentStatus}
                 />
                 <div className='mt-[-70px] ml-[950px] text-[13px]'>
                     <button
@@ -204,18 +247,22 @@ const viewApplicantInfo = () => {
             </div>
             <div className={`${isCollapsed ? "ml-[150px] p-4" : "ml-[375px] p-4"}`}>
                 <div className="flex space-x-6">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`pb-2 text-gray-600 hover:text-[#008A90] ${activeTab === tab.id
-                                ? "text-teal-700 font-semibold border-b-2 border-teal-600"
-                                : ""
-                                }`}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
+                    {tabs
+                        .filter(tab => (tab.id !== 'interview' && tab.id !== 'preliminary') || 
+                                       (tab.id === 'preliminary' && PreEvaPathAllow.includes(Qpath)) || 
+                                       (tab.id === 'interview' && InterviewEvaPathAllow.includes(Qpath)))
+                        .map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`pb-2 text-gray-600 hover:text-[#008A90] ${activeTab === tab.id
+                                    ? "text-teal-700 font-semibold border-b-2 border-teal-600"
+                                    : ""
+                                    }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
                 </div>
             </div>
             <div className={`${isCollapsed ? "ml-[100px] mr-[25px] border border-bottom mt-[-17px]" : "ml-[325px] mr-[25px] border border-bottom mt-[-17px]"}`}></div>
@@ -226,19 +273,19 @@ const viewApplicantInfo = () => {
                         <div>
                             <PersonalInfoSummary
                                 props={data?.general_info as GeneralInfoInterface}
-                                isVisible={isVisible} 
+                                isVisible={isVisible}
                                 setIsVisible={setIsVisible}
                             />
 
                             <ContactSummary
                                 props={data?.contact_info as ContactInfoInterface}
-                                isVisible={isVisible} 
+                                isVisible={isVisible}
                                 setIsVisible={setIsVisible}
                             />
 
                             <EmergencyContactSummary
                                 props={data?.emergency_contact as EmergencyContactInterface}
-                                isVisible={isVisible} 
+                                isVisible={isVisible}
                                 setIsVisible={setIsVisible}
                             />
 
@@ -262,7 +309,7 @@ const viewApplicantInfo = () => {
                                 school="ทวีธาภิเษก"
                                 major="Science-Math"
                                 gpa="3.33"
-                                isVisible={isVisible} 
+                                isVisible={isVisible}
                                 setIsVisible={setIsVisible}
                             />
                         </div>
@@ -271,15 +318,15 @@ const viewApplicantInfo = () => {
                     {
                         activeTab === "awards" &&
                         <div>
-                            <AwardSummary 
-                            awards={awardsData} 
-                            isVisible={isVisible} 
-                            setIsVisible={setIsVisible}
+                            <AwardSummary
+                                awards={awardsData}
+                                isVisible={isVisible}
+                                setIsVisible={setIsVisible}
                             />
-                            <TalentSummary 
-                            talents={talentData} 
-                            isVisible={isVisible} 
-                            setIsVisible={setIsVisible}
+                            <TalentSummary
+                                talents={talentData}
+                                isVisible={isVisible}
+                                setIsVisible={setIsVisible}
                             />
                         </div>
                     }
@@ -287,10 +334,10 @@ const viewApplicantInfo = () => {
                     {
                         activeTab === "training" &&
                         <div>
-                            <TrainingSummary 
-                            trainings={trainingsData} 
-                            isVisible={isVisible} 
-                            setIsVisible={setIsVisible}
+                            <TrainingSummary
+                                trainings={trainingsData}
+                                isVisible={isVisible}
+                                setIsVisible={setIsVisible}
                             />
                         </div>
                     }
@@ -298,13 +345,45 @@ const viewApplicantInfo = () => {
                     {
                         activeTab === "documents" &&
                         <div>
-                            <AdditionalDocumentsSummary 
-                            documents={additionalDocumentsData} 
-                            isVisible={isVisible} 
-                            setIsVisible={setIsVisible}
+                            <AdditionalDocumentsSummary
+                                documents={additionalDocumentsData}
+                                isVisible={isVisible}
+                                setIsVisible={setIsVisible}
                             />
                         </div>
                     }
+
+                    {
+                        activeTab === "preliminary" &&
+                        <div>
+                            <PreliminaryEvaSummary
+                                props={{
+                                    applicantId: QapplicantId,
+                                    courseComId: QcourseComId,
+                                    committeeName: QcourseComFullname,
+                                    preEvaDate: QpreEvaDate,
+                                    preEvaResult: QpreEva,
+                                    comment: Qcomment,
+                                    path: Qpath,
+                                }}
+                            />
+                        </div>
+                    }
+
+                    {
+                        activeTab === "interview" &&
+                        <div>
+                            <InterviewEvaSummary
+                                props={{
+                                    app_id: QapplicantId,
+                                    edu_id: "300001",
+                                    path: Qpath,
+                                    interviewCom: QinterviewComId
+                                }}
+                            />
+                        </div>
+                    }
+
                 </div>
             </div>
 
