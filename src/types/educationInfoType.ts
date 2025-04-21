@@ -76,3 +76,25 @@ export interface OCRTranscriptICTResponse {
     schoolName?: string;
     cumulativeGPA?: string;
 }
+
+
+export interface EducantionApplicantView {
+    roundName: string;
+    applicantId: string;
+    firstnameEN: string;
+    lastnameEN: string;
+    program: string;
+    admissionStatus: string;
+    docStatus: string;
+    paymentStatus: string;
+    academicYear: string;
+}
+
+
+export interface ApplicantProblem {
+    applicantId: string;
+    details: string;
+    educationId: string;
+    problemId: string;
+    updateDate: string;
+}

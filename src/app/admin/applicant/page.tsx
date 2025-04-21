@@ -10,6 +10,7 @@ import AlertAdmin from "@components/components/common/admin/alertAdmin";
 import PopupCancelReason from "@components/components/common/admin/applicant/PopupCancelReason";
 import { EduScreeningInterface } from "@components/types/screening";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const courseOptions = ["ITDS/B", "ITCS/B"];
 const roundOptions = [
@@ -27,6 +28,7 @@ const Page = () => {
     const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
     const [applicants, setApplicants] = useState<EduScreeningInterface[]>([]);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     async function fetchAllApplicants() {
         const res = await fetch(`${API_BASE_URL}/education-department/all-applicant-edu`);
@@ -149,6 +151,11 @@ const Page = () => {
         setSelectedApplicants([]);     // ล้างรายการที่เลือก
         setShowCheckboxes(false);      // ปิดโหมด checkbox
     };
+
+    
+    const handleClick = ( appId: string ) => {
+        router.push(`/admin/applicant/view?id=${appId}&role=edu`) // TODO fix role
+    }
 
     return (
         <div className="flex flex-col min-h-screen bg-white">

@@ -8,9 +8,10 @@ interface TalentSummaryProps {
     talents: TalentResponse[];
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
+    setReport: any;
 }
 
-const TalentSummary: React.FC<TalentSummaryProps> = ({ talents, isVisible, setIsVisible }) => {
+const TalentSummary: React.FC<TalentSummaryProps> = ({ talents, isVisible, setIsVisible, setReport }) => {
     const { language } = useLanguage();
     const texts = talentTexts[language] || talentTexts["ENG"];
     
@@ -40,10 +41,12 @@ const TalentSummary: React.FC<TalentSummaryProps> = ({ talents, isVisible, setIs
         <div className="flex justify-center py-5 bg-[white]">
             <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl lg:max-w-screen-xl p-3">
                 <div className="p-6 bg-white rounded-lg w-full max-w-6xl mx-auto">
-                    <h2 className="text-2xl text-[#008A90] font-semibold mb-6">
-                        {texts.talentSummaryTitle}
-                    </h2>
-                    <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+                    <div className="flex flex-cols gap-4">
+                        <h2 className="text-2xl text-[#008A90] font-semibold mb-6">
+                            {texts.talentSummaryTitle}
+                        </h2>
+                        <ReportProb isVisible={isVisible} problem={texts.talentSummaryTitle} setReport={setReport} reportColumn={"talents"}/>
+                    </div>
                     {/* --- แสดงเป็นตารางสำหรับหน้าจอใหญ่ (>= md) --- */}
                     <div className="overflow-x-auto w-full hidden md:flex">
                         <table className="w-full max-w-full border-collapse border border-[#B9B9B9]">

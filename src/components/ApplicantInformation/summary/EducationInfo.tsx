@@ -6,8 +6,9 @@ import EducationLevelSummary from "./Info/educationInfo/EducationLevelSummary"; 
 import EnglishTestScoreSummary from "./Info/educationInfo/EnglishTestScoreSummary"; // นำเข้า EnglishTestScoreSummary
 import MathTestScoreSummary from "./Info/educationInfo/MathTestScoreSummary";
 import { ApplicantEducationResponse, EducationBackground, EducationEngExam, EducationMathExam } from "@components/types/educationInfoType";
+import { authFetch } from "@components/lib/auth";
 
-const EducationInfo = () => {
+const EducationInfo = ({appId}: any) => {
     const { language } = useLanguage();
     const texts = summaryTexts[language] || summaryTexts["ENG"];
     const [eduData, setEduData] = useState<ApplicantEducationResponse | null>(null);
@@ -17,16 +18,11 @@ const EducationInfo = () => {
         dateStr ? new Date(dateStr).toISOString().split("T")[0] : "";
 
     const fetchEducationData = async () => {
-        try {
-          const res = await fetch(`${process.env.API_BASE_URL}/applicant/education/0000001`, {
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/education/${appId}`, {
             method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          })
-          if (!res.ok) throw new Error("Failed to fetch education data");
-          
-          const result = await res.json();
+        });
+        if (!response.ok) throw new Error("Failed to fetch education data");
+        const result = await response.json();
           const parsedData = {
             background: {
                 ...result.background,
@@ -40,20 +36,15 @@ const EducationInfo = () => {
                 ...result.math_exam,
                 mathExamDate: formatDate(result?.math_exam?.mathExamDate),
             }
-          };
-          setEduData(parsedData)
-        } catch (error) {
-          console.error("Error fetching education information:", error);
-        }
+        };
+        setEduData(parsedData)
     }
 
     useEffect(() => {
-        fetchEducationData();
-    },[])
-
-    useEffect(() => {
-        console.log("Summary Edu data:", eduData);
-    },[eduData])
+        if (appId) {
+            fetchEducationData();
+        }
+    },[appId])
 
     
     return (

@@ -11,9 +11,10 @@ import { useLanguage } from "../../hooks/LanguageContext";
 import { awardTexts, YearOptions, competitionLevelOptions } from "../../translation/AwardInfo";
 import Popup from '../../components/common/popup';
 import { AwardResponse } from '@components/types/AwardType';
+import { authFetch } from '@components/lib/auth';
 //import Alert from '../../components/common/alert';
 
-const Award = ({ setAward, setTalent }: any) => {
+const Award = ({ setAward, setTalent, appId }: any) => {
   const { language } = useLanguage();
   const currentTexts = awardTexts[language] || awardTexts["ENG"];
   const [isPopupOpen, setPopupOpen] = useState(false);
@@ -40,31 +41,34 @@ const Award = ({ setAward, setTalent }: any) => {
   }
 
   useEffect(() => {
-    fetchAward();
-  },[])
+    if (appId) {
+      fetchAward();
+    }
+  },[appId])
 
   useEffect(() => {
     console.log("Updated formData:", formData);
   }, [formData]); 
 
   const fetchAward = async () => {
-    try {
-      const res = await fetch(`${process.env.API_BASE_URL}/applicant/reward/0000001`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
-      const data: AwardResponse[] = await res.json()
-      console.log("data", data)
-      setFormData(data)
-
-    } catch (error){
-      console.error('Failed to fetch rewards:', error);
-      throw error;
-    }
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/reward/${appId}`, {
+      method: 'GET',
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data: AwardResponse[] = await response.json()
+    const mappedData = data.map(item => ({
+      rewardId: item.rewardId ?? "",
+      applicantId: item.applicantId ?? "",
+      nameOfCompetition: item.nameOfCompetition ?? "",
+      rewardYear: item.rewardYear ?? "",
+      rewardLevel: item.rewardLevel ?? "",
+      rewardAwards: item.rewardAwards ?? "",
+      project: item.project ?? "",
+      rewardCer: item.rewardCer ?? "",
+      rewardCerName: item.rewardCerName ?? "",
+      rewardCerSize: item.rewardCerSize ?? "",
+    }));
+    setFormData(mappedData)
   }
 
   // Function to add a new container
@@ -72,7 +76,7 @@ const Award = ({ setAward, setTalent }: any) => {
     const id = generateLongId()
     setFormData([...formData, {
       rewardId: id,
-      applicantId: "0000001",
+      applicantId: appId,
       nameOfCompetition: "",
       rewardYear: "",
       rewardLevel: "",
@@ -293,7 +297,7 @@ const Award = ({ setAward, setTalent }: any) => {
         </button>
       </div>
 
-      <div><Talent setTalent={setTalent}/></div>
+      <div><Talent setTalent={setTalent} appId={appId}/></div>
 
       <Popup
         type="deleteConfirmation"

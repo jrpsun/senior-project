@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useLanguage } from "../../../hooks/LanguageContext";
 import { summaryTexts } from "@components/translation/summary";
 import TrainingSummary from "./Info/trainingSummary"; 
+import { authFetch } from "@components/lib/auth";
 
 // const trainingsData = [
 //   {
@@ -34,7 +35,7 @@ import TrainingSummary from "./Info/trainingSummary";
 //   },
 // ];
 
-const TrainingPage = () => {
+const TrainingPage = ({appId}: any) => {
   const { language } = useLanguage();
   const texts = summaryTexts[language] || summaryTexts["ENG"];
   const [isVisible, setIsVisible] = useState(false)
@@ -53,28 +54,20 @@ const TrainingPage = () => {
 
 
   const fetchTrining = async() => {
-    try {
-      const res = await fetch(`${process.env.API_BASE_URL}/applicant/training/0000001`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/training/${appId}`, {
+      method: 'GET',
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-      const data = await res.json()
-      console.log("data Training", data)
-      setFormData(data)
-
-    } catch (error){
-      console.error('Failed to fetch rewards:', error);
-      throw error;
-    }
+    const data = await response.json()
+    setFormData(data)
   }
 
   useEffect(() => {
-      fetchTrining();
-  }, [])
+      if (appId) {
+        fetchTrining();
+      }
+  }, [appId])
 
   return (
     <div className="space-y-6">

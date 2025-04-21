@@ -4,9 +4,10 @@ import EducationLevel from "./education-info/EducationLevel";
 import EnglishTestScore from "./education-info/EnglishTestScore";
 import MathTestScore from "./education-info/MathTestScore";
 import { ApplicantEducationResponse, EducationBackground, EducationEngExam, EducationMathExam } from "@components/types/educationInfoType";
+import { authFetch } from "@components/lib/auth";
 
 
-const EducationInformation: React.FC = ({ onUpdate }: any) => {
+const EducationInformation = ({ onUpdate, appId }: { onUpdate: any, appId: string }) => {
   const [data, setData] = useState<ApplicantEducationResponse | null>(null);
 
   const [allChanges, setAllChanges] = useState({
@@ -40,28 +41,21 @@ const EducationInformation: React.FC = ({ onUpdate }: any) => {
   };
 
   const fetchEducationData = async () => {
-    try {
-      const res = await fetch(`${process.env.API_BASE_URL}/applicant/education/0000001`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!res.ok) throw new Error("Failed to fetch education data");
-      
-      const result = await res.json();
-      console.log("education result:", result)
-      setData(result)
-      console.log("education data:", data)
-    } catch (error) {
-      console.error("Error fetching education information:", error);
-    }
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/education/${appId}`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) throw new Error("Failed to fetch education data");
+    const result = await response.json();
+    setData(result)
   }
   
 
   useEffect(() => {
-    fetchEducationData()
-  }, []);
+    if (appId) {
+      fetchEducationData();
+    }
+  }, [appId]);
 
   return (
   <div className="flex flex-col gap-4 pb-10">

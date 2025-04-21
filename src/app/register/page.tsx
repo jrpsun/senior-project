@@ -9,6 +9,9 @@ import Popup from "../../components/common/popup";
 import { useLanguage } from "@components/hooks/LanguageContext";
 import { SingleValue } from "react-select";
 import { texts } from "../../translation/register";
+import { register } from "@components/lib/auth";
+import { useRouter } from "next/navigation";
+import { DataInteractive } from "@headlessui/react";
 
 
 const initialFormData = {
@@ -36,6 +39,7 @@ export default function RegisterPage() {
   const [isErrorPopupOpen, setIsErrorPopupOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     fetch("/data/nationalities.json")
@@ -91,8 +95,25 @@ export default function RegisterPage() {
   };
 
 
-  const handleConfirmRegistration = () => {
-    console.log("fsdsd", formData)
+  const handleConfirmRegistration = async() => {
+    const data = {
+      idNumber: formData?.idNumber?.replace(/-/g, "") || "",
+      idType: formData?.idType || "",
+      email: formData?.email || "",
+      title: formData?.title || "",
+      firstNameEnglish: formData?.firstNameEnglish || "",
+      firstNameThai: formData?.firstNameThai || "",
+      lastNameEnglish: formData?.lastNameEnglish,
+      lastNameThai: formData?.lastNameThai || "",
+      nationality: formData?.nationality || "",
+      password: formData?.password || "",
+    }
+    try {
+      await register(data)
+      setIsSuccessPopupOpen(true)
+    } catch (err: any) {
+      console.log("error", err)
+    }
   };
 
   const titleOptions = {

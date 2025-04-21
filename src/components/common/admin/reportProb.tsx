@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 interface ReportProbProps {
+    problem: string;
     isVisible: boolean;
-    setIsVisible: (value: boolean) => void;
+    setReport: any;
+    reportColumn: string;
 }
 
-const ReportProb: React.FC<ReportProbProps> = ({ isVisible, setIsVisible }) => {
+const ReportProb: React.FC<ReportProbProps> = ({ problem, isVisible, setReport, reportColumn }) => {
     const [isReportBoxVisible, setIsReportBoxVisible] = useState(false);
     const [selectedIssues, setSelectedIssues] = useState<string[]>([]);
     const [otherIssue, setOtherIssue] = useState('');
@@ -45,7 +47,29 @@ const ReportProb: React.FC<ReportProbProps> = ({ isVisible, setIsVisible }) => {
         if (!isOtherChecked) {
             setOtherIssue('');
         }
+        setOtherIssue("");
     };
+
+    const handleSave = () => {
+        console.log("problem", problem)
+        console.log("selectedIssues", selectedIssues);
+        console.log("otherIssue", otherIssue)
+        console.log("reportColumn", reportColumn)
+        if (selectedIssues.length === 0 && otherIssue.trim() === "") {
+            setReport(prev => ({
+                ...prev,
+                [reportColumn]: ""
+            }))
+        }
+        else {
+            setReport(prev => ({
+                ...prev,
+                [reportColumn]: `${problem} -> ${selectedIssues.join(", ")}${otherIssue ? ", " + otherIssue : ""}`
+            }))
+        }
+        setIsReportBoxVisible(false)
+    }
+
 
     return (
         <div className="relative inline-block" ref={messageRef}>
@@ -69,7 +93,7 @@ const ReportProb: React.FC<ReportProbProps> = ({ isVisible, setIsVisible }) => {
                 </button>
             )}
             {isReportBoxVisible && (
-                <div className="absolute left-full ml-2 top-0 bg-white border border-gray-300 rounded-md shadow-md p-4 w-[650px]">
+                <div className="absolute left-full ml-2 top-0 bg-white border border-gray-300 rounded-md shadow-md p-4 w-[650px] z-50">
                     <p className="text-black">เลือกปัญหา (เลือกได้มากกว่า 1 รายการ)</p>
 
                     {/* Checkboxes */}
@@ -119,7 +143,10 @@ const ReportProb: React.FC<ReportProbProps> = ({ isVisible, setIsVisible }) => {
                         >
                             ยกเลิก
                         </button>
-                        <button className="flex flex-row px-[30px] py-1 space-x-1 bg-[#008A90] text-white rounded-md hover:bg-teal-700">
+                        <button 
+                            className="flex flex-row px-[30px] py-1 space-x-1 bg-[#008A90] text-white rounded-md hover:bg-teal-700"
+                            onClick={() => handleSave()}    
+                        >
                             <div>
                                 <svg width="21" height="25" viewBox="0 0 21 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M14.3688 21.2402L14.3688 13.2402L6.03548 13.2402L6.03548 21.2402M6.03548 3.24023L6.03548 8.24023L12.7021 8.24023M16.0355 21.2402L4.36882 21.2402C3.92679 21.2402 3.50286 21.0295 3.1903 20.6544C2.87774 20.2794 2.70215 19.7707 2.70215 19.2402L2.70215 5.24023C2.70215 4.7098 2.87774 4.20109 3.1903 3.82602C3.50286 3.45095 3.92679 3.24023 4.36882 3.24023L13.5355 3.24023L17.7021 8.24023L17.7021 19.2402C17.7021 19.7707 17.5266 20.2794 17.214 20.6544C16.9014 21.0295 16.4775 21.2402 16.0355 21.2402Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

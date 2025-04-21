@@ -8,9 +8,10 @@ interface trainingSummaryProps {
     trainings: TrainingResponse[];
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
+    setReport: any;
 }
 
-const trainingSummary: React.FC<trainingSummaryProps> = ({ trainings, isVisible, setIsVisible }) => {
+const trainingSummary: React.FC<trainingSummaryProps> = ({ trainings, isVisible, setIsVisible, setReport }) => {
     const { language } = useLanguage();
     const texts = trainingTexts[language] || trainingTexts["ENG"];
 
@@ -34,10 +35,12 @@ const trainingSummary: React.FC<trainingSummaryProps> = ({ trainings, isVisible,
         <div className="flex justify-center py-5 bg-[white]">
             <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl lg:max-w-screen-xl p-3">
                 <div className="p-6 bg-white rounded-lg w-full max-w-6xl mx-auto">
-                    <h2 className="text-2xl text-[#008A90] font-semibold mb-6">
-                        {texts.trainingTitle}
-                    </h2>
-                    <ReportProb isVisible={isVisible} setIsVisible={setIsVisible}/>
+                    <div className="flex flex-cols gap-4">
+                        <h2 className="text-2xl text-[#008A90] font-semibold mb-6">
+                            {texts.trainingTitle}
+                        </h2>
+                        <ReportProb isVisible={isVisible} problem={texts.trainingTitle} setReport={setReport} reportColumn={"training"}/>
+                    </div>
                     {/* ตารางสำหรับหน้าจอใหญ่ */}
                     <div className="overflow-x-auto w-full hidden md:flex">
                         <table className="w-full max-w-full border-collapse border border-[#B9B9B9]">
