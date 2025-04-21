@@ -4,6 +4,7 @@ import SideBar from "../../../../components/SideBar";
 import AdminNavbar from "../../../../components/adminNavbar";
 import SearchField from "../../../../components/form/searchField";
 import Image from "next/image";
+import { CourseComScreeningInterface } from "@components/types/screening";
 
 interface GroupedData {
     committeeName: string;
@@ -46,6 +47,35 @@ const mockGroupedData: GroupedData[] = [
 ];
 
 const ScreeningResultPage = () => {
+    const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+    const [applicants, setApplicants] = useState<CourseComScreeningInterface[]>([]);
+    const [loading, setLoading] = useState(true);
+
+
+    async function fetchData() {
+        try {
+            const res = await fetch(`${API_BASE_URL}/course-committee/all-applicant-courseC`)
+
+            if (!res.ok) {
+                throw new Error("Failed to fetch one or more resources");
+            }
+
+            const data_app = await res.json();
+
+            setApplicants(data_app.applicants || []);
+
+        } catch (err) {
+            console.error("Error fetching data:", err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+    console.log(applicants);
+
     const [isPopupVisible, setIsPopupVisible] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -199,7 +229,7 @@ const ScreeningResultPage = () => {
 
             <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
                 <div className="relative z-20">
-                    <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin"/>
+                    <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin" />
                 </div>
 
                 <main
