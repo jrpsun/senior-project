@@ -24,8 +24,9 @@ interface Props {
         duration: number;
         committee: string;
     }[];
-    roomOptions: { label: string; value: string }[];
-    onSave: ({ room, startTime, endTime }: { room: string; startTime: string; endTime: string }) => void;
+    roomOptions: { label: string; value: string; id: string }[];
+    onSave: ({ room, roundId, startTime, endTime }: { room: string; roundId: string; startTime: string; endTime: string }) => void;
+
 }
 const PopupEditInterviewGrouping: React.FC<Props> = ({
     isOpen,
@@ -111,11 +112,16 @@ const PopupEditInterviewGrouping: React.FC<Props> = ({
 
     const handleSave = () => {
         if (!error) {
-            onSave({ room, startTime, endTime });
+            const selectedRoom = roomOptions.find(r => r.value === room);
+            const roundId = selectedRoom?.id || "";
+            onSave({ room, roundId, startTime, endTime });
         }
     };
+    
 
     if (!isOpen) return null;
+
+    console.log('room start end',room)
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
@@ -129,7 +135,7 @@ const PopupEditInterviewGrouping: React.FC<Props> = ({
                 <div className="mb-4">
                     <CustomSelect
                         label="ห้องสัมภาษณ์"
-                        options={filteredRoomOptions}
+                        options={roomOptions}
                         value={room} // ส่งเป็น string ไปเลย
                         onChange={(option) => setRoom(option?.value || "")}
                         width="100%"

@@ -3,7 +3,7 @@
 //สถานะชำระเงิน มีแค่ ชำระเงินเรียบร้อยเท่านั้น
 
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import React from 'react';
 import Sidebar from "@components/components/SideBar";
 import AdminNavbar from "@components/components/adminNavbar";
@@ -17,6 +17,8 @@ import { PaginationControls } from "@components/components/admin/interviewSchedu
 import { useFilterApplicants } from "@components/hooks/admin/groupingInterview/useFilterApplicants";
 import { useEditInterviewGrouping } from "@components/hooks/admin/groupingInterview/useEditInterviewGrouping";
 import AlertAdmin from "@components/components/common/admin/alertAdmin";
+import { InterviewScreeningForEduInterface } from "@components/types/screening";
+import { InterviewRoomDetails } from "@components/types/interviewRooms";
 //import InterviewTable from "@components/components/admin/interviewSchedule/InterviewTable";
 //import { useInterviewGrouping } from "@components/hooks/admin/groupingInterview/useInterviewGrouping";
 
@@ -35,6 +37,58 @@ const docStatusOptions = ["03 - เอกสารครบถ้วน"];
 const paymentStatusOptions = ["03 - ชำระเงินเรียบร้อย"];
 
 const Page = () => {
+    // fetch applicants data to show on table
+    const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+    const [applicants, setApplicants] = useState<InterviewScreeningForEduInterface[]>([]);
+    const [rooms, setRooms] = useState<InterviewRoomDetails[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    async function fetchData() {
+        try {
+            const [res_app, res_room] = await Promise.all([
+                fetch(`${API_BASE_URL}/education-department/get-summary-applicants-interview`),
+                fetch(`${API_BASE_URL}/education-department/get-all-interview-rooms`)
+            ])
+
+            if (!res_app.ok || !res_room.ok) {
+                throw new Error("Failed to fetch one or more resources");
+            }
+
+            const data_app = await res_app.json();
+            const data_room = await res_room.json()
+
+            setApplicants(data_app.applicants || []);
+            setRooms(data_room.room || []);
+
+        } catch (err) {
+            console.error("Error fetching data:", err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+    //console.log("applicants", applicants)
+    useEffect(() => {
+        const statusMap = new Map<string, boolean>();
+
+        for (const item of applicants) {
+            // If the current applicant is already marked as false, skip
+            if (statusMap.get(item.applicantId || '') === false) continue;
+
+            if (item.interviewStatus === null) {
+                statusMap.set(item.applicantId || '', false);
+            } else if (!statusMap.has(item.applicantId || '')) {
+                statusMap.set(item.applicantId || '', true);
+            }
+        }
+
+        const allGrouped = Array.from(statusMap.values()).every(v => v === true);
+        setIsAllGrouped(allGrouped);
+    }, [applicants]);
+
     const [isCollapsed, setIsCollapsed] = useState(false);
     interface FilterState {
         course?: string;
@@ -69,9 +123,10 @@ const Page = () => {
         { label: "อ. เจตน์พิภพ", value: " เจตน์พิภพ" },
     ];
 
-    const allRoomOptions = interviewSchedules.map(room => ({
-        label: room.room,
-        value: room.room
+    const allRoomOptions = rooms.map(room => ({
+        label: room.interviewRoom,
+        value: room.interviewRoom,
+        id: room.interviewRoundId
     }));
 
     const handleSearch = () => {
@@ -91,8 +146,10 @@ const Page = () => {
     const [isGroupingMode, setIsGroupingMode] = useState(false);
     const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
     const [isGrouped, setIsGrouped] = useState(false);
+    const [isAllGrouped, setIsAllGrouped] = useState(false);
+    const [isEdit, setIsEdit] = useState(false)
     const [showEditInterviewPopup, setShowEditInterviewPopup] = useState(false);
-    const [editingInterview, setEditingInterview] = useState<(typeof mockApplicants)[0] | null>(null);
+    const [editingInterview, setEditingInterview] = useState<InterviewScreeningForEduInterface[]>([]);
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
     interface Applicant {
         applicantId: string;
@@ -118,94 +175,109 @@ const Page = () => {
         }))
     );
 
+    const [groupedApplicants, setGroupedApplicants] = useState([]);
     const handleEnterGroupingMode = () => {
-        setIsGroupingMode(true);
 
-        if (selectedApplicants.length > 0 && selectedRooms.length > 0) {
-            const updatedData = [...applicantData];
-            const totalRooms = selectedRooms.length;
+        const assignments = [];
+        const applicantsQueue = [...selectedApplicants];
 
-            // เตรียมเก็บเวลาสุดท้ายของแต่ละห้อง
-            const lastSlotEndTimes: Record<string, Date> = {};
+        for (const room of selectedRooms) {
+            const {
+                startTime,
+                endTime,
+                duration,
+                interviewComs,
+                interviewDate,
+                interviewRoom,
+                interviewRoomId,
+                interviewRoundId
+            } = room;
 
-            selectedRooms.forEach(roomName => {
-                const roomSchedule = interviewSchedules.find(s => s.room === roomName);
-                const applicantsInRoom = updatedData
-                    .filter(app => app.grouping === "grouped" && app.interviewRoom === roomName && app.interviewDateTime)
-                    .sort((a, b) => (a.interviewDateTime || "").localeCompare(b.interviewDateTime || ""));
+            const [startHour, startMinute] = startTime.split(":").map(Number);
+            const [endHour, endMinute] = endTime.split(":").map(Number);
+            const interviewDuration = parseInt(duration, 10);
 
-                if (applicantsInRoom.length > 0) {
-                    const last = applicantsInRoom[applicantsInRoom.length - 1];
-                    const endTimeStr = last.interviewDateTime?.split(" ")[5]; // เช่น "09:40"
-                    if (endTimeStr) {
-                        lastSlotEndTimes[roomName] = new Date(`2025-04-10T${endTimeStr}:00`);
-                    }
-                } else if (roomSchedule) {
-                    lastSlotEndTimes[roomName] = new Date(`2025-04-10T${roomSchedule.startTime}:00`);
-                }
+            const start = new Date(`1970-01-01T${startTime}:00`);
+            const end = new Date(`1970-01-01T${endTime}:00`);
+            const totalMinutes = (end.getTime() - start.getTime()) / 60000;
+            const maxApplicants = Math.floor(totalMinutes / interviewDuration);
+
+            for (let i = 0; i < maxApplicants && applicantsQueue.length > 0; i++) {
+                const appId = applicantsQueue.shift();
+                const slotStart = new Date(start.getTime() + i * interviewDuration * 60000);
+                const slotEnd = new Date(slotStart.getTime() + interviewDuration * 60000);
+
+                const formatTime = (date: Date) => {
+                    const h = String(date.getHours()).padStart(2, "0");
+                    const m = String(date.getMinutes()).padStart(2, "0");
+                    return `${h}:${m}`;
+                };
+
+                const dateTime = `${interviewDate} - ${formatTime(slotStart)}–${formatTime(slotEnd)}`;
+
+                assignments.push({
+                    appId,
+                    roundId: interviewRoundId,
+                    interviewRoom,
+                    interviewRoomId,
+                    interviewComs,
+                    dateTime,
+                });
+            }
+        }
+
+        // Add unassigned applicants (if any)
+        while (applicantsQueue.length > 0) {
+            assignments.push({
+                appId: applicantsQueue.shift(),
+                unassigned: true,
+            });
+        }
+
+        setGroupedApplicants(assignments);
+        setIsGrouped(true);
+        //setApplicantData(updatedData);
+
+    }
+
+
+    const canSaveGrouping = isGrouped;
+
+    const transformInterviewData = (data) => {
+        return data.map((item) => {
+            const [intDate, intTime] = item.dateTime.split(' - ');
+            return {
+                applicantId: item.appId,
+                room: item.interviewRoom,
+                intDate: intDate,
+                intTime: intTime,
+                interviewRoundId: item.roundId,
+                committeeId: item.interviewComs.map((com) => com.interviewComId),
+            };
+        });
+    };
+
+    const handleSaveGrouping = async () => {
+        const transformedData = transformInterviewData(groupedApplicants);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/interview-committee/create-interview-eva`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(transformedData),
             });
 
-            // กระจายผู้สมัครแบบ round-robin โดยดูเวลาสุดท้ายของแต่ละห้อง
-            selectedApplicants.forEach((id, index) => {
-                const roomIndex = index % totalRooms;
-                const assignedRoom = selectedRooms[roomIndex];
-                const schedule = interviewSchedules.find(s => s.room === assignedRoom);
-                const targetIndex = updatedData.findIndex(app => `${app.round}-${app.applicantId}` === id);
+            if (!response.ok) throw new Error("Failed to save interview evaluations");
+            alert("บันทึกข้อมูลสำเร็จ");
 
-                if (targetIndex !== -1 && schedule) {
-                    const interviewEnd = new Date(`2025-04-10T${schedule.endTime}:00`);
-
-                    // เริ่ม slot จากเวลาสุดท้ายที่ใช้ในห้องนั้น
-                    const slotStart = new Date(lastSlotEndTimes[assignedRoom].getTime());
-                    const slotEnd = new Date(slotStart.getTime() + schedule.duration * 60000);
-
-                    if (slotEnd > interviewEnd) {
-                        console.warn(`Slot เกินเวลาห้อง ${assignedRoom} แล้ว ไม่จัดผู้สมัคร ${id}`);
-                        return;
-                    }
-
-                    const formatTime = (d: Date) =>
-                        d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", hour12: false });
-
-                    updatedData[targetIndex] = {
-                        ...updatedData[targetIndex],
-                        interviewRoom: assignedRoom,
-                        grouping: "grouped",
-                        committee: [schedule.committee],
-                        interviewDateTime: `${schedule.date} ${formatTime(slotStart)} - ${formatTime(slotEnd)} น.`,
-                    };
-
-                    // อัปเดตเวลาสุดท้ายของห้องนี้
-                    lastSlotEndTimes[assignedRoom] = slotEnd;
-                }
-            });
-
-            setApplicantData(updatedData);
-            setIsGrouped(true);
+            window.location.reload();
+        } catch (error) {
+            console.error('Error submitting interview evaluations:', error);
+            alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
         }
     };
 
-    const canSaveGrouping = isGrouped;
-    const handleSaveGrouping = () => {
-        const updatedData = applicantData.map((app) => {
-            if (app.grouping === "grouped") {
-                return {
-                    ...app,
-                    admitStatus: "06 - รอสัมภาษณ์",
-                };
-            }
-            return app;
-        });
-
-        setApplicantData(updatedData);
-        setIsGrouped(true);
-        setIsGroupingMode(false);
-        setSelectedApplicants([]);
-        setSelectedRooms([]);
-        setShowSuccessAlert(true);
-    };
-
-    const filteredApplicants = useFilterApplicants(applicantData, filters);
+    const filteredApplicants = useFilterApplicants(applicants, filters);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10); // Show 10 items per page
 
@@ -237,8 +309,9 @@ const Page = () => {
             .map(room => ({ label: room.room, value: room.room }));
     }, [applicantData, editingInterview]);
 
-
-    const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
+    const [selectedApp, setSelectedApp] = useState<string[]>([]);
+    const [selectedRooms, setSelectedRooms] = useState<InterviewRoomDetails[]>([]);
+    const [selectedRoomId, setSelectedRoomId] = useState<InterviewRoomDetails[]>([]);
     const [showRoomDropdown, setShowRoomDropdown] = useState(false);
 
 
@@ -265,17 +338,17 @@ const Page = () => {
         setCurrentPage(1); // Reset to first page when changing items per page
     };
     const isAllSelected = filteredApplicants
-        .filter(app => app.grouping !== "grouped")
-        .every(app => selectedApplicants.includes(`${app.round}-${app.applicantId}`));
+        .filter(app => app.interviewStatus === null)
+        .every(app => selectedApplicants.includes(`${app.applicantId}`));
 
-    const hasSelectableApplicants = filteredApplicants.some(app => app.grouping !== "grouped");
+    const hasSelectableApplicants = filteredApplicants.some(app => app.interviewStatus === null);
 
 
     // ฟังก์ชันเลือก/ไม่เลือกทั้งหมดในหน้า current page
     const toggleSelectAll = () => {
         const ungroupedKeys = filteredApplicants
-            .filter(app => app.grouping !== "grouped")
-            .map(app => `${app.round}-${app.applicantId}`);
+            .filter(app => app.interviewStatus === null)
+            .map(app => `${app.applicantId}`);
 
         const isAllUngroupedSelected = ungroupedKeys.every(id => selectedApplicants.includes(id));
 
@@ -290,12 +363,50 @@ const Page = () => {
             setSelectedApplicants([...selectedApplicants, ...newSelections]);
         }
     };
-    const { handleEditSave } = useEditInterviewGrouping({
-        applicantData,
-        setApplicantData,
-        interviewSchedules,
-    });
+    // const { handleEditSave } = useEditInterviewGrouping({
+    //     applicantData,
+    //     setApplicantData,
+    //     interviewSchedules,
+    // });
+    const handleEditSave = async (room, roundId, start, end) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/interview-committee/update-interview-room-auto-grouping`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    applicantId: currentApplicant,
+                    interviewRoom: room,
+                    interviewRoundId: roundId,
+                    interviewTime: `${start}-${end}`
+                }),
+            });
 
+            if (!response.ok) throw new Error("Failed to edit interview room");
+            alert("บันทึกข้อมูลสำเร็จ");
+
+            window.location.reload();
+        } catch (error) {
+            console.error('Error submitting interview room:', error);
+            alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
+        }
+    }
+
+    const [startTime, setStartTime] = useState("");
+    const [endTime, setEndTime] = useState("");
+    const [currentApplicant, setCurrentApplicant] = useState("");
+    const handleEditMode = (app: InterviewScreeningForEduInterface) => {
+        setEditingInterview(app);
+        setShowEditInterviewPopup(true);
+        setStartTime(app.interviewTime.split('-')[0])
+        setEndTime(app.interviewTime.split('-')[1])
+        setCurrentApplicant(app.applicantId)
+    }
+
+    console.log('selected app', selectedApplicants)
+    console.log('selected room(s)', selectedRooms)
+    console.log('grouped applicant', groupedApplicants)
+    console.log('is all app are grouped?????', isAllGrouped)
+    console.log('date time is --->', startTime, endTime)
     return (
         <div className="flex flex-col min-h-screen bg-white">
             <div>
@@ -344,8 +455,11 @@ const Page = () => {
                                 <TopBarActions
                                     isGroupingMode={isGroupingMode}
                                     isGrouped={isGrouped}
+                                    isAllGrouped={isAllGrouped}
                                     selectedRooms={selectedRooms}
                                     setSelectedRooms={setSelectedRooms}
+                                    selectedRoomId={selectedRoomId}
+                                    setSelectedRoomId={setSelectedRoomId}
                                     roomOptions={roomOptions}
                                     handleEnterGroupingMode={handleEnterGroupingMode}
                                     handleSaveGrouping={handleSaveGrouping}
@@ -354,6 +468,8 @@ const Page = () => {
                                     setIsGroupingMode={setIsGroupingMode}
                                     showRoomDropdown={showRoomDropdown}
                                     setShowRoomDropdown={setShowRoomDropdown}
+                                    isEdit={isEdit}
+                                    setIsEdit={setIsEdit}
                                 />
                             </div>
                             <div className="overflow-x-auto w-full">
@@ -384,7 +500,7 @@ const Page = () => {
                                             <th className="px-2 py-4 whitespace-nowrap ">ห้องสัมภาษณ์</th>
                                             <th className="px-2 py-4 whitespace-nowrap ">กรรมการสัมภาษณ์</th>
                                             <th className="px-2 py-4 whitespace-nowrap ">วัน-เวลา สัมภาษณ์</th>
-                                            {isGroupingMode && filteredApplicants.some(app => app.grouping === "grouped") && (
+                                            {isEdit && (
                                                 <th className="px-2 py-4 whitespace-nowrap"></th>
                                             )}
 
@@ -392,9 +508,10 @@ const Page = () => {
                                     </thead>
                                     <tbody>
                                         {paginatedApplicants.map((app, index) => {
-                                            const uniqueKey = `${app.round}-${app.applicantId}`;
-                                            const isSelected = selectedApplicants.includes(uniqueKey);
 
+                                            const uniqueKey = `${app.applicantId}`;
+                                            const isSelected = selectedApplicants.includes(uniqueKey);
+                                            const groupedApp = groupedApplicants.find(item => item.appId === app.applicantId)
                                             const handleCheckboxChange = () => {
                                                 if (isSelected) {
                                                     setSelectedApplicants(selectedApplicants.filter((id) => id !== uniqueKey));
@@ -405,10 +522,10 @@ const Page = () => {
 
                                             return (
                                                 <tr
-                                                    key={index}
+                                                    key={app.applicantId}
                                                     className={`text-[#565656] h-[50px] items-center 
-          ${app.admitStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
-          ${app.admitStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
+          ${app.admissionStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
+          ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
         `}
                                                 >
                                                     {isGroupingMode && (
@@ -417,23 +534,23 @@ const Page = () => {
                                                                 type="checkbox"
                                                                 checked={isSelected}
                                                                 onChange={handleCheckboxChange}
-                                                                disabled={app.grouping === "grouped"}
+                                                                disabled={app.interviewStatus !== null}
                                                                 className={`w-5 h-5 accent-[#008A90] text-white rounded-md border-2 ${app.grouping === "grouped" ? "border-gray-300 cursor-not-allowed" : "border-[#008A90]"
                                                                     }`}
                                                             />
                                                         </td>
                                                     )}
                                                     <td className="text-center whitespace-nowrap">{startIndex + index + 1}</td>
-                                                    <td className="text-center whitespace-nowrap">{app.round}</td>
+                                                    <td className="text-center whitespace-nowrap">{app.roundName}</td>
                                                     <td className="text-center whitespace-nowrap">{app.applicantId}</td>
-                                                    <td className="whitespace-nowrap">{app.name}</td>
-                                                    <td className="text-center whitespace-nowrap">{app.course}</td>
+                                                    <td className="whitespace-nowrap">{app.fullnameEN}</td>
+                                                    <td className="text-center whitespace-nowrap">{app.program}</td>
                                                     <td>
                                                         <div className={`mr-4 whitespace-nowrap
-            ${app.admitStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : ""}
-            ${app.admitStatus === "06 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
+            ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : ""}
+            ${app.admissionStatus === "06 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
           `}>
-                                                            {app.admitStatus}
+                                                            {app.admissionStatus}
                                                         </div>
                                                     </td>
                                                     <td>
@@ -447,6 +564,10 @@ const Page = () => {
                                                     <td className="text-center whitespace-nowrap text-[#565656]">
                                                         {app.interviewRoom ? (
                                                             app.interviewRoom
+                                                        ) : isGrouped ? (
+                                                            <div>
+                                                                <span>{groupedApp?.interviewRoom}</span>
+                                                            </div>
                                                         ) : (
                                                             <div className="flex items-center justify-center gap-1 text-[#B9B9B9]">
                                                                 <Image
@@ -460,10 +581,17 @@ const Page = () => {
                                                         )}
                                                     </td>
 
-                                                    <td className="text-center whitespace-nowrap text-[#565656]">
-                                                        {app.committee ? (
-                                                            app.committee
-                                                        ) : (
+                                                    <td className="text-center whitespace-nowrap text-[#565656] mt-3 flex flex-row space-x-1 px-4">
+                                                        {isGrouped ? (
+                                                            <div className="flex flex-row space-x-2">
+                                                                {groupedApp?.interviewComs.map((com, index) => (
+                                                                    <div key={index}>
+                                                                        อ. {com.firstName} |
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        ) : (app.InterviewCommittee?.length === 0) ? (
+
                                                             <div className="flex items-center justify-center gap-1 text-[#B9B9B9]">
                                                                 <Image
                                                                     src="/images/admin/interview/waiting_icon.svg"
@@ -473,22 +601,34 @@ const Page = () => {
                                                                 />
                                                                 <span>ยังไม่ได้เลือกกรรมการ</span>
                                                             </div>
+                                                        ) : (
+                                                            <div className="flex flex-row space-x-2">
+                                                                {app.InterviewCommittee?.map((com, index) => (
+                                                                    <div key={index}>
+                                                                        {com.shortName} |
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+
                                                         )}
+
                                                     </td>
 
                                                     <td className="text-center whitespace-nowrap text-[#565656]">
-                                                        {app.interviewDateTime ? (() => {
-                                                            const parts = app.interviewDateTime.split(" ");
-                                                            const date = parts.slice(0, 3).join(" "); // เช่น "10 เม.ย. 2568"
-                                                            const time = parts.slice(3).join(" ");    // เช่น "09:00 – 09:20 น."
+                                                        {isGrouped ? (
+                                                            <div>
+                                                                <span>{groupedApp?.dateTime}</span>
+                                                            </div>
+                                                        ) : (app.interviewDate && app.interviewTime) ? (
+                                                            // const parts = app.interviewDateTime.split(" ");
+                                                            // const date = parts.slice(0, 3).join(" "); // เช่น "10 เม.ย. 2568"
+                                                            // const time = parts.slice(3).join(" ");    // เช่น "09:00 – 09:20 น."
+                                                            <>
+                                                                <div className="text-[15px]">{app.interviewDate}</div>
+                                                                <div className="text-[15px] text-[#6B7280]">{app.interviewTime}</div>
+                                                            </>
 
-                                                            return (
-                                                                <>
-                                                                    <div className="text-[15px]">{date}</div>
-                                                                    <div className="text-[15px] text-[#6B7280]">{time}</div>
-                                                                </>
-                                                            );
-                                                        })() : (
+                                                        ) : (
                                                             <div className="flex items-center justify-center gap-1 text-[#B9B9B9]">
                                                                 <Image
                                                                     src="/images/admin/interview/waiting_icon.svg"
@@ -500,15 +640,14 @@ const Page = () => {
                                                             </div>
                                                         )}
                                                     </td>
-                                                    {isGroupingMode && app.grouping === "grouped" && (
+                                                    {isEdit && (
                                                         <td className="text-center whitespace-nowrap">
                                                             <button
                                                                 onClick={() => {
-                                                                    setEditingInterview(app);
-                                                                    setShowEditInterviewPopup(true);
+                                                                    handleEditMode(app);
                                                                 }}
 
-                                                                className="text-[#F59E0B] border border-[#DAA520] hover:bg-[#FFF7E6] px-4 py-1 rounded-[10px] flex items-center gap-1 "
+                                                                className="text-[#F59E0B] border border-[#DAA520] hover:bg-[#FFF7E6] px-4 py-1 rounded-[10px] flex justify-center gap-1 "
                                                             >
                                                                 <Image
                                                                     src="/images/admin/interview/edit_icon.svg"
@@ -544,6 +683,7 @@ const Page = () => {
                     onClose={() => setShowSuccessAlert(false)}
                 />
             )}
+            {/* this way */}
             {showEditInterviewPopup && editingInterview && (
                 <PopupEditInterviewGrouping
                     isOpen={showEditInterviewPopup}
@@ -551,8 +691,8 @@ const Page = () => {
                     interviewSchedules={interviewSchedules}
                     currentData={{
                         room: editingInterview.interviewRoom || "",
-                        startTime: editingInterview.interviewDateTime?.split(" ")[3] || "",
-                        endTime: editingInterview.interviewDateTime?.split(" ")[5] || "",
+                        startTime: startTime.trim() || "",
+                        endTime: endTime.trim() || "",
                     }}
                     existingSchedules={applicantData
                         .filter(a => a.grouping === "grouped" && a.applicantId !== editingInterview.applicantId)
@@ -561,10 +701,9 @@ const Page = () => {
                             startTime: a.interviewDateTime?.split(" ")[3] || "",
                             endTime: a.interviewDateTime?.split(" ")[5] || "",
                         }))}
-                    roomOptions={roomOptions}
-                    onSave={({ room, startTime, endTime }) => {
-                        handleEditSave(editingInterview, room, startTime, endTime);
-                        setShowEditInterviewPopup(false);
+                    roomOptions={allRoomOptions}
+                    onSave={({ room, roundId, startTime, endTime }) => {
+                        handleEditSave(room, roundId, startTime, endTime);
                     }}
                 />
             )}

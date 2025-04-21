@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { InterviewRoomDetails } from "@components/types/interviewRooms";
 
 interface TopBarActionsProps {
   isGroupingMode: boolean;
   isGrouped: boolean;
-  selectedRooms: string[];
-  setSelectedRooms: (rooms: string[]) => void;
+  isAllGrouped: boolean;
+  selectedRooms: InterviewRoomDetails[];
+  setSelectedRooms: (rooms: InterviewRoomDetails[]) => void;
+  selectedRoomId: InterviewRoomDetails[];
+  setSelectedRoomId: (roomId: InterviewRoomDetails[]) => void;
   roomOptions: { label: string; value: string }[];
   handleEnterGroupingMode: () => void;
   handleSaveGrouping: () => void;
@@ -14,13 +18,18 @@ interface TopBarActionsProps {
   setIsGroupingMode: (value: boolean) => void;
   showRoomDropdown: boolean;
   setShowRoomDropdown: (value: boolean) => void;
+  isEdit: boolean;
+  setIsEdit: (value: boolean) => void;
 }
 
 const TopBarActions: React.FC<TopBarActionsProps> = ({
   isGroupingMode,
   isGrouped,
+  isAllGrouped,
   selectedRooms,
   setSelectedRooms,
+  selectedRoomId,
+  setSelectedRoomId,
   roomOptions,
   handleEnterGroupingMode,
   handleSaveGrouping,
@@ -29,23 +38,56 @@ const TopBarActions: React.FC<TopBarActionsProps> = ({
   setIsGroupingMode,
   showRoomDropdown,
   setShowRoomDropdown,
+  isEdit,
+  setIsEdit
 }) => {
+  const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+  const [rooms, setRooms] = useState<InterviewRoomDetails[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  async function fetchData() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/education-department/get-all-interview-rooms`)
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch one or more resources");
+      }
+
+      const data = await res.json();
+
+      setRooms(data.room || []);
+
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+  console.log("all rooms", rooms)
+
+  console.log('selected room(s)', selectedRooms)
+
   return (
     <div className="flex flex-wrap gap-2 items-center justify-between mb-4">
       <div className="flex flex-wrap gap-2 items-center">
         {isGroupingMode && (
           <div className="flex flex-wrap items-center gap-2 mt-2">
-            {selectedRooms.map((room) => (
+            {selectedRooms.map((room, index) => (
               <div
-                key={room}
+                key={room.interviewRoomId}
                 className="flex items-center bg-gray-100 text-[#565656] rounded-xl px-3 py-0.5"
               >
-                {room}
+                {room.interviewRoom}
                 <button
                   className="ml-2 text-[#565656] hover:text-gray-700 text-3xl"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedRooms(selectedRooms.filter((r) => r !== room));
+                    setSelectedRooms(selectedRooms.filter((r, i) => i !== index));
+                    //setSelectedRoomId(selectedRoomId.filter((_, i) => i !== index));
                   }}
                 >
                   ×
@@ -71,6 +113,7 @@ const TopBarActions: React.FC<TopBarActionsProps> = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedRooms([]);
+                        //setSelectedRoomId([]);
                       }}
                     >
                       <Image src="/images/clear_icon.svg" alt="Clear" width={18} height={18} />
@@ -83,15 +126,18 @@ const TopBarActions: React.FC<TopBarActionsProps> = ({
 
               {showRoomDropdown && (
                 <div className="absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-[200px] overflow-y-auto shadow-md">
-                  {roomOptions
-                    .filter((room) => !selectedRooms.includes(room.value))
+                  {rooms
+                    .filter((room) => !selectedRooms.some((selected) => selected.interviewRoomId === room.interviewRoomId))
                     .map((room) => (
                       <div
-                        key={room.value}
+                        key={room.interviewRoomId}
                         className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-[#565656]"
-                        onClick={() => setSelectedRooms([...selectedRooms, room.value])}
+                        onClick={() => {
+                          setSelectedRooms([...selectedRooms, room]);
+                          //setSelectedRoomId([...selectedRoomId, room.interviewRoomId]);
+                        }}
                       >
-                        {room.label}
+                        {room.interviewRoom}
                       </div>
                     ))}
                 </div>
@@ -131,11 +177,11 @@ const TopBarActions: React.FC<TopBarActionsProps> = ({
             <div>บันทึกการจัดกลุ่ม</div>
           </button>
         </>
-      ) : isGrouped ? (
+      ) : isAllGrouped ? (
         <>
           <button
             className="min-w-[160px] border border-[#F59E0B] text-[#F59E0B] bg-white  px-3 py-2 rounded-[10px] flex items-center gap-2"
-            onClick={() => setIsGroupingMode(true)}
+            onClick={() => setIsEdit(!isEdit)}
           >
             <Image
               src="/images/admin/interview/edit_icon.svg"
@@ -164,7 +210,7 @@ const TopBarActions: React.FC<TopBarActionsProps> = ({
         <>
           <button
             className="min-w-[160px] bg-[#008A90] hover:bg-[#009198] text-white px-3 py-2 rounded-md flex items-center gap-2"
-            onClick={handleEnterGroupingMode}
+            onClick={() => setIsGroupingMode(!isEdit)}
           >
             <Image
               src="/images/admin/preliminaryResult/grouping_icon_before.svg"

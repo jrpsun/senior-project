@@ -16,14 +16,18 @@ export interface CourseComScreeningInterface {
     applicantId?: string;
     firstnameEN?: string;
     lastnameEN?: string;
+    fullnameEN?: string;
     program?: string;
     admissionStatus?: string;
     docStatus?: string;
     paymentStatus?: string;
+    courseComId?: string;
     prefix?: string;
     firstName?: string;
     lastName?: string;
-    preEvaDate ?: string;
+    preEvaDate?: string;
+    preliminaryEva?: string;
+    preliminaryComment?: string;
     
 }
 
@@ -58,3 +62,38 @@ export interface EduScreeningGroupingAllCourseComInterface {
     email?: string;
     phoneNumber?: string;
 }
+
+
+export interface CommitteeResult {
+    id?: string;
+    shortName?: string;
+    name?: string;
+    InterviewResult?: string;
+  }
+  
+export interface InterviewScreeningForEduInterface {
+    interviewStatus?: string;
+    admissionStatus?: string;
+    docStatus?: string;
+    paymentStatus?: string;
+    interviewRoom?: string; 
+    interviewDate?: string;
+    interviewTime?: string;
+    englishScore?: number; 
+    personalityScore?: number; 
+    intensionScore?: number; 
+    computerScore?: number; 
+    totalScore?: number;
+
+    applicantId?: string;
+    firstnameEN?: string;
+    lastnameEN?: string;
+    fullnameEN?: string;
+    programRegistered?: string;
+    program?: string;
+    roundName?: string;
+
+    InterviewCommittee?: CommitteeResult[];
+}
+  
+  
