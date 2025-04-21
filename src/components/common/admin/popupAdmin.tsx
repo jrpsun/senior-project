@@ -14,27 +14,29 @@ interface PopupAdminProps {
   isEditRole?: boolean;
   isDelete?: boolean;
   onSave?: (formData: {
-    title: string;
-    username: string;
+    adminId?: string;
+    prefix: string;
+    firstName: string;
     lastName: string;
     email: string;
-    phone: string;
-    role: string[];
-    course?: string;
-    roundName?: string;
-    academicYear?: string;
-    startDate?: string;
-    endDate?: string;
+    phoneNumber: string;
+    roles: string[];
+    username: string;
+    password: string;
   }) => void;
   onDeleteConfirm?: () => void;
   onDelete: () => void;
   userData?: {
-    title: string;
-    username: string;
+    adminId: string;
+    prefix: string;
+    firstName: string;
     lastName: string;
     email: string;
-    phone: string;
-    role?: string[];
+    phoneNumber: string;
+    roles?: string[];
+    lastSeen?: string;
+    username: string;
+    password: string;
   };
 }
 
@@ -80,47 +82,41 @@ const PopupMenu: React.FC<PopupMenuProps> = ({ isOpen, onClose, onEdit, onEditRo
 
 const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false, isEditRole = false, isDelete = false, onDeleteConfirm, userData  ,onSave = () => {} }) => {
   const [formData, setFormData] = useState({
-    title: "",
-    username: "",
+    adminId: "",
+    prefix: "",
+    firstName: "",
     lastName: "",
     email: "",
-    phone: "",
-    role: [] as string[],
-    course: "",
-    roundName: "",
-    academicYear: "",
-    startDate: "",
-    endDate: "",
+    phoneNumber: "",
+    roles: [] as string[],
+    username: "",
+    password: ""
   });
 
   useEffect(() => {
     if ((isEdit || isEditRole) && userData) {
       setFormData({
-        title: userData.title || "",
-        username: userData.username || "",
+        adminId: userData.adminId || "",
+        prefix: userData.prefix || "",
+        firstName: userData.firstName || "",
         lastName: userData.lastName || "",
         email: userData.email || "",
-        phone: userData.phone || "",
-        role: userData.role || [],
-        course: "",
-        roundName: "",
-        academicYear: "",
-        startDate: "",
-        endDate: "",
+        phoneNumber: userData.phoneNumber || "",
+        roles: userData.roles || [],
+        username: userData.username || "",
+        password : userData.password || "",
       });
     } else {
       setFormData({
-        title: "",
-        username: "",
+        adminId: "",
+        prefix: "",
+        firstName: "",
         lastName: "",
         email: "",
-        phone: "",
-        role: [],
-        course: "",
-        roundName: "",
-        academicYear: "",
-        startDate: "",
-        endDate: "",
+        phoneNumber: "",
+        roles: [],
+        username: "",
+        password: ""
       });
     }
   }, [isEdit, isEditRole, userData]);
@@ -128,11 +124,13 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
 
 
   const handleChange = (field: string, value: string | string[]) => {
-      if (field === "phone" && typeof value === "string") {
+      if (field === "phoneNumber" && typeof value === "string") {
         value = formatPhoneNumber(value);
       }
       setFormData((prev) => ({ ...prev, [field]: value }));
     };
+
+  console.log("current formData",formData)  
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
@@ -185,13 +183,13 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
               <CheckboxDropdown
                 label="บทบาท"
                 options={[
-                  { value: "กรรมการหลักสูตร", label: "กรรมการหลักสูตร" },
-                  { value: "กรรมการสัมภาษณ์", label: "กรรมการสัมภาษณ์" },
-                  { value: "ประชาสัมพันธ์ (PR)", label: "ประชาสัมพันธ์ (PR)" },
-                  { value: "ฝ่ายการศึกษา", label: "ฝ่ายการศึกษา" },
+                  { value: "Course Committee", label: "Course Committee" },
+                  { value: "Interview Committee", label: "Interview Committee" },
+                  { value: "Public Relations", label: "Public Relations" },
+                  { value: "Education Department", label: "Education Department" },
                 ]}
-                selected={formData.role}
-                onChange={(selected) => setFormData((prev) => ({ ...prev, role: selected }))}
+                selected={formData.roles}
+                onChange={(selected) => setFormData((prev) => ({ ...prev, roles: selected }))}
                 placeholder="เลือกบทบาท"
               />
             </>
@@ -223,8 +221,8 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
                     { value: "Miss.", label: "Miss." },
                     { value: "Mrs.", label: "Mrs." }
                   ]}
-                  value={formData.title}
-                  onChange={(option) => handleChange("title", option ? option.value : "")}
+                  value={formData.prefix}
+                  onChange={(option) => handleChange("prefix", option ? option.value : "")}
                   placeholder="กรุณาเลือกคำนำหน้า"
                   required={false}
                   boldLabel={true}
@@ -233,8 +231,8 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
                 {/* ชื่อผู้ใช้งาน */}
                 <FormField
                   label="ชื่อผู้ใช้งาน"
-                  value={formData.username}
-                  onChange={(value) => handleChange("username", value)}
+                  value={formData.firstName}
+                  onChange={(value) => handleChange("firstName", value)}
                   placeholder="กรอกชื่อผู้ใช้งาน"
                   boldLabel={true}
                 />
@@ -260,8 +258,8 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
                 {/* เบอร์โทรศัพท์ */}
                 <FormField
                   label="เบอร์โทรศัพท์"
-                  value={formData.phone}
-                  onChange={(value) => handleChange("phone", value)}
+                  value={formData.phoneNumber}
+                  onChange={(value) => handleChange("phoneNumber", value)}
                   placeholder="กรอกเบอร์โทรศัพท์"
                   boldLabel={true}
                 />
@@ -276,8 +274,8 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
                       { value: "ประชาสัมพันธ์ (PR)", label: "ประชาสัมพันธ์ (PR)" },
                       { value: "เจ้าหน้าที่งานการศึกษา", label: "เจ้าหน้าที่งานการศึกษา" },
                     ]}
-                    selected={formData.role}
-                    onChange={(selected) => handleChange("role", selected)}
+                    selected={formData.roles}
+                    onChange={(selected) => handleChange("roles", selected)}
                     placeholder="กรุณาเลือกบทบาท"
                     boldLabel={true}
                   />

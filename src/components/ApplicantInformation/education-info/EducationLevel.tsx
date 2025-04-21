@@ -546,7 +546,7 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
                                 <div className="w-full sm:w-[350px]">
                                     <FormField
                                         label={currentTexts.cumulativeGPA}
-                                        value={formData.cumulativeGPA}
+                                        value={formData.cumulativeGPA || ""}
                                         onChange={(value) => handleChange("cumulativeGPA", value)}
                                         type="text"
                                         placeholder={currentTexts.cumulativeGPAPlaceholder}

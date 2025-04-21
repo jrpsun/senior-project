@@ -1,6 +1,17 @@
 import React from 'react'
 
-const ViewInfoAdmin = ({ course, round, year, applicantNumber, fullName, admissionStatus, docStatus, paymentStatus }) => {
+interface ViewInfoAdminProps {
+    course: string;
+    round: string;
+    year: string;
+    applicantNumber: string;
+    fullName: string;
+    admissionStatus: string;
+    docStatus: string;
+    paymentStatus: string;
+}
+
+const ViewInfoAdmin: React.FC<ViewInfoAdminProps> = ({ course, round, year, applicantNumber, fullName, admissionStatus, docStatus, paymentStatus }) => {
     return (
         <div>
             <div className='flex flex-row space-x-1 text-lg'>
@@ -36,12 +47,14 @@ const ViewInfoAdmin = ({ course, round, year, applicantNumber, fullName, admissi
                     </div>
                 </div>
 
+          {paymentStatus !== 'N' && (
                 <div className='flex flex-row'>
                     สถานะการชำระเงิน:
                     <div className={`ml-[10px]`}>
                         {paymentStatus}
                     </div>
                 </div>
+          )}
             </div>
         </div>
     )
