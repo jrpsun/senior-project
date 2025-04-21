@@ -13,14 +13,13 @@ const roundOptions = [
     { label: "1/68 - MU – Portfolio (TCAS 1)", value: "DST01" },
     { label: "1/68 - ICT Portfolio", value: "ICT01" },
 ];
-
-
 const admitStatusOptions = [
     { label: "03 - รอพิจารณา", value: "03 - รอพิจารณา" },
     { label: "04 - ผ่านการพิจารณา", value: "04 - ผ่านการพิจารณา" },
     { label: "05 - ไม่ผ่านการพิจารณา", value: "05 - ไม่ผ่านการพิจารณา" },
 
 ];
+const paymentStatusOptions = ["03 - ชำระเงินเรียบร้อย"];
 
 const Page = () => {
 
@@ -28,6 +27,7 @@ const Page = () => {
     const [committees, setCommittees] = useState<EduScreeningGroupingAllCourseComInterface[]>([]);
     const [applicants, setApplicants] = useState<CourseComScreeningInterface[]>([]);
     const [loading, setLoading] = useState(true);
+
 
     async function fetchData() {
         try {
@@ -57,38 +57,56 @@ const Page = () => {
         fetchData();
     }, []);
 
-    const handleAutoGrouping = async () => {
-        if (selectedApplicantIds.length === 0 || !selectedCommittees) return;
+    const [selectedApplicantIds, setSelectedApplicantIds] = useState<string[]>([]);
+    const [selectedCommittees, setSelectedCommittees] = useState<string[]>([]);
+    const [editSelectedCommittees, setEditSelectedCommittees] = useState<string[]>([]);
+    const [editSelectedApplicantIds, setEditSelectedApplicantIds] = useState<string[]>([]);
 
+    const createApplicantCommitteePairs = (applicantIds: string[], committees: string[]) => {
+        const validApplicantIds = Array.isArray(applicantIds) ? applicantIds : [];
+        const pairs = validApplicantIds.map((applicantId, index) => {
+            const committeeId = committees[index % committees.length];
+            return { app_id: applicantId, com_id: committeeId };
+        });
+
+        return pairs;
+    };
+
+    const applicantCommitteePairs = createApplicantCommitteePairs(selectedApplicantIds, selectedCommittees);
+    const editApplicantCommitteePairs = createApplicantCommitteePairs(editSelectedApplicantIds, editSelectedCommittees);
+
+    console.log("Applicant-Committee Pairs:", applicantCommitteePairs);
+    console.log("Edit Applicant-Committee Pairs:", editApplicantCommitteePairs);
+
+    const sendPairsToBackend = async (pairs: { app_id: string; com_id: string }[]) => {
         try {
-            const payload = {
-                app_id: selectedApplicantIds,
-                com_id: selectedCommittees,
-            };
-
             const response = await fetch(`${API_BASE_URL}/education-department/update-edu-preEva`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(payload),
+                body: JSON.stringify(pairs),
             });
 
             if (!response.ok) {
-                throw new Error('ไม่สามารถจัดกลุ่มได้');
+                throw new Error('Failed to update data in the database');
             }
 
-            alert('จัดกลุ่มสำเร็จแล้ว');
-
+            alert('Data successfully updated in the database');
+            window.location.reload();
         } catch (error) {
-            console.error(error);
-            alert('เกิดข้อผิดพลาดในการจัดกลุ่ม');
+            console.error("Error sending pairs to backend:", error);
+            alert('An error occurred while updating data');
         }
     };
 
-
+    console.log("Selected Committees:", selectedCommittees);
+    console.log("Selected Applicant IDs:", selectedApplicantIds);
+    console.log("Selected edit applicant:", editSelectedApplicantIds);
+    console.log("Selected edit committees:", editSelectedCommittees);
 
     const [isCollapsed, setIsCollapsed] = useState(false);
+
     interface FilterState {
         course?: string;
         round?: string;
@@ -98,15 +116,15 @@ const Page = () => {
         applicantId?: string;
         fname?: string;
         lname?: string;
+        fullname?: string;
         committee?: string;
+        grouping?: string;
     }
 
-    const [filters, setFilters] = useState<FilterState>({
-        docStatus: "03 - เอกสารครบถ้วน",
-    });
-
+    const [filters, setFilters] = useState<FilterState>({})
     const [filterValues, setFilterValues] = useState<FilterState>({
         docStatus: "03 - เอกสารครบถ้วน",
+        paymentStatus: "03 - ชำระเงินเรียบร้อย"
     });
 
     const [isExpanded, setIsExpanded] = useState(false);
@@ -116,14 +134,17 @@ const Page = () => {
     };
 
     const handleReset = () => {
-        const defaultDocStatus = "03 - เอกสารครบถ้วน";
-        setFilterValues({ docStatus: defaultDocStatus });
-        setFilters({ docStatus: defaultDocStatus });
+        setFilterValues({
+            docStatus: "03 - เอกสารครบถ้วน",
+            paymentStatus: "03 - ชำระเงินเรียบร้อย"
+        });
+        setFilters({});
     };
 
     const committeeGroups = committees.map((com) => ({
-        com_name: `อ. ${com.firstName}`,
-        com_id: `${com.courseComId}`
+        label: `อ. ${com.firstName}`,
+        value: `${com.courseComId}`,
+        full: `${com.prefix} ${com.firstName} ${com.lastName}`
     }));
 
     const filteredApplicants = applicants.filter(app =>
@@ -132,8 +153,9 @@ const Page = () => {
         (!filters.admitStatus || app.admissionStatus === filters.admitStatus) &&
         (!filters.docStatus || app.docStatus === filters.docStatus) &&
         (!filters.applicantId || app.applicantId?.includes(filters.applicantId)) &&
-        (!filters.fname || app.firstnameEN?.includes(filters.fname)) &&
-        (!filters.lname || app.lastnameEN?.includes(filters.lname))
+        (!filters.fullname || app.fullnameEN?.includes(filters.fullname)) &&
+        (!filters.committee || app.courseComId?.includes(filters.committee)) &&
+        (!filters.grouping || (filters.grouping === "grouped" && app.courseComId) || (filters.grouping === "ungrouped" && !app.courseComId))
     );
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -162,451 +184,631 @@ const Page = () => {
         setCurrentPage(1); // Reset to first page when changing items per page
     };
 
-    const [selectedApplicantIds, setSelectedApplicantIds] = useState<string[]>([]);
-    const [selectedCommittees, setSelectedCommittees] = useState<string[]>([]);
+    const [showPopup, setShowPopup] = useState(false)
+    const [isGroupingMode, setIsGroupingMode] = useState(false);
+    const [isAssignedShowing, setIsAssignedShowing] = useState(false);
     const isAllSelected = paginatedApplicants.every(app => selectedApplicantIds.includes(app.applicantId));
+    const [assignedCommitteeMap, setAssignedCommitteeMap] = useState<Record<string, string>>({});
+    const [isEditing, setIsEditing] = useState(false);
+    const [showingEditDropdown, setShowingEditDropdown] = useState('');
+
+    const handleEnterGroupingMode = () => {
+        setIsGroupingMode(!isGroupingMode);
+    }
+
+    const handleAssignCommittees = () => {
+        const assignments: Record<string, string> = {};
+        const totalApplicants = selectedApplicantIds.length;
+        const totalCommittees = selectedCommittees.length;
+
+        if (totalApplicants === 0 || totalCommittees === 0) return;
+
+        const applicantsPerCommittee = Math.floor(totalApplicants / totalCommittees);
+        const remainingApplicants = totalApplicants % totalCommittees;
+
+        let currentIndex = 0;
+
+        selectedCommittees.forEach((committeeId, index) => {
+            const numberToAssign = applicantsPerCommittee + (index < remainingApplicants ? 1 : 0);
+
+            for (let i = 0; i < numberToAssign; i++) {
+                if (currentIndex >= totalApplicants) break;
+                const applicantId = selectedApplicantIds[currentIndex];
+                const committee = committeeGroups.find((c) => c.value === committeeId);
+                if (committee) {
+                    assignments[applicantId] = committee.full;
+                }
+                currentIndex++;
+            }
+        });
+
+        setAssignedCommitteeMap(assignments);
+        setIsAssignedShowing(true);
+    };
+
 
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            <div>
-                <AdminNavbar
-                    isCollapsed={isCollapsed}
-                />
-                <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
-                    <div className="relative z-50">
-                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="กรรมการหลักสูตร" />
-                    </div>
-                    <main
-                        className={`w-full transition-all p-6 mt-[64px] min-h-[calc(100vh-64px)] ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}
-                    >
-                        {/* Search and Filter Box */}
 
-                        <div className="relative max-w-[1600px] w-full mx-auto p-5 rounded-lg shadow-md mb-6 px-4 md:px-8 z-10 mt-5">
-                            <h2 className="text-[24px] font-semibold text-[#565656] mb-4">ค้นหาผู้สมัคร</h2>
-                            <hr className="mb-4 border-gray-300" />
+            <AdminNavbar
+                isCollapsed={isCollapsed}
+            />
+            <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
+                <div className="relative z-50">
+                    <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="กรรมการหลักสูตร" />
+                </div>
+                <div
+                    className={`w-full transition-all p-6 mt-[64px] min-h-[calc(100vh-64px)] ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}
+                >
+                    {/* Search and Filter Box */}
 
-                            <div className="flex flex-wrap items-end gap-2 mb-4">
-                                <div className="w-[180px] z-20">
+                    <div className="relative max-w-[1600px] w-full mx-auto p-5 rounded-lg shadow-md mb-6 px-4 md:px-8 z-10 mt-5">
+                        <h2 className="text-[24px] font-semibold text-[#565656] mb-4">ค้นหาผู้สมัคร</h2>
+                        <hr className="mb-4 border-gray-300" />
+
+                        <div className="flex flex-wrap items-end gap-2 mb-4">
+                            <div className="w-[180px] z-20">
+                                <SearchField
+                                    label="หลักสูตร"
+                                    type="dropdown"
+                                    value={filterValues.course || ""}
+                                    onChange={(option) => {
+                                        if (typeof option === "object" && option !== null && "value" in option) {
+                                            setFilterValues({ ...filterValues, course: option.value });
+                                        } else {
+                                            setFilterValues({ ...filterValues, course: "" });
+                                        }
+                                    }}
+                                    options={courseOptions.map(value => ({ label: value, value }))}
+                                    placeholder="เลือกหลักสูตร"
+                                />
+                            </div>
+
+                            <div className="w-[320px] z-50 relative">
+                                <SearchField
+                                    label="รอบรับสมัคร"
+                                    type="dropdown"
+                                    value={filterValues.round || ""}
+                                    onChange={(option) => {
+                                        if (typeof option === "object" && option !== null && "value" in option) {
+                                            setFilterValues({ ...filterValues, round: option.value });
+                                        } else {
+                                            setFilterValues({ ...filterValues, round: "" });
+                                        }
+                                    }}
+                                    options={roundOptions}
+                                    placeholder="เลือกรอบรับสมัคร"
+                                />
+                            </div>
+
+                            <div className="w-[240px]">
+                                <SearchField
+                                    label="สถานะการสมัคร"
+                                    type="dropdown"
+                                    value={filterValues.admitStatus || ""}
+                                    onChange={(option) => {
+                                        if (typeof option === "object" && option !== null && "value" in option) {
+                                            setFilterValues({ ...filterValues, admitStatus: option.value });
+                                        } else {
+                                            setFilterValues({ ...filterValues, admitStatus: "" });
+                                        }
+                                    }}
+                                    options={admitStatusOptions}
+                                    placeholder="เลือกสถานะการสมัคร"
+                                />
+                            </div>
+
+                            <div className="w-[240px]">
+                                <SearchField
+                                    label="สถานะเอกสาร"
+                                    type="dropdown"
+                                    value={filterValues.docStatus || ""}
+                                    onChange={(option) => {
+                                        if (typeof option === "object" && option !== null && "value" in option) {
+                                            setFilterValues({ ...filterValues, docStatus: option.value });
+                                        } else {
+                                            setFilterValues({ ...filterValues, docStatus: "" });
+                                        }
+                                    }}
+                                    options={[
+                                        { label: "03 - เอกสารครบถ้วน", value: "03 - เอกสารครบถ้วน" },
+                                    ]}
+                                    placeholder="เลือกสถานะเอกสาร"
+                                />
+                            </div>
+
+                            <div className="w-[270px]">
+                                <SearchField
+                                    label="สถานะการชำระเงิน"
+                                    type="dropdown"
+                                    value={filterValues.paymentStatus || ""}
+                                    onChange={(option) => {
+                                        if (typeof option === "object" && option !== null && "value" in option) {
+                                            setFilterValues({ ...filterValues, paymentStatus: option.value });
+                                        } else {
+                                            setFilterValues({ ...filterValues, paymentStatus: "" });
+                                        }
+                                    }}
+                                    options={paymentStatusOptions.map(value => ({ label: value, value }))}
+                                    placeholder="เลือกสถานะการชำระเงิน"
+                                />
+                            </div>
+
+                            <div className="flex gap-1 flex-wrap items-end">
+                                <button
+                                    onClick={() => setIsExpanded(!isExpanded)}
+                                    className="w-[30px] h-[40px] flex items-center justify-center border border-[#565656] rounded-md"
+                                >
+
+                                    <Image
+                                        src={
+                                            isExpanded
+                                                ? "/images/admin/searchBar/show_less_icon.svg"
+                                                : "/images/admin/searchBar/show_more_icon.svg"
+                                        }
+                                        alt={isExpanded ? "แสดงน้อยลง" : "แสดงเพิ่มเติม"}
+                                        width={37}
+                                        height={37}
+                                        className="w-37 h-37"
+                                    />
+                                </button>
+                                <button
+                                    className="px-1.5 h-[40px] border border-gray-400 rounded-md text-[#565656] bg-white flex items-center gap-1"
+                                    onClick={handleReset}
+                                >
+                                    <Image src="/images/admin/searchBar/clear_icon.svg" alt="reset" width={16} height={16} className="w-4 h-4" />
+                                    ล้างค่า
+                                </button>
+                                <button
+                                    className="px-2 h-[40px] rounded-md bg-[#008A90] hover:bg-[#009198] text-white flex items-center gap-1"
+                                    onClick={handleSearch}
+                                >
+                                    <Image src="/images/admin/searchBar/search_icon.svg" alt="search" width={16} height={16} className="w-4 h-4" />
+                                    ค้นหารายการ
+                                </button>
+                            </div>
+                        </div>
+
+                        {isExpanded && (
+                            <div className="flex flex-wrap gap-2">
+                                <div className="w-[180px]">
                                     <SearchField
-                                        label="หลักสูตร"
-                                        type="dropdown"
-                                        value={filterValues.course || ""}
-                                        onChange={(option) => {
-                                            if (typeof option === "object" && option !== null && "value" in option) {
-                                                setFilterValues({ ...filterValues, course: option.value });
+                                        label="เลขที่สมัคร"
+                                        value={filterValues.applicantId || ""}
+                                        onChange={(value) => {
+                                            if (typeof value === "object" && value !== null && "value" in value) {
+                                                setFilterValues({ ...filterValues, applicantId: value.value });
                                             } else {
-                                                setFilterValues({ ...filterValues, course: "" });
+                                                setFilterValues({ ...filterValues, applicantId: value ?? undefined });
                                             }
                                         }}
-                                        options={courseOptions.map(value => ({ label: value, value }))}
-                                        placeholder="เลือกหลักสูตร"
+                                        placeholder="กรุณากรอกข้อมูล"
                                     />
                                 </div>
-
-                                <div className="w-[320px] z-50 relative">
+                                <div className="w-[280px]">
                                     <SearchField
-                                        label="รอบรับสมัคร"
-                                        type="dropdown"
-                                        value={filterValues.round || ""}
-                                        onChange={(option) => {
-                                            if (typeof option === "object" && option !== null && "value" in option) {
-                                                setFilterValues({ ...filterValues, round: option.value });
+                                        label="ชื่อ-นามสกุล ผู้สมัคร"
+                                        value={filterValues.fullname || ""}
+                                        onChange={(value) => {
+                                            if (typeof value === "object" && value !== null && "value" in value) {
+                                                setFilterValues({ ...filterValues, fullname: value.value });
                                             } else {
-                                                setFilterValues({ ...filterValues, round: "" });
+                                                setFilterValues({ ...filterValues, fullname: value ?? undefined });
                                             }
                                         }}
-                                        options={roundOptions}
-                                        placeholder="เลือกรอบรับสมัคร"
+                                        placeholder="กรุณากรอกข้อมูล"
                                     />
                                 </div>
-
-                                <div className="w-[300px]">
+                                <div className="w-[240px]">
                                     <SearchField
-                                        label="สถานะการสมัคร"
+                                        label="การจัดกลุ่มผู้สมัคร"
                                         type="dropdown"
-                                        value={filterValues.admitStatus || ""}
+                                        value={filterValues.grouping || ""}
                                         onChange={(option) => {
                                             if (typeof option === "object" && option !== null && "value" in option) {
-                                                setFilterValues({ ...filterValues, admitStatus: option.value });
+                                                setFilterValues({ ...filterValues, grouping: option.value });
                                             } else {
-                                                setFilterValues({ ...filterValues, admitStatus: "" });
-                                            }
-                                        }}
-                                        options={admitStatusOptions}
-                                        placeholder="เลือกสถานะการสมัคร"
-                                    />
-                                </div>
-
-                                <div className="w-[275px]">
-                                    <SearchField
-                                        label="สถานะเอกสาร"
-                                        type="dropdown"
-                                        value={filterValues.docStatus || ""}
-                                        onChange={(option) => {
-                                            if (typeof option === "object" && option !== null && "value" in option) {
-                                                setFilterValues({ ...filterValues, docStatus: option.value });
-                                            } else {
-                                                setFilterValues({ ...filterValues, docStatus: "" });
+                                                setFilterValues({ ...filterValues, grouping: "" });
                                             }
                                         }}
                                         options={[
-                                            { label: "03 - เอกสารครบถ้วน", value: "03 - เอกสารครบถ้วน" },
+                                            { label: "จัดกลุ่มแล้ว", value: "grouped" },
+                                            { label: "ยังไม่ได้จัดกลุ่ม", value: "ungrouped" },
                                         ]}
-                                        placeholder="เลือกสถานะเอกสาร"
+                                        placeholder="เลือกการจัดกลุ่ม"
                                     />
                                 </div>
-
-                                <div className="flex gap-1 flex-wrap items-end">
-                                    <button
-                                        onClick={() => setIsExpanded(!isExpanded)}
-                                        className="w-[30px] h-[40px] flex items-center justify-center border border-[#565656] rounded-md"
-                                    >
-
-                                        <Image
-                                            src={
-                                                isExpanded
-                                                    ? "/images/admin/searchBar/show_less_icon.svg"
-                                                    : "/images/admin/searchBar/show_more_icon.svg"
+                                <div className="w-[240px]">
+                                    <SearchField
+                                        label="กรรมการหลักสูตร"
+                                        type="dropdown"
+                                        value={filterValues.committee || ""}
+                                        onChange={(option) => {
+                                            if (typeof option === "object" && option !== null && "value" in option) {
+                                                setFilterValues({ ...filterValues, committee: option.value });
+                                            } else {
+                                                setFilterValues({ ...filterValues, committee: "" });
                                             }
-                                            alt={isExpanded ? "แสดงน้อยลง" : "แสดงเพิ่มเติม"}
-                                            width={37}
-                                            height={37}
-                                            className="w-37 h-37"
-                                        />
-                                    </button>
-                                    <button
-                                        className="px-1.5 h-[40px] border border-gray-400 rounded-md text-[#565656] bg-white flex items-center gap-1"
-                                        onClick={handleReset}
-                                    >
-                                        <Image src="/images/admin/searchBar/clear_icon.svg" alt="reset" width={16} height={16} className="w-4 h-4" />
-                                        ล้างค่า
-                                    </button>
-                                    <button
-                                        className="px-2 h-[40px] rounded-md bg-[#008A90] hover:bg-[#009198] text-white flex items-center gap-1"
-                                        onClick={handleSearch}
-                                    >
-                                        <Image src="/images/admin/searchBar/search_icon.svg" alt="search" width={16} height={16} className="w-4 h-4" />
-                                        ค้นหารายการ
-                                    </button>
+
+                                        }}
+                                        options={committeeGroups}
+                                        placeholder="เลือกกรรมการหลักสูตร"
+                                    />
                                 </div>
                             </div>
+                        )}
+                    </div>
 
-                            {isExpanded && (
-                                <div className="flex flex-wrap gap-2">
-                                    <div className="w-[180px]">
-                                        <SearchField
-                                            label="เลขที่สมัคร"
-                                            value={filterValues.applicantId || ""}
-                                            onChange={(value) => {
-                                                if (typeof value === "object" && value !== null && "value" in value) {
-                                                    setFilterValues({ ...filterValues, applicantId: value.value });
-                                                } else {
-                                                    setFilterValues({ ...filterValues, applicantId: value ?? undefined });
-                                                }
-                                            }}
-                                            placeholder="กรุณากรอกข้อมูล"
-                                        />
-                                    </div>
-                                    <div className="w-[280px]">
-                                        <SearchField
-                                            label="ชื่อ ผู้สมัคร"
-                                            value={filterValues.fname || ""}
-                                            onChange={(value) => {
-                                                if (typeof value === "object" && value !== null && "value" in value) {
-                                                    setFilterValues({ ...filterValues, fname: value.value });
-                                                } else {
-                                                    setFilterValues({ ...filterValues, fname: value ?? undefined });
-                                                }
-                                            }}
-                                            placeholder="กรุณากรอกข้อมูล"
-                                        />
-                                    </div>
-                                    <div className="w-[280px]">
-                                        <SearchField
-                                            label="นามสกุล ผู้สมัคร"
-                                            value={filterValues.lname || ""}
-                                            onChange={(value) => {
-                                                if (typeof value === "object" && value !== null && "value" in value) {
-                                                    setFilterValues({ ...filterValues, lname: value.value });
-                                                } else {
-                                                    setFilterValues({ ...filterValues, lname: value ?? undefined });
-                                                }
-                                            }}
-                                            placeholder="กรุณากรอกข้อมูล"
-                                        />
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                    {/* Display Filtered Results */}
+                    <div className="mt-6 ">
+                        <div className="flex justify-between mb-4">
+                            <h2 className="text-xl font-bold text-[#565656] whitespace-nowrap">
+                                รายการใบสมัคร  <span className="text-[#6B7280] font-bold">{filteredApplicants.length}</span>
+                            </h2>
 
-                        {/* Display Filtered Results */}
-                        <div className="mt-6 ">
-                            <div className="flex justify-between mb-4">
-                                <h2 className="text-xl font-bold text-[#565656] whitespace-nowrap">
-                                    รายการใบสมัคร  <span className="text-[#6B7280] font-bold">{filteredApplicants.length}</span>
-                                </h2>
+                            <div className="flex flex-row space-x-2">
+                                <div>
 
-                                <div className="flex flex-row space-x-2">
-
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        {selectedCommittees.map((id) => {
-                                            const group = committeeGroups.find((g) => g.com_id === id);
-                                            return (
-                                                <div
-                                                    key={id}
-                                                    className="bg-[#008A90] text-white px-2 py-1 rounded-full flex items-center gap-1"
-                                                >
-                                                    <span>{group?.com_name}</span>
-                                                    <button
-                                                        className="text-white hover:text-gray-200"
-                                                        onClick={() =>
-                                                            setSelectedCommittees(selectedCommittees.filter((gid) => gid !== id))
-                                                        }
+                                    {isGroupingMode && (
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            {selectedCommittees.map((id) => {
+                                                const group = committeeGroups.find((g) => g.value === id);
+                                                return (
+                                                    <div
+                                                        key={id}
+                                                        className="bg-[#008A90] text-white px-2 py-1 rounded-full flex items-center gap-1"
                                                     >
-                                                        ✕
-                                                    </button>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-
-                                    <select
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            if (value && !selectedCommittees.includes(value)) {
-                                                setSelectedCommittees([...selectedCommittees, value]);
-                                            }
-                                        }}
-                                        value=""
-                                        className="border border-gray-300 rounded px-2 py-1 w-[200px]"
-                                    >
-                                        <option value="" disabled>เลือกกรรมการ</option>
-                                        {committeeGroups.map((group) => (
-                                            <option key={group.com_id} value={group.com_id}>
-                                                {group.com_name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                                        <span>{group?.label}</span>
+                                                        <button
+                                                            className="text-white hover:text-gray-200"
+                                                            onClick={() =>
+                                                                setSelectedCommittees(selectedCommittees.filter((gid) => gid !== id))
+                                                            }
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
 
 
-                                    <button
-                                        className={`min-w-[160px] px-3 py-2 rounded-md flex items-center gap-2 text-white 
-                                                ${selectedApplicantIds.length > 0 && selectedCommittees
+                                            <select
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    if (value && !selectedCommittees.includes(value)) {
+                                                        setSelectedCommittees([...selectedCommittees, value]);
+                                                    }
+                                                }}
+                                                value=""
+                                                className="border border-gray-300 text-gray-500 rounded-md px-2 py-2 w-[200px]"
+                                            >
+                                                <option value="" disabled>เลือกกรรมการ</option>
+                                                {committeeGroups.map((group) => (
+                                                    <option key={group.value} value={group.value}>
+                                                        {group.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                </div>
+                                {isGroupingMode ? (
+
+
+                                    <div className="flex flex-row space-x-2">
+                                        <button
+                                            className="min-w-[160px] border border-[#008A90] text-[#008A90] bg-white px-3 py-2 rounded-md flex items-center gap-2"
+                                            onClick={handleAssignCommittees}
+                                        >
+                                            <Image src="/images/admin/preliminaryResult/grouping_icon_after.svg" alt="จัดกลุ่มอัตโนมัติ" width={20} height={20} />
+                                            <div>จัดกลุ่มอัตโนมัติ</div>
+                                        </button>
+
+                                        <button
+                                            className={`min-w-[160px] px-3 py-2 rounded-md flex items-center gap-2 text-white ${selectedApplicantIds.length > 0 && selectedCommittees.length > 0
                                                 ? "bg-[#008A90] hover:bg-[#009198]"
                                                 : "bg-gray-300 cursor-not-allowed"}
-                                                `}
-                                        onClick={handleAutoGrouping}
-                                        disabled={selectedApplicantIds.length === 0 || !selectedCommittees}
-                                    >
-                                        <Image src="/images/admin/preliminaryResult/grouping_icon_before.svg" alt="จัดกลุ่มอัตโนมัติ" width={20} height={20} />
-                                        <div>จัดกลุ่มอัตโนมัติ</div>
-                                    </button>
+                                                        `}
+                                            onClick={() => sendPairsToBackend(applicantCommitteePairs)}
+                                            disabled={selectedApplicantIds.length === 0 || !selectedCommittees}
+                                        >
+                                            <Image src="/images/admin/preliminaryResult/save_icon.svg" alt="บันทึกการจัดกลุ่ม" width={16} height={16} className="w-4 h-4" />
+                                            <div>บันทึกการจัดกลุ่ม</div>
+                                        </button>
+                                    </div>
 
 
-                                    <button
-                                        className="min-w-[160px] bg-[#00796B] hover:bg-[#028273] text-white px-3 py-2 rounded-md flex items-center gap-2 "
+                                ) : applicants.every(app => app.prefix && app.firstName && app.lastName) ? (
+                                    <div className="flex flex-row space-x-2">
+                                        <button
+                                            className="min-w-[160px] border border-[#F59E0B] text-[#F59E0B] bg-white  px-3 py-2 rounded-[10px] flex items-center gap-2"
+                                            onClick={() => setIsEditing(!isEditing)}
+                                        >
+                                            <Image src="/images/admin/interview/edit_icon.svg" alt="แก้ไขการจัดกลุ่ม" width={20} height={20} />
+                                            <div>แก้ไขการจัดกลุ่ม</div>
+                                        </button>
+                                        <button
+                                            className="min-w-[160px] bg-[#00796B] hover:bg-[#028273] text-white px-3 py-2 rounded-md flex items-center gap-2 "
 
-                                    >
-                                        <Image src="/images/admin/searchBar/download_icon.svg" alt="Download Excel" width={16} height={16} className="w-4 h-4" />
-                                        <div>Export to Excel</div>
-                                    </button>
+                                        >
+                                            <Image src="/images/admin/searchBar/download_icon.svg" alt="Download Excel" width={16} height={16} className="w-4 h-4" />
+                                            <div>Export to Excel</div>
+                                        </button>
+                                    </div>
+                                ) : (
 
-                                    {/*<button
-                                        className={`min-w-[160px] px-3 py-2 rounded-[10px] flex items-center gap-2 bg-[#008A90] hover:bg-[#009198] text-white`}
-                                    >
-                                        <Image src="/images/admin/preliminaryResult/save_icon.svg" alt="บันทึกการจัดกลุ่ม" width={16} height={16} className="w-4 h-4" />
-                                        <div>บันทึกการจัดกลุ่ม</div>
-                                    </button>*/}
-                                </div>
+                                    <div className="flex flex-row space-x-2">
+                                        <button
+                                            className={`min-w-[160px] px-3 py-2 rounded-[10px] flex items-center gap-2 bg-[#008A90] hover:bg-[#009198] text-white`}
+                                            onClick={handleEnterGroupingMode}
+                                        >
+                                            <Image src="/images/admin/preliminaryResult/grouping_icon_before.svg" alt="จัดกลุ่มอัตโนมัติ" width={20} height={20} />
+                                            <div>จัดกลุ่มอัตโนมัติ</div>
+                                        </button>
+
+                                        <button
+                                            className="min-w-[160px] bg-[#C4C4C4] text-white px-3 py-2 rounded-md flex items-center gap-2 cursor-not-allowed"
+                                            disabled
+                                            title="โปรดจัดกลุ่มผู้สมัครก่อน"
+                                        >
+                                            <Image src="/images/admin/searchBar/download_icon.svg" alt="Download Excel" width={16} height={16} className="w-4 h-4" />
+                                            <div>Export to Excel</div>
+                                        </button>
+                                    </div>
+                                )}
+
                             </div>
-                            <div className="overflow-x-auto w-full">
-                                <table className="w-full table-auto border-collapse">
-                                    <thead>
-                                        <tr className="bg-[#F3F5F6] text-center text-[#565656]">
-                                            <th className="px-2 py-4 whitespace-nowrap w-[40px]">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isAllSelected}
-                                                    onChange={(e) => {
-                                                        const allIds = paginatedApplicants.map(app => app.applicantId);
-                                                        setSelectedApplicantIds(e.target.checked ? allIds : []);
-                                                    }}
-                                                />
-                                            </th>
-                                            <th className="px-2 py-4 whitespace-nowrap w-[50px]">No</th>
-                                            <th className="px-2 py-4 whitespace-nowrap w-[60px]">รอบ</th>
-                                            <th className="px-2 py-4 whitespace-nowrap w-[100px]">เลขที่สมัคร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap w-[200px]">ชื่อ - นามสกุล ผู้สมัคร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap w-[100px]">หลักสูตร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap w-[170px]">สถานะการสมัคร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap w-[170px]">สถานะเอกสาร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap w-[180px]">สถานะการชำระเงิน</th>
-                                            <th className="px-2 py-4 whitespace-nowrap w-[200px]">กรรมการหลักสูตร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap w-[130px]"></th>
-                                        </tr>
-                                    </thead>
+                        </div>
+                        <div className="overflow-x-auto w-full">
+                            <table className="w-full table-auto border-collapse">
+                                <thead>
+                                    <tr className="bg-[#F3F5F6] text-center text-[#565656]">
+                                        {isGroupingMode && (<th className="px-2 py-4 whitespace-nowrap w-[40px]">
+                                            <input
+                                                type="checkbox"
+                                                checked={isAllSelected}
+                                                onChange={(e) => {
+                                                    const allIds = paginatedApplicants.map(app => app.applicantId);
+                                                    setSelectedApplicantIds(e.target.checked ? allIds : []);
+                                                }}
+                                            />
+                                        </th>)}
+                                        <th className="px-2 py-4 whitespace-nowrap w-[50px]">No</th>
+                                        <th className="px-2 py-4 whitespace-nowrap w-[60px]">รอบ</th>
+                                        <th className="px-2 py-4 whitespace-nowrap w-[100px]">เลขที่สมัคร</th>
+                                        <th className="px-2 py-4 whitespace-nowrap w-[200px]">ชื่อ - นามสกุล ผู้สมัคร</th>
+                                        <th className="px-2 py-4 whitespace-nowrap w-[100px]">หลักสูตร</th>
+                                        <th className="px-2 py-4 whitespace-nowrap w-[170px]">สถานะการสมัคร</th>
+                                        <th className="px-2 py-4 whitespace-nowrap w-[170px]">สถานะเอกสาร</th>
+                                        <th className="px-2 py-4 whitespace-nowrap w-[180px]">สถานะการชำระเงิน</th>
+                                        <th className="px-2 py-4 whitespace-nowrap w-[200px]">กรรมการหลักสูตร</th>
+                                        <th className="px-2 py-4 whitespace-nowrap w-[130px]"></th>
+                                    </tr>
+                                </thead>
 
-                                    <tbody>
-                                        {paginatedApplicants.map((app, index) => (
-                                            <tr
-                                                key={index}
-                                                className={`text-[#565656] h-[50px] items-center 
+                                <tbody>
+                                    {paginatedApplicants.map((app, index) => (
+                                        <tr
+                                            key={index}
+                                            className={`text-[#565656] h-[50px] items-center 
                                               ${app.admissionStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
                                               ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
                                             `}
-                                            >
-                                                <td className="text-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedApplicantIds.includes(app.applicantId)}
-                                                        onChange={(e) => {
-                                                            setSelectedApplicantIds(prev =>
-                                                                e.target.checked
-                                                                    ? [...prev, app.applicantId]
-                                                                    : prev.filter(id => id !== app.applicantId)
-                                                            );
-                                                        }}
-                                                    />
-                                                </td>
+                                        >
+                                            {isGroupingMode && (<td className="text-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedApplicantIds.includes(app.applicantId)}
+                                                    onChange={(e) => {
+                                                        setSelectedApplicantIds(prev =>
+                                                            e.target.checked
+                                                                ? [...prev, app.applicantId]
+                                                                : prev.filter(id => id !== app.applicantId)
+                                                        );
+                                                    }}
+                                                />
+                                            </td>)}
 
-                                                <td className="text-center whitespace-nowrap">{startIndex + index + 1}</td>
-                                                <td className="text-center whitespace-nowrap">{app.roundName}</td>
-                                                <td className="text-center whitespace-nowrap">{app.applicantId}</td>
-                                                <td className="whitespace-nowrap">{app.firstnameEN} {app.lastnameEN}</td>
-                                                <td className="text-center whitespace-nowrap">{app.program}</td>
-                                                <td>
-                                                    <div className={`mr-4 whitespace-nowrap
+                                            <td className="text-center whitespace-nowrap">{startIndex + index + 1}</td>
+                                            <td className="text-center whitespace-nowrap">{app.roundName}</td>
+                                            <td className="text-center whitespace-nowrap">{app.applicantId}</td>
+                                            <td className="whitespace-nowrap">{app.firstnameEN} {app.lastnameEN}</td>
+                                            <td className="text-center whitespace-nowrap">{app.program}</td>
+                                            <td>
+                                                <div className={`mr-4 whitespace-nowrap
             ${app.admissionStatus === "02 - ยื่นใบสมัครแล้ว" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : ""}
             ${app.admissionStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
           `}>
-                                                        {app.admissionStatus}
-                                                    </div>
-                                                </td>
+                                                    {app.admissionStatus}
+                                                </div>
+                                            </td>
 
-                                                {/* Document Status with Conditional Highlight */}
-                                                <td>
-                                                    {app.admissionStatus === "09 - ยกเลิกการสมัคร" ? (
-                                                        <div >ไม่ต้องดำเนินการต่อ</div>
-                                                    ) : (
-                                                        <div className={`mr-4 whitespace-nowrap
+                                            {/* Document Status with Conditional Highlight */}
+                                            <td>
+                                                {app.admissionStatus === "09 - ยกเลิกการสมัคร" ? (
+                                                    <div >ไม่ต้องดำเนินการต่อ</div>
+                                                ) : (
+                                                    <div className={`mr-4 whitespace-nowrap
       ${app.docStatus === "02 - รอตรวจสอบเอกสาร" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
       ${app.docStatus === "03 - เอกสารครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
       ${app.docStatus === "04-เอกสารไม่ครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600" : ""}
     `}>
-                                                            {app.docStatus}
-                                                        </div>
-                                                    )}
-                                                </td>
-                                                <td>
-                                                    <div className={`mr-4 whitespace-nowrap
+                                                        {app.docStatus}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td>
+                                                <div className={`mr-4 whitespace-nowrap
             ${app.paymentStatus === "03 - ชำระเงินเรียบร้อย" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
           `}>
-                                                        {app.paymentStatus}
+                                                    {app.paymentStatus}
+                                                </div>
+                                            </td>
+                                            <td className="text-center text-[#565656] whitespace-nowrap">
+                                                {isAssignedShowing ? (
+                                                    (() => {
+                                                        const committee = committeeGroups.find(group =>
+                                                            group.value === applicantCommitteePairs.find(pair => pair.app_id === app.applicantId)?.com_id
+                                                        );
+                                                        return committee ? (
+                                                            <span>{committee.full}</span>
+                                                        ) : null;
+                                                    })()
+
+                                                ) : app.prefix ? (
+                                                    <span>{app.prefix} {app.firstName} {app.lastName}</span>
+                                                ) : (
+                                                    <div className="flex items-center justify-center gap-1 text-[#6B7280]">
+                                                        <Image
+                                                            src="/images/admin/preliminaryResult/not_grouping_icon.svg"
+                                                            alt="ยังไม่ได้เลือกกรรมการ"
+                                                            width={16}
+                                                            height={16}
+                                                        />
+                                                        <span>ยังไม่ได้เลือกกรรมการหลักสูตร</span>
                                                     </div>
-                                                </td>
-                                                <td className="text-center text-[#565656] whitespace-nowrap">
-                                                    {app.firstName ? (
-                                                        `${app.prefix} ${app.firstName} ${app.lastName}`
-                                                    ) : (
-                                                        <div className="flex items-center justify-center gap-1 text-[#6B7280]">
-                                                            <Image
-                                                                src="/images/admin/preliminaryResult/not_grouping_icon.svg"
-                                                                alt="ยังไม่ได้เลือกกรรมการ"
-                                                                width={16}
-                                                                height={16}
-                                                            />
-                                                            <span>ยังไม่ได้เลือกกรรมการหลักสูตร</span>
-                                                        </div>
-                                                    )}
-                                                </td>
+                                                )
+                                                }
+                                            </td>
 
-                                                <td className="py-2 text-center whitespace-nowrap">
-                                                    {(app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" || app.admissionStatus === "03 - รอพิจารณา") && (
-                                                        <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] ">
-                                                            <div className="flex flex-row gap-1">
-                                                                <div className="pt-1">
-                                                                    <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M18.6438 16.6993L14.5879 12.6365C15.6817 11.3031 16.335 9.59495 16.335 7.73621C16.335 3.46403 12.8738 0 8.60502 0C4.33626 0 0.875 3.46403 0.875 7.73621C0.875 12.0084 4.33626 15.4724 8.60502 15.4724C10.4696 15.4724 12.1801 14.8112 13.5161 13.7092L17.572 17.7683C18.0455 18.2018 18.4896 17.9226 18.6438 17.7683C18.9521 17.4634 18.9521 17.0042 18.6438 16.6993ZM2.38356 7.73621C2.38356 4.29789 5.16945 1.50977 8.60502 1.50977C12.0406 1.50977 14.8301 4.29789 14.8301 7.73621C14.8301 11.1745 12.0442 13.9626 8.60869 13.9626C5.17312 13.9626 2.38356 11.1745 2.38356 7.73621Z" fill="#008A91" />
-                                                                    </svg>
-                                                                </div>
-                                                                <div>view</div>
-                                                            </div>
+
+                                            <td>
+                                                {isEditing && (
+                                                    <div>
+                                                        <button
+                                                            className="min-w-[160px] border border-[#F59E0B] text-[#F59E0B] bg-white mx-5 px-1 py-1 rounded-[10px] flex items-center gap-2"
+                                                            onClick={() => {
+                                                                setShowPopup(true)
+                                                                setEditSelectedApplicantIds([...editApplicantCommitteePairs, app.applicantId])
+                                                            }}
+                                                        >
+                                                            <Image src="/images/admin/interview/edit_icon.svg" alt="แก้ไขการจัดกลุ่ม" width={20} height={20} />
+                                                            <div>แก้ไขการจัดกลุ่ม</div>
                                                         </button>
-                                                    )}
+                                                        {showPopup && (
+                                                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                                                <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+                                                                    <h2 className="text-xl font-bold mb-4">แก้ไขการจัดกลุ่มผู้สมัคร</h2>
+                                                                    <p className="mb-4 text-[15px] text-gray-700">กรรมการหลักสูตร</p>
+                                                                    <div className="flex flex-col gap-2 mb-4">
+                                                                        <div className="relative w-full">
+                                                                            <select
+                                                                                onChange={(e) => {
+                                                                                    const value = e.target.value;
+                                                                                    if (value) {
+                                                                                        setShowingEditDropdown(value);
+                                                                                        setEditSelectedCommittees([...editSelectedCommittees, value]);
+                                                                                    }
+                                                                                }}
+                                                                                value={showingEditDropdown}
+                                                                                className="appearance-none border border-gray-300 text-gray-500 rounded-md px-2 py-2 w-full pr-10"
+                                                                            >
+                                                                                <option value="" disabled>เลือกกรรมการหลักสูตร</option>
+                                                                                {committeeGroups.map((group) => (
+                                                                                    <option key={group.value} value={group.value}>
+                                                                                        {group.label}
+                                                                                    </option>
+                                                                                ))}
+                                                                            </select>
 
-                                                    {app.admissionStatus === "09 - ยกเลิกการสมัคร" && (
-                                                        <button className="bg-red px-1 py-1 my-2 rounded-lg border border-red-500 text-red-500 text-[14px] font-bold w-[130px]">
-                                                            <div className="flex flex-row gap-1">
-                                                                <div className="pt-1">
-                                                                    <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M5.02655 0.00736992C2.26224 -0.00847055 0.0160495 2.21504 0.0094537 4.97341C0.00286904 7.73769 2.23391 9.99135 4.9923 10.0072C7.7566 10.023 10.0028 7.79951 10.0094 5.04114C10.0219 2.27687 7.78494 0.0232018 5.02655 0.00736992ZM4.95821 1.35397C5.20038 1.35433 5.40137 1.44322 5.56708 1.61475C5.73869 1.78039 5.82177 1.98724 5.82223 2.22941C5.82269 2.47158 5.74037 2.67228 5.56941 2.84333C5.40434 3.00847 5.19776 3.09086 4.9615 3.09052C4.71342 3.09015 4.51244 3.00717 4.34084 2.84154C4.17514 2.67591 4.08615 2.46905 4.08569 2.22688C4.08522 1.9788 4.17344 1.7781 4.34442 1.61297C4.50948 1.44192 4.71604 1.35362 4.95821 1.35397ZM3.55078 3.59052L5.84843 3.59387L5.85653 7.87616L6.5476 7.87717L6.54864 8.42648L3.55991 8.42213L3.55888 7.87281L4.24404 7.87381L4.23698 4.14083L3.55181 4.13984L3.55078 3.59052Z" fill="#D92D20" />
-                                                                    </svg>
+                                                                            <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
+                                                                                <Image
+                                                                                    src="/images/dropdown_button.svg"
+                                                                                    alt="Dropdown"
+                                                                                    width={16}
+                                                                                    height={16}
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="flex justify-center flex-row mt-4 gap-x-2">
+                                                                            <button
+                                                                                onClick={() => setShowPopup(false)}
+                                                                                className="px-8 py-2 text-black rounded-md border border-gray-400"
+                                                                            >
+                                                                                ยกเลิก
+                                                                            </button>
+                                                                            <button
+
+                                                                                className="px-8 py-2 bg-[#008A90] text-white rounded-md flex flex-row gap-x-1 items-center"
+                                                                                onClick={() => sendPairsToBackend(editApplicantCommitteePairs)}
+                                                                            >
+                                                                                <svg width="21" height="25" viewBox="0 0 21 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                                    <path d="M14.4943 21.2402L14.4943 13.2402L6.16097 13.2402L6.16097 21.2402M6.16097 3.24023L6.16097 8.24023L12.8276 8.24023M16.161 21.2402L4.4943 21.2402C4.05228 21.2402 3.62835 21.0295 3.31579 20.6544C3.00323 20.2794 2.82764 19.7707 2.82764 19.2402L2.82764 5.24023C2.82764 4.7098 3.00323 4.20109 3.31579 3.82602C3.62835 3.45095 4.05228 3.24023 4.4943 3.24023L13.661 3.24023L17.8276 8.24023L17.8276 19.2402C17.8276 19.7707 17.652 20.2794 17.3395 20.6544C17.0269 21.0295 16.603 21.2402 16.161 21.2402Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                                                </svg>
+
+                                                                                บันทึก
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                                <div>เหตุผลการยกเลิก</div>
+
                                                             </div>
-                                                        </button>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
 
-                                    </tbody>
-                                </table>
-                            </div>
+                                </tbody>
+                            </table>
                         </div>
-                        <div className="flex justify-between flex-row mt-6 items-center">
-                            {/* จำนวนรายการที่แสดง */}
-                            <div className="items-center">
-                                <span className="mx-2 text-[#565656] text-sm">จำนวนรายการที่แสดง</span>
-                                <select
-                                    value={itemsPerPage}
-                                    onChange={handleItemsPerPageChange}
-                                    className="border border-[#C4C4C4] rounded-[10px] w-[80px] p-0.5 text-sm focus:outline-none focus:ring-0"
-                                >
+                    </div>
+                    <div className="flex justify-between flex-row mt-6 items-center">
+                        {/* จำนวนรายการที่แสดง */}
+                        <div className="items-center">
+                            <span className="mx-2 text-[#565656] text-sm">จำนวนรายการที่แสดง</span>
+                            <select
+                                value={itemsPerPage}
+                                onChange={handleItemsPerPageChange}
+                                className="border border-[#C4C4C4] rounded-[10px] w-[80px] p-0.5 text-sm focus:outline-none focus:ring-0"
+                            >
 
-                                    <option value={10}>10</option>
-                                    <option value={15}>15</option>
-                                    <option value={20}>20</option>
-                                    <option value={filteredApplicants.length}>ทั้งหมด</option>
-                                </select>
-                            </div>
-
-                            {/* ช่วงที่แสดง + pagination */}
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-[#6B7280]">
-                                    {filteredApplicants.length === 0
-                                        ? "0 รายการ"
-                                        : `${startIndex + 1}-${Math.min(endIndex, filteredApplicants.length)} จาก ${filteredApplicants.length}`}
-                                </span>
-
-                                <button
-                                    onClick={prevPage}
-                                    disabled={currentPage === 1}
-                                    className="border-2 border-solid border-gray-300 px-3 py-2 rounded-md"
-                                >
-                                    <svg width="8" height="13" viewBox="0 0 8 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M3.4 6.5L8 11.1L6.6 12.5L0.6 6.5L6.6 0.5L8 1.9L3.4 6.5Z" fill="#1D1B20" />
-                                    </svg>
-                                </button>
-
-                                <span className="bg-[#008A90] px-3 py-[6px] rounded-md text-white">{currentPage}</span>
-
-                                <button
-                                    onClick={nextPage}
-                                    disabled={endIndex >= filteredApplicants.length}
-                                    className="border-2 border-solid border-gray-300 px-3 py-2 rounded-md"
-                                >
-                                    <svg width="8" height="13" viewBox="0 0 8 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M5.13125 6.5L0.53125 1.9L1.93125 0.5L7.93125 6.5L1.93125 12.5L0.53125 11.1L5.13125 6.5Z" fill="#1D1B20" />
-                                    </svg>
-                                </button>
-                            </div>
+                                <option value={10}>10</option>
+                                <option value={15}>15</option>
+                                <option value={20}>20</option>
+                                <option value={filteredApplicants.length}>ทั้งหมด</option>
+                            </select>
                         </div>
 
-                    </main>
+                        {/* ช่วงที่แสดง + pagination */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-[#6B7280]">
+                                {filteredApplicants.length === 0
+                                    ? "0 รายการ"
+                                    : `${startIndex + 1}-${Math.min(endIndex, filteredApplicants.length)} จาก ${filteredApplicants.length}`}
+                            </span>
+
+                            <button
+                                onClick={prevPage}
+                                disabled={currentPage === 1}
+                                className="border-2 border-solid border-gray-300 px-3 py-2 rounded-md"
+                            >
+                                <svg width="8" height="13" viewBox="0 0 8 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3.4 6.5L8 11.1L6.6 12.5L0.6 6.5L6.6 0.5L8 1.9L3.4 6.5Z" fill="#1D1B20" />
+                                </svg>
+                            </button>
+
+                            <span className="bg-[#008A90] px-3 py-[6px] rounded-md text-white">{currentPage}</span>
+
+                            <button
+                                onClick={nextPage}
+                                disabled={endIndex >= filteredApplicants.length}
+                                className="border-2 border-solid border-gray-300 px-3 py-2 rounded-md"
+                            >
+                                <svg width="8" height="13" viewBox="0 0 8 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5.13125 6.5L0.53125 1.9L1.93125 0.5L7.93125 6.5L1.93125 12.5L0.53125 11.1L5.13125 6.5Z" fill="#1D1B20" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+
                 </div>
             </div>
+
         </div>
 
     );
