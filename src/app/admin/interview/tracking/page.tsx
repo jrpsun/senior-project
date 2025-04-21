@@ -1,12 +1,48 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import React from 'react';
 import Sidebar from "@components/components/SideBar";
 import AdminNavbar from "@components/components/adminNavbar";
 import SearchField from "@components/components/form/searchField";
-import { mockApplicants } from "@components/data/admin/Interview/tracking/mockApplicant";
 import Image from 'next/image';
+import { InterviewScreeningForEduInterface } from "@components/types/screening";
+import Link from "next/link";
+
+const applicant = [
+    { round: 'DST01', applicantId: '0000001', name: 'อาทิตย์ แสงจันทร์', course: 'ITDS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 09.04 น.' },
+    { round: 'ICT01', applicantId: '0000001', name: 'กนกวรรณ ทองสุข', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 09.10 น.' },
+    { round: 'DST01', applicantId: '0000002', name: 'พิชญะ วิสุทธิ์', course: 'ITDS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '31 มี.ค. 2568 09.15 น.' },
+    { round: 'ICT01', applicantId: '0000002', name: 'วราภรณ์ เจริญสุข', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '31 มี.ค. 2568 09.23 น.' },
+    { round: 'ICT01', applicantId: '0000003', name: 'อนันต์ โชติกุล', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 09.45 น.' },
+    { round: 'ICT01', applicantId: '0000004', name: 'ปรียาภรณ์ สุทธิวัฒน์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 11.02 น.' },
+    { round: 'ICT01', applicantId: '0000005', name: 'ธนากร ศรีสวัสดิ์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 11.03 น.' },
+    { round: 'ICT01', applicantId: '0000006', name: 'ณัฐมน มณีวงศ์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 11.07 น.' },
+    { round: 'DST01', applicantId: '0000003', name: 'วิศรุต พิทักษ์ธรรม', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '' },
+    { round: 'ICT01', applicantId: '0000007', name: 'อภิรักษ์ ธีรพัฒนเกียรติ', course: 'ITCS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: ' ' },
+    { round: 'DST01', applicantId: '0000008', name: 'กนกวรรณ วัฒนปัญญากุล', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: ' ' },
+    { round: 'ICT01', applicantId: '0000009', name: 'พิชญา นาคสุข', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 13.10 น.' },
+    { round: 'ICT01', applicantId: '0000010', name: 'ชลธิชา นันทวโรภาส', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 13.12 น.' },
+    { round: 'ICT01', applicantId: '0000012', name: 'พัชรีย์ เกษมสุขเจริญ', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 13.23 น.' },
+    { round: 'ICT01', applicantId: '0000013', name: 'จารุวรรณ รัตนศิลป์', course: 'ITCS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 13.56 น.' },
+    { round: 'DST01', applicantId: '0000005', name: 'วารินทร์ รัตนประเสริฐกุล', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
+    { round: 'ICT01', applicantId: '0000014', name: 'ศุภชัย จิตตเมธากานต์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 15.34 น.' },
+    { round: 'DST01', applicantId: '0000006', name: 'มนัสนันท์ อัครพงศ์วณิช', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
+    { round: 'ICT01', applicantId: '0000015', name: 'ปรเมศวร์ อินทร์สถิตธรรม', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 15.40 น.' },
+    { round: 'ICT01', applicantId: '0000016', name: 'ธัญญ์วาริน บุญฤทธิ์วรา', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 15.43 น.' },
+    { round: 'ICT01', applicantId: '0000017', name: 'วรเมธ รัตนากรไพบูลย์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 15.47 น.' },
+    { round: 'ICT01', applicantId: '0000018', name: 'ณัฐณิชา พิพัฒน์เวชกิจ', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 15.53 น.' },
+    { round: 'ICT01', applicantId: '0000019', name: 'วีรยุทธ พิพัฒน์ผล', course: 'ITCS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.02 น.' },
+    { round: 'DST01', applicantId: '0000007', name: 'อนวัช ธนเศรษฐกุลภักดี', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
+    { round: 'ICT01', applicantId: '0000020', name: 'ชยุตม์ ภูมิวรางกูร', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.02 น.' },
+    { round: 'DST01', applicantId: '0000008', name: 'ขวัญฤดี บุญเรือง', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
+    { round: 'ICT01', applicantId: '0000021', name: 'ภูริชญ์ วัฒนศิริธรรมรัตน์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.08 น.' },
+    { round: 'ICT01', applicantId: '0000022', name: 'ศักดิ์สิทธิ์ จันทร์เพ็ญ', course: 'ITCS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.10 น.' },
+    { round: 'ICT01', applicantId: '0000023', name: 'ปรเมศวร์ ชัยมงคล', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.15 น.' },
+    { round: 'ICT01', applicantId: '0000024', name: 'นลินี โชติวัฒน์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.18 น.' },
+    { round: 'ICT01', applicantId: '0000025', name: 'ธเนศ วงศ์มณฑลพัฒนา', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.20 น.' },
+    { round: 'ICT01', applicantId: '0000025', name: 'ธนบดี มิ่งมงคลทรัพย์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.24 น.' }
+]
 
 const courseOptions = ["ITDS/B", "ITCS/B"];
 const roundOptions = [
@@ -14,49 +50,73 @@ const roundOptions = [
     { label: "1/68 - ICT Portfolio", value: "ICT01" },
 ];
 
-const committeeOptions = [
-    { label: "อาจารย์ ดร. วรพงษ์ ศรีปัญญา", value: "อ. วรพงษ์" },
-    { label: "อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล", value: "อ. อารดา" },
-    { label: "อาจารย์ ดร. ชนากานต์ แก้วเกษ", value: "อ. ชนากานต์" },
-    { label: "อาจารย์ ดร. จินต์พิชชา พรหมมา", value: "อ. จินต์พิชชา" },
-    { label: "อาจารย์ ดร. คชาภา ปิติกุล", value: "อ. คชาภา" },
-    { label: "อาจารย์ ดร. เจตน์พิภพ สุขเกษม", value: "อ. เจตน์พิภพ" },
-  ];
-  
-  
-const interviewRoomOptions = [
-    { label: "ห้อง IT 123", value: "ห้อง IT 123" },
-    { label: "ห้อง IT 124", value: "ห้อง IT 124" },
-    { label: "ห้อง IT 125", value: "ห้อง IT 125" },
+const ScreeningStatusOptions = [
+    { label: "แสดงทั้งหมด", value: '' },
+    { label: "ผ่านการพิจารณา", value: "04 - ผ่านการพิจารณา" },
+    { label: "ผ่านการพิจารณา", value: "04 - ผ่านการพิจารณา" },
+    { label: "ไม่ผ่านการพิจารณา", value: "05 - ไม่ผ่านการพิจารณา" },
+    { label: "รอพิจารณา", value: "03 - รอพิจารณา" }
 ];
 
-
 const Page = () => {
+    const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+    const [applicants, setApplicants] = useState<InterviewScreeningForEduInterface[]>([]);
+    const [loading, setLoading] = useState(true);
+
+
+    async function fetchData() {
+        try {
+            const res = await fetch(`${API_BASE_URL}/education-department/get-summary-applicants-interview`)
+
+            if (!res.ok) {
+                throw new Error("Failed to fetch one or more resources");
+            }
+
+            const data = await res.json();
+
+            setApplicants(data.applicants || []);
+
+        } catch (err) {
+            console.error("Error fetching data:", err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const committeeOptions = applicants.map((com) => ({
+        full: `${com.InterviewCommittee?.map((com) => `${com.name}`)}`,
+        value: `${com.InterviewCommittee?.map((com) => `${com.id}`)}`,
+
+    }));
+
+    const committeeOptions1 = applicants.map((com) => (
+        com.InterviewCommittee?.map((com) => ({
+            label: `${com.name}`,
+            value: `${com.id}`,
+            result: `${com.InterviewResult}`
+        }))
+    ));
+
     const [isCollapsed, setIsCollapsed] = useState(false);
     interface FilterState {
         course?: string;
         round?: string;
-        admitStatus?: string;
-        docStatus?: string;
         interviewStatus?: string;
-        interviewRoom?: string;
         paymentStatus?: string;
         applicantId?: string;
-        name?: string;
-        committee?: string;
+        fname?: string;
+        lname?: string;
+        fullname?: string;
+        committee?: string[];
+        room?: string;
     }
 
-
-    const defaultDocStatus = "03 - เอกสารครบถ้วน";
-
-const [filters, setFilters] = useState<FilterState>({
-  docStatus: defaultDocStatus,
-});
-const [filterValues, setFilterValues] = useState<FilterState>({
-  docStatus: defaultDocStatus,
-});
-
-
+    const [filters, setFilters] = useState<FilterState>({});
+    const [filterValues, setFilterValues] = useState<FilterState>({});
     const [isExpanded, setIsExpanded] = useState(false);
 
     const handleSearch = () => {
@@ -64,55 +124,21 @@ const [filterValues, setFilterValues] = useState<FilterState>({
     };
 
     const handleReset = () => {
-        setFilterValues({ docStatus: defaultDocStatus });
-        setFilters({ docStatus: defaultDocStatus });
-    };
-    
-
-    const interviewStatusOptions = [
-        { label: "แสดงทั้งหมด", value: "" }, 
-        { label: "03 - ผ่านการสัมภาษณ์", value: "03 - ผ่านการสัมภาษณ์" },
-        { label: "04 - ไม่ผ่านการสัมภาษณ์", value: "04 - ไม่ผ่านการสัมภาษณ์" },
-        { label: "02 - ไม่มาสัมภาษณ์", value: "02 - ไม่มาสัมภาษณ์" },
-        { label: "05 - รอพิจารณาเพิ่มเติม", value: "05 - รอพิจารณาเพิ่มเติม" },
-        { label: "06 - รอผลการประเมินเพิ่มเติม", value: "06 - รอผลการประเมินเพิ่มเติม" },
-    ];
-    
-
-    const docStatusOptions = [
-        { label: "03 - เอกสารครบถ้วน", value: "03 - เอกสารครบถ้วน" },
-    ];
-    const getFinalInterviewStatus = (results: { result: string }[]) => {
-        const res = results.map(r => r.result);
-
-        if (res.every(r => r === "ผ่าน")) return "03 - ผ่านการสัมภาษณ์";
-        if (res.every(r => r === "ไม่ผ่าน")) return "04 - ไม่ผ่านการสัมภาษณ์";
-        if (res.every(r => r === "ไม่มา")) return "02 - ไม่มาสัมภาษณ์";
-
-        const hasPending = res.includes("รอ") || res.includes("ยังไม่ประเมิน");
-        const hasPassFailMix = res.includes("ผ่าน") && res.includes("ไม่ผ่าน");
-
-        if (hasPending) return "06 - รอผลการประเมินเพิ่มเติม";
-        if (hasPassFailMix || res.every(r => r === "รอ")) return "05 - รอพิจารณาเพิ่มเติม";
-
-        return "06 - รอผลการประเมินเพิ่มเติม"; // fallback ปลอดภัย
+        setFilterValues({});
+        setFilters({});
     };
 
-    const filteredApplicants = mockApplicants.filter(app =>
-        (!filters.course || app.course === filters.course) &&
-        (!filters.round || app.round === filters.round) &&
-        (!filters.admitStatus || app.admitStatus === filters.admitStatus) &&
-        (!filters.interviewStatus || getFinalInterviewStatus(app.interviewResult) === filters.interviewStatus) &&
-        (!filters.docStatus || app.docStatus === filters.docStatus) &&
-        (!filters.interviewRoom || app.interviewRoom === filters.interviewRoom) &&
-        (!filters.committee || (
-            Array.isArray(app.interviewResult) &&
-            app.interviewResult.some(r => r.committee?.includes(filters.committee!))
-          )) &&
-        (!filters.applicantId || app.applicantId.includes(filters.applicantId)) &&
-        (!filters.name || app.name.includes(filters.name))
+    console.log("applicants", applicants);
+
+    const filteredApplicants = applicants.filter(app =>
+        (!filters.course || app.program === filters.course) &&
+        (!filters.round || app.roundName === filters.round) &&
+        (!filters.interviewStatus || app.interviewStatus === filters.interviewStatus) &&
+        (!filters.applicantId || app.applicantId?.includes(filters.applicantId)) &&
+        (!filters.fullname || app.fullnameEN?.includes(filters.fullname)) &&
+        (!filters.room || app.interviewRoom === filters.room) &&
+        (!filters.committee || filters.committee.every(filterCom => app.InterviewCommittee?.some(com => com.id === filterCom)))
     );
-
 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10); // Show 10 items per page
@@ -121,7 +147,6 @@ const [filterValues, setFilterValues] = useState<FilterState>({
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const paginatedApplicants = filteredApplicants.slice(startIndex, endIndex);
-
 
     // Pagination Handlers
     const nextPage = () => {
@@ -141,6 +166,21 @@ const [filterValues, setFilterValues] = useState<FilterState>({
         setCurrentPage(1); // Reset to first page when changing items per page
     };
 
+    const interviewStatusOptions = [
+        { label: "แสดงทั้งหมด", value: "" },
+        { label: "01 - รอสัมภาษณ์", value: "01 - รอสัมภาษณ์" },
+        { label: "03 - ผ่านการสัมภาษณ์", value: "03 - ผ่านการสัมภาษณ์" },
+        { label: "04 - ไม่ผ่านการสัมภาษณ์", value: "04 - ไม่ผ่านการสัมภาษณ์" },
+        { label: "02 - ไม่มาสัมภาษณ์", value: "02 - ไม่มาสัมภาษณ์" },
+        { label: "05 - รอพิจารณาเพิ่มเติม", value: "05 - รอพิจารณาเพิ่มเติม" },
+        { label: "06 - รอผลการประเมินเพิ่มเติม", value: "06 - รอผลการประเมินเพิ่มเติม" },
+    ];
+
+    const interviewRoomOptions = [
+        { label: "ห้อง IT 123", value: "IT123" },
+        { label: "ห้อง IT 124", value: "IT124" },
+        { label: "ห้อง IT 122", value: "IT122" },
+    ];
     return (
         <div className="flex flex-col min-h-screen bg-white">
             <div>
@@ -149,12 +189,13 @@ const [filterValues, setFilterValues] = useState<FilterState>({
                 />
                 <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
                     <div className="relative z-50">
-                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin"/>
+                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin" />
                     </div>
                     <main
                         className={`w-full transition-all p-6 mt-[64px] min-h-[calc(100vh-64px)] ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}
                     >
                         {/* Search and Filter Box */}
+
                         <div className="relative max-w-[1600px] w-full mx-auto p-5 rounded-lg shadow-md mb-6 px-4 md:px-8 z-10 mt-5">
                             <h2 className="text-[24px] font-semibold text-[#565656] mb-4">ค้นหาผู้สมัคร</h2>
                             <hr className="mb-4 border-gray-300" />
@@ -177,7 +218,7 @@ const [filterValues, setFilterValues] = useState<FilterState>({
                                     />
                                 </div>
 
-                                <div className="w-[280px] z-50 relative">
+                                <div className="w-[320px] z-50 relative">
                                     <SearchField
                                         label="รอบรับสมัคร"
                                         type="dropdown"
@@ -210,32 +251,16 @@ const [filterValues, setFilterValues] = useState<FilterState>({
                                         placeholder="เลือกสถานะการสัมภาษณ์"
                                     />
                                 </div>
-                                <div className="w-[250px]">
-                                    <SearchField
-                                        label="สถานะเอกสาร"
-                                        type="dropdown"
-                                        value={filterValues.docStatus || ""}
-                                        onChange={(option) => {
-                                            if (typeof option === "object" && option !== null && "value" in option) {
-                                                setFilterValues({ ...filterValues, docStatus: option.value });
-                                            } else {
-                                                setFilterValues({ ...filterValues, docStatus: "" });
-                                            }
-                                        }}
-                                        options={docStatusOptions}
-                                        placeholder="เลือกสถานะเอกสาร"
-                                    />
-                                </div>
                                 <div className="w-[180px]">
                                     <SearchField
                                         label="ห้องสัมภาษณ์"
                                         type="dropdown"
-                                        value={filterValues.interviewRoom || ""}
+                                        value={filterValues.room || ""}
                                         onChange={(option) => {
                                             if (typeof option === "object" && option !== null && "value" in option) {
-                                                setFilterValues({ ...filterValues, interviewRoom: option.value });
+                                                setFilterValues({ ...filterValues, room: option.value });
                                             } else {
-                                                setFilterValues({ ...filterValues, interviewRoom: "" });
+                                                setFilterValues({ ...filterValues, room: "" });
                                             }
                                         }}
                                         options={interviewRoomOptions}
@@ -277,6 +302,7 @@ const [filterValues, setFilterValues] = useState<FilterState>({
                                     </button>
                                 </div>
                             </div>
+
                             {isExpanded && (
                                 <div className="flex flex-wrap gap-2">
                                     <div className="w-[180px]">
@@ -295,36 +321,39 @@ const [filterValues, setFilterValues] = useState<FilterState>({
                                     </div>
                                     <div className="w-[280px]">
                                         <SearchField
-                                            label="ชื่อ - นามสกุล ผู้สมัคร"
-                                            value={filterValues.name || ""}
+                                            label="ชื่อ-นามสกุล ผู้สมัคร"
+                                            value={filterValues.fullname || ""}
                                             onChange={(value) => {
                                                 if (typeof value === "object" && value !== null && "value" in value) {
-                                                    setFilterValues({ ...filterValues, name: value.value });
+                                                    setFilterValues({ ...filterValues, fullname: value.value });
                                                 } else {
-                                                    setFilterValues({ ...filterValues, name: value ?? undefined });
+                                                    setFilterValues({ ...filterValues, fullname: value ?? undefined });
                                                 }
                                             }}
                                             placeholder="กรุณากรอกข้อมูล"
                                         />
                                     </div>
-                                    <div className="w-[325px]">
+                                    <div className="w-[375px]">
                                         <SearchField
                                             label="กรรมการสัมภาษณ์"
                                             type="dropdown"
-                                            value={filterValues.committee || ""}
+                                            value={Array.isArray(filterValues.committee) ? filterValues.committee.join(", ") : filterValues.committee || ""}
                                             onChange={(option) => {
                                                 if (typeof option === "object" && option !== null && "value" in option) {
-                                                    setFilterValues({ ...filterValues, committee: option.value });
+                                                    setFilterValues({ ...filterValues, committee: [option.value] });
                                                 } else {
-                                                    setFilterValues({ ...filterValues, committee: "" });
+                                                    setFilterValues({ ...filterValues, committee: [] });
                                                 }
                                             }}
-                                            options={committeeOptions}
-                                            placeholder="เลือกกรรมการสัมภาษณ์"
+                                            options={[...new Map(
+                                                committeeOptions1
+                                                    .filter(value => value !== undefined)
+                                                    .flatMap(value => value.map(com => ({ label: `${com.label}`, value: `${com.value}` })))
+                                                    .map(item => [item.value, item])
+                                            ).values()]}
+                                            placeholder="เลือกกรรมการหลักสูตร"
                                         />
                                     </div>
-
-
                                 </div>
                             )}
                         </div>
@@ -340,91 +369,96 @@ const [filterValues, setFilterValues] = useState<FilterState>({
                                 <table className="w-full table-auto border-collapse">
                                     <thead>
                                         <tr className="bg-[#F3F5F6] text-center text-[#565656]">
-                                            <th className="px-2 py-4 whitespace-nowrap">No</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">รอบ</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">เลขที่สมัคร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">ชื่อ - นามสกุล ผู้สมัคร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">หลักสูตร</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">สถานะการสัมภาษณ์</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">ห้องสัมภาษณ์</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">กรรมการสัมภาษณ์</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">วัน-เวลา สัมภาษณ์</th>
-                                            <th className="px-2 py-4 whitespace-nowrap">ผลการสัมภาษณ์</th>
-                                            <th className="px-2 py-4 "></th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[50px]">No</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[60px]">รอบ</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[100px]">เลขที่สมัคร</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[200px]">ชื่อ - นามสกุล ผู้สมัคร</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[100px]">หลักสูตร</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[170px]">สถานะการสัมภาษณ์</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[170px]">ห้องสัมภาษณ์</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[170px]">กรรมการสัมภาษณ์</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[200px]">วัน-เวลา สัมภาษณ์</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[180px]">ผลการสัมภาษณ์</th>
+                                            <th className="px-2 py-4 whitespace-nowrap w-[130px]"></th>
                                         </tr>
                                     </thead>
-                                    {/* ปุ่ม view จะอยู่ใน <td> ของแต่ละ row */}
 
                                     <tbody>
                                         {paginatedApplicants.map((app, index) => (
-                                            <tr key={index} className="text-[#565656] h-[50px] items-center">
+                                            <tr
+                                                key={index}
+                                                className={`text-[#565656] h-[50px] items-center 
+                                              ${app.interviewStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
+                                              ${app.interviewStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
+                                            `}
+                                            >
+
                                                 <td className="text-center whitespace-nowrap">{startIndex + index + 1}</td>
-                                                <td className="text-center whitespace-nowrap">{app.round}</td>
+                                                <td className="text-center whitespace-nowrap">{app.roundName}</td>
                                                 <td className="text-center whitespace-nowrap">{app.applicantId}</td>
-                                                <td className="whitespace-nowrap">{app.name}</td>
-                                                <td className="text-center whitespace-nowrap">{app.course}</td>
+                                                <td className="whitespace-nowrap">{app.firstnameEN} {app.lastnameEN}</td>
+                                                <td className="text-center whitespace-nowrap">{app.program}</td>
                                                 <td>
-                                                    <div className={`h-[30px] pt-[2px] rounded-xl whitespace-nowrap
-    ${getFinalInterviewStatus(app.interviewResult) === "03 - ผ่านการสัมภาษณ์" ? "bg-[#E2F5E2] text-[#13522B]" : ""}
-    ${getFinalInterviewStatus(app.interviewResult) === "04 - ไม่ผ่านการสัมภาษณ์" ? "bg-[#FEE2E2] text-red-600" : ""}
-    ${getFinalInterviewStatus(app.interviewResult) === "05 - รอพิจารณาเพิ่มเติม" ? "bg-[#FFF4E2] text-[#DAA520]" : ""}
-    ${getFinalInterviewStatus(app.interviewResult) === "06 - รอผลการประเมินเพิ่มเติม" ? "bg-[#E3F2FD] text-[#0D47A1]" : ""}
-    ${getFinalInterviewStatus(app.interviewResult) === "02 - ไม่มาสัมภาษณ์" ? "text-[#565656]" : ""}
-  `}>
-                                                        {getFinalInterviewStatus(app.interviewResult)}
+                                                    <div className={`mr-4 whitespace-nowrap
+          ${app.interviewStatus === "04 - ผ่านการสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+          ${app.interviewStatus === "01 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : "py-2"}
+          ${app.interviewStatus === "05 - ไม่ผ่านการสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
+          ${app.interviewStatus === "03 - รอพิจารณาเพิ่มเติม" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520] " : "py-2"}
+          ${app.interviewStatus === "06 - รอผลการประเมินเพิ่มเติม" ? "h-[30px] pt-[2px] rounded-xl bg-[#E3F2FD] text-[#0D47A1]" : "py-2"}
+        `}>
+                                                        {app.interviewStatus}
                                                     </div>
                                                 </td>
 
                                                 <td className="text-center whitespace-nowrap">{app.interviewRoom}</td>
-                                                <td className="whitespace-nowrap">
-                                                    {Array.isArray(app.committee) ? app.committee.join(", ") : app.committee}
-                                                </td>
-                                                <td className="text-center whitespace-nowrap">
-                                                    {app.interviewDateTime ? (
-                                                        <div className="flex flex-col items-center leading-tight">
-                                                            <div>{app.interviewDateTime.split(" ")[0]} {app.interviewDateTime.split(" ")[1]} {app.interviewDateTime.split(" ")[2]}</div>
-                                                            <div className="text-[#6B7280]">{app.interviewDateTime.split(" ").slice(3).join(" ")}</div>
+                                                <td className="py-2 whitespace-nowrap text-center">
+                                                    {app.InterviewCommittee?.map((com) => (
+                                                        <div key={com.id} className={`mr-4 whitespace-nowrap`}>
+                                                            {com.shortName}
                                                         </div>
-                                                    ) : (
-                                                        <span className="text-gray-400">-</span>
-                                                    )}
+                                                    ))}
                                                 </td>
-
-                                                <td className="text-center whitespace-nowrap">
-                                                    {Array.isArray(app.interviewResult) && app.interviewResult.length > 0 ? (
-                                                        <div className="flex flex-row gap-1 justify-start">
-                                                            {app.interviewResult.map((r, idx) => (
-                                                                <div
-                                                                    key={idx}
-                                                                    className="flex items-center justify-start gap-1 text-[#565656] w-[120px] min-w-[120px]"
-                                                                >
-                                                                    <span className="truncate">{r.committee}</span>
-                                                                    <Image
-                                                                        src={
-                                                                            r.result === "ผ่าน"
-                                                                                ? "/images/admin/interview/statusFollowUp/pass_icon.svg"
-                                                                                : r.result === "ไม่ผ่าน"
-                                                                                    ? "/images/admin/interview/statusFollowUp/fail_icon.svg"
-                                                                                    : r.result === "รอ"
-                                                                                        ? "/images/admin/interview/statusFollowUp/wait_icon.svg"
-                                                                                        : "/images/admin/interview/statusFollowUp/calendar_icon.svg"
-                                                                        }
-                                                                        alt={r.result}
-                                                                        width={16}
-                                                                        height={16}
-                                                                    />
-                                                                </div>
-                                                            ))}
+                                                <td className="py-2 whitespace-nowrap"><span>{app.interviewDate} {app.interviewTime}</span></td>
+                                                <td className="py-2 whitespace-nowrap text-center">
+                                                    {app.InterviewCommittee?.map((com) => (
+                                                        <div key={com.id} className="mr-4 whitespace-nowrap flex flex-row space-x-1">
+                                                            <div>
+                                                                {com.shortName}
+                                                            </div>
+                                                            <div>
+                                                                <Image
+                                                                    src={
+                                                                        com.InterviewResult === "ผ่านการสัมภาษณ์"
+                                                                            ? "/images/admin/interview/statusFollowUp/pass_icon.svg"
+                                                                            : com.InterviewResult === "ไม่ผ่านการสัมภาษณ์"
+                                                                                ? "/images/admin/interview/statusFollowUp/fail_icon.svg"
+                                                                                : com.InterviewResult === "รอพิจารณาเพิ่มเติม" || com.InterviewResult === "รอผลการประเมินเพิ่มเติม" || com.InterviewResult === null
+                                                                                    ? "/images/admin/interview/statusFollowUp/wait_icon.svg"
+                                                                                    : "/images/admin/interview/statusFollowUp/calendar_icon.svg"
+                                                                    }
+                                                                    alt={com.InterviewResult || ""}
+                                                                    width={16}
+                                                                    height={16}
+                                                                />
+                                                            </div>
                                                         </div>
-
-                                                    ) : (
-                                                        <span className="text-gray-400">-</span>
-                                                    )}
+                                                    ))}
                                                 </td>
 
                                                 <td className="py-2 text-center whitespace-nowrap">
-                                                    <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] ">
-                                                        <div className="flex flex-row gap-1">
+
+                                                    <Link
+                                                        key='view'
+                                                        href={{
+                                                            pathname: '/admin/applicant/view',
+                                                            query: {
+                                                                QapplicantId: `${app.applicantId}`,
+                                                                Qpath: '/admin/interview/tracking'
+                                                            }
+                                                        }}
+                                                        className="bg-white text-[#008A90]"
+                                                    >
+                                                        <div className="flex justify-center flex-row border border-[#008A90] font-bold rounded-lg py-1 mt-1">
                                                             <div className="pt-1">
                                                                 <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                     <path d="M18.6438 16.6993L14.5879 12.6365C15.6817 11.3031 16.335 9.59495 16.335 7.73621C16.335 3.46403 12.8738 0 8.60502 0C4.33626 0 0.875 3.46403 0.875 7.73621C0.875 12.0084 4.33626 15.4724 8.60502 15.4724C10.4696 15.4724 12.1801 14.8112 13.5161 13.7092L17.572 17.7683C18.0455 18.2018 18.4896 17.9226 18.6438 17.7683C18.9521 17.4634 18.9521 17.0042 18.6438 16.6993ZM2.38356 7.73621C2.38356 4.29789 5.16945 1.50977 8.60502 1.50977C12.0406 1.50977 14.8301 4.29789 14.8301 7.73621C14.8301 11.1745 12.0442 13.9626 8.60869 13.9626C5.17312 13.9626 2.38356 11.1745 2.38356 7.73621Z" fill="#008A91" />
@@ -432,10 +466,12 @@ const [filterValues, setFilterValues] = useState<FilterState>({
                                                             </div>
                                                             <div>view</div>
                                                         </div>
-                                                    </button>
+                                                    </Link>
+
                                                 </td>
                                             </tr>
                                         ))}
+
                                     </tbody>
                                 </table>
                             </div>
