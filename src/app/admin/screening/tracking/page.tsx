@@ -8,6 +8,8 @@ import SearchField from "@components/components/form/searchField";
 import Image from 'next/image';
 import { CourseComScreeningInterface, EduScreeningGroupingAllCourseComInterface, InterviewScreeningForEduInterface } from "@components/types/screening";
 import Link from "next/link";
+import { getDecodedToken } from "@components/lib/auth";
+import Modal from "@components/components/common/popup-login";
 
 const applicant = [
     { round: 'DST01', applicantId: '0000001', name: 'อาทิตย์ แสงจันทร์', course: 'ITDS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 09.04 น.' },
@@ -64,6 +66,19 @@ const Page = () => {
     const [applicants, setApplicants] = useState<CourseComScreeningInterface[]>([]);
     const [appTest, setAppTest] = useState<InterviewScreeningForEduInterface[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [roles, setRoles] = useState<string[]>([]);
+    const [eduId, setEduId] = useState('');
+
+    useEffect(() => {
+        const decoded = getDecodedToken();
+        if (!decoded) {
+            setShowModal(true);
+            return;
+        }
+        setRoles(decoded.roles);
+        setEduId(decoded.id);
+    }, []);
 
 
     async function fetchData() {
@@ -180,13 +195,14 @@ const Page = () => {
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
+            {showModal && <Modal role="admin"/>}
             <div>
                 <AdminNavbar
                     isCollapsed={isCollapsed}
                 />
                 <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
                     <div className="relative z-50">
-                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin" />
+                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRoles={roles} />
                     </div>
                     <main
                         className={`w-full transition-all p-6 mt-[64px] min-h-[calc(100vh-64px)] ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}
@@ -541,3 +557,7 @@ const Page = () => {
 };
 
 export default Page;
+
+function setShowModal(arg0: boolean) {
+    throw new Error("Function not implemented.");
+}

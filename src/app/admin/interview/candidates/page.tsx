@@ -9,6 +9,8 @@ import { mockApplicants } from "@components/data/admin/Interview/candidates/mock
 import Image from 'next/image';
 import { InterviewComScreeningInterface } from "@components/types/screening";
 import Link from "next/link";
+import { getDecodedToken } from "@components/lib/auth";
+import Modal from "@components/components/common/popup-login";
 
 const courseOptions = ["ITDS/B", "ITCS/B"];
 const roundOptions = [
@@ -19,9 +21,22 @@ const roundOptions = [
 const Page = () => {
 
     const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
-    const committee_id = "000001"
+    const committee_id = "kmza0w073"
     const [applicants, setApplicants] = useState<InterviewComScreeningInterface[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [roles, setRoles] = useState<string[]>([]);
+    const [id, setId] = useState('');
+
+    useEffect(() => {
+        const decoded = getDecodedToken();
+        if (!decoded) {
+            setShowModal(true);
+            return;
+        }
+        setRoles(decoded.roles);
+        setId(decoded.id);
+    }, []);
 
     async function fetchAllApplicants() {
         const res = await fetch(`${API_BASE_URL}/interview-committee/all-applicant-interviewC/${committee_id}`);
@@ -157,13 +172,14 @@ const Page = () => {
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
+            {showModal && <Modal role="admin"/>}
             <div>
                 <AdminNavbar
                     isCollapsed={isCollapsed}
                 />
                 <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
                     <div className="relative z-50">
-                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="กรรมการสัมภาษณ์" />
+                        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRoles={roles} />
                     </div>
                     <main
                         className={`w-full transition-all p-6 mt-[64px] min-h-[calc(100vh-64px)] ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}

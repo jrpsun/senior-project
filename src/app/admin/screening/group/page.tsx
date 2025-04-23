@@ -7,6 +7,8 @@ import AdminNavbar from "@components/components/adminNavbar";
 import SearchField from "@components/components/form/searchField";
 import Image from 'next/image';
 import { CourseComScreeningInterface, EduScreeningGroupingAllCourseComInterface } from "@components/types/screening";
+import { getDecodedToken } from "@components/lib/auth";
+import Modal from "@components/components/common/popup-login";
 
 const courseOptions = ["ITDS/B", "ITCS/B"];
 const roundOptions = [
@@ -22,18 +24,26 @@ const admitStatusOptions = [
 const paymentStatusOptions = ["03 - ชำระเงินเรียบร้อย"];
 
 const Page = () => {
-
-    const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
     const [committees, setCommittees] = useState<EduScreeningGroupingAllCourseComInterface[]>([]);
     const [applicants, setApplicants] = useState<CourseComScreeningInterface[]>([]);
     const [loading, setLoading] = useState(true);
+    const [roles, setRoles] = useState<string[]>([]);
+    const [showModal, setShowModal] = useState(false);
 
+    useEffect(() => {
+        const decoded = getDecodedToken();
+        if (!decoded) {
+          setShowModal(true);
+          return;
+        }
+        setRoles(decoded.roles);
+      }, []);
 
     async function fetchData() {
         try {
             const [res_com, res_app] = await Promise.all([
-                fetch(`${API_BASE_URL}/course-committee/get-all-courseC`),
-                fetch(`${API_BASE_URL}/course-committee/all-applicant-courseC`)
+                fetch(`${process.env.API_BASE_URL}/course-committee/get-all-courseC`),
+                fetch(`${process.env.API_BASE_URL}/course-committee/all-applicant-courseC`)
             ]);
 
             if (!res_com.ok || !res_app.ok) {
@@ -80,7 +90,7 @@ const Page = () => {
 
     const sendPairsToBackend = async (pairs: { app_id: string; com_id: string }[]) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/education-department/update-edu-preEva`, {
+            const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-edu-preEva`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -230,13 +240,13 @@ const Page = () => {
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
-
+            {showModal && <Modal role="admin"/>}
             <AdminNavbar
                 isCollapsed={isCollapsed}
             />
             <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
                 <div className="relative z-50">
-                    <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="กรรมการหลักสูตร" />
+                    <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRoles={roles} />
                 </div>
                 <div
                     className={`w-full transition-all p-6 mt-[64px] min-h-[calc(100vh-64px)] ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}

@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/compat/router';
 import Sidebar from "@components/components/SideBar";
-import { useSearchParams } from 'next/navigation';
 // import { useLanguage } from '@components/hooks/LanguageContext';
 // import { generalInfoTexts } from '@components/translation/generalInfo';
 // import { summaryTexts } from '@components/translation/summary';
@@ -30,6 +29,13 @@ import EducationInformation from '@components/components/ApplicantInformation/Ed
 import Award from '@components/components/ApplicantInformation/Award';
 import Training from '@components/components/ApplicantInformation/Training';
 import AdditionalDocuments from '@components/components/ApplicantInformation/AdditionalDocuments';
+import { useLanguage } from '@components/hooks/LanguageContext';
+import { generalInfoTexts } from '@components/translation/generalInfo';
+import { summaryTexts } from '@components/translation/summary';
+import { TokenAdminPayload } from '@components/types/token';
+import { jwtDecode } from 'jwt-decode';
+import Modal from '@components/components/common/popup-login';
+import { getDecodedToken } from '@components/lib/auth';
 
 // const awardsData = [
 //     {
@@ -131,28 +137,26 @@ const viewApplicantInfo = () => {
     const [isVisible, setIsVisible] = useState(false)
     const searchParams = useSearchParams();
 
-    const QapplicantId = searchParams.get('QapplicantId') ?? 'N';
-    const QapplicantFullname = searchParams.get('QapplicantFullname') ?? 'N';
-    const QroundName = searchParams.get('QroundName') ?? 'N';
-    const Qprogram = searchParams.get('Qprogram') ?? 'N';
-    const QcourseComFullname = searchParams.get('QcourseComFullname') ?? 'N';
-    const QadmissionStatus = searchParams.get('QadmissionStatus') ?? 'N';
-    const QdocStatus = searchParams.get('QdocStatus') ?? 'N';
-    const QpaymentStatus = searchParams.get('QpaymentStatus') ?? 'N';
-    const QpreEvaDate = searchParams.get('QpreEvaDate') ?? 'N';
-    const QpreEva = searchParams.get('QpreEva') ?? 'N';
-    const Qcomment = searchParams.get('Qcomment') ?? '-';
-    const Qpath = searchParams.get('Qpath') ?? 'N';
-    const QcourseComId = searchParams.get('QcourseComId') ?? 'N';
-    const QinterviewComId = searchParams.get('QinterviewComId') ?? 'N';
+    // const QapplicantId = searchParams.get('QapplicantId') ?? 'N';
+    // const QapplicantFullname = searchParams.get('QapplicantFullname') ?? 'N';
+    // const QroundName = searchParams.get('QroundName') ?? 'N';
+    // const Qprogram = searchParams.get('Qprogram') ?? 'N';
+    // const QcourseComFullname = searchParams.get('QcourseComFullname') ?? 'N';
+    // const QadmissionStatus = searchParams.get('QadmissionStatus') ?? 'N';
+    // const QdocStatus = searchParams.get('QdocStatus') ?? 'N';
+    // const QpaymentStatus = searchParams.get('QpaymentStatus') ?? 'N';
+    // const QpreEvaDate = searchParams.get('QpreEvaDate') ?? 'N';
+    // const QpreEva = searchParams.get('QpreEva') ?? 'N';
+    // const Qcomment = searchParams.get('Qcomment') ?? '-';
+    // const Qpath = searchParams.get('Qpath') ?? 'N';
+    // const QcourseComId = searchParams.get('QcourseComId') ?? 'N';
+    // const QinterviewComId = searchParams.get('QinterviewComId') ?? 'N';
 
-    console.log("result", QpreEva, "comment", Qcomment)
+    // console.log("result", QpreEva, "comment", Qcomment)
     const { language } = useLanguage();
     const texts = generalInfoTexts[language] || generalInfoTexts["ENG"];
     const titletexts = summaryTexts[language] || summaryTexts["ENG"];
-    const [isVisible, setIsVisible] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const searchParams = useSearchParams();
     const appId = searchParams.get('id')
 
 
@@ -259,6 +263,20 @@ const viewApplicantInfo = () => {
         resume: "",
         addDoc: ""
     })
+
+    const [showModal, setShowModal] = useState(false);
+    const [roles, setRoles] = useState<string[]>([]);
+    const [eduId, setEduId] = useState('');
+
+    useEffect(() => {
+        const decoded = getDecodedToken();
+        if (!decoded) {
+            setShowModal(true);
+            return;
+        }
+        setRoles(decoded.roles);
+        setEduId(decoded.id);
+    }, []);
 
     const fetchGeneralInfoData = async () => {
         try {
@@ -481,7 +499,7 @@ const viewApplicantInfo = () => {
 
     const handleDocumentComplete = async () => {
         try {
-            const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-applicant-status/${appId}/0000002`, {
+            const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-applicant-status/${appId}/${eduId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'text/plain',
@@ -509,7 +527,7 @@ const viewApplicantInfo = () => {
         try {
             const allEmpty = Object.values(report).every(value => value === "");
             const dataToSend = allEmpty ? "เอกสารครบถ้วน" : JSON.stringify(report);
-            const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-applicant-status/${appId}/0000002`, {
+            const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-applicant-status/${appId}/${eduId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'text/plain',
@@ -530,8 +548,6 @@ const viewApplicantInfo = () => {
         console.log("PR Click");
         setIsEdit(true)
     }
-
-    const roleAdmin = searchParams.get('role')
 
     const [editedGeneralData, setEditedGeneralData] = useState({})
     const [editedEducationData, setEditedEducationData] = useState({})
@@ -709,9 +725,12 @@ const viewApplicantInfo = () => {
         }
       }
 
+    const Qpath = '/admin/applicant'
+
     return (
         <div>
-            <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+            {showModal && <Modal role="admin"/>}
+            <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRoles={roles}/>
             <div className={`mb-5 mt-8 ${isCollapsed ? "ml-[100px] p-4" : "ml-[325px] p-4"}`}>
                 <div className='mb-[75px]'>
                     <AdminNavbar
@@ -720,14 +739,6 @@ const viewApplicantInfo = () => {
                     />
                 </div>
                 <ViewInfoAdmin
-                    // course={Qprogram}
-                    // round={QroundName}
-                    // year="2568"
-                    // applicantNumber={QapplicantId}
-                    // fullName={QapplicantFullname}
-                    // admissionStatus={QadmissionStatus}
-                    // docStatus={QdocStatus}
-                    // paymentStatus={QpaymentStatus}
                     course={appInfo?.program || ""}
                     round={appInfo?.roundName|| ""}
                     year={appInfo?.academicYear|| ""}
@@ -791,7 +802,7 @@ const viewApplicantInfo = () => {
                     ) : null
                 )}
 
-                { roleAdmin === "edu" ? (
+                { (roles as string[]).includes('education_department') && (
                     <div className='mt-[-70px] ml-[950px] text-[13px]'>
                         <div className="relative inline-block">
                             <button
@@ -851,7 +862,8 @@ const viewApplicantInfo = () => {
                             </div>
                         </button>
                     </div>
-                ): (
+                )} 
+                {(roles as string[]).includes('public_relations') && (
                     <div className='mt-[-70px] ml-[950px] text-[13px]'>
                         <div className="relative inline-block">
                             <button

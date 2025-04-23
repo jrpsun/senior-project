@@ -35,7 +35,7 @@ const subMenus = [
         label: 'จัดการการคัดกรองเบื้องต้น',
         icon: 'preliminary_icon.svg',
         subLinks: [
-            { href: '/admin/screening/grouping', label: 'จัดกลุ่มผู้สมัครเพื่อคัดกรองเบื้องต้น' },
+            { href: '/admin/screening/group', label: 'จัดกลุ่มผู้สมัครเพื่อคัดกรองเบื้องต้น' },
             { href: '/admin/screening/tracking', label: 'ติดตามผลการคัดกรองเบื้องต้น' },
             { href: '/admin/screening/candidates', label: 'รายชื่อผู้สมัครสำหรับพิจารณา' },
             { href: '/admin/screening/summary', label: 'สรุปผลการคัดกรองเบื้องต้น' }
@@ -57,14 +57,14 @@ const subMenus = [
 interface SidebarProps {
     isCollapsed: boolean;
     setIsCollapsed: (value: boolean) => void;
-    userRole: 'admin' | 'กรรมการหลักสูตร' | 'กรรมการสัมภาษณ์';
+    userRoles: string[];
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, userRole }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, userRoles }) => {
     const pathname = usePathname();
     const isPreliminaryPage = pathname.startsWith("/admin/screening");
     const isInterviewPage = pathname.startsWith("/admin/interview");
-    const isNotAdmin = userRole !== 'admin';
+    const isNotAdmin = !userRoles.includes('education_department');
     const [openMenu, setOpenMenu] = useState<string | null>(null);
     // เมื่อ user คลิกเปิดมือ = ไม่ auto collapse แล้ว
     const handleManualExpand = () => {
@@ -123,13 +123,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, userRole
                     const isActive = pathname === href || pathname.startsWith(href + "/");
 
                     // Disable ถ้าไม่ใช่ admin (เช่น กรรมการทุกคน)
-                    const isDisabled = isNotAdmin;
+                    const isDisabled = (!userRoles.includes('public_relations') && label !== 'จัดการใบสมัคร') || 
+                        (userRoles.includes('course_committee')) || 
+                        (userRoles.includes('interview'));
 
                     return (
                         <Link key={label} href={isDisabled ? '#' : href}
                             className={`flex items-center gap-x-3 p-1.5 rounded-lg  
-            ${isActive ? 'font-bold underline bg-[#00767A]' : 'hover:bg-[#00A2A8] transition'}  
-            ${isDisabled ? 'text-[#565656] cursor-not-allowed' : ''}`}>
+                                ${isActive ? 'font-bold underline bg-[#00767A]' : 'hover:bg-[#00A2A8] transition'}  
+                                ${isDisabled ? 'text-[#565656] cursor-not-allowed' : ''}`}>
                             <Image
                                 src={`/images/admin/Sidebar/${icon}`}
                                 alt={label}
@@ -147,10 +149,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, userRole
                 {subMenus.map(({ label, icon, subLinks }) => {
                     // กรอง subLinks ตาม role
                     const filteredSubLinks = subLinks.filter((link) => {
-                        if (userRole === 'กรรมการหลักสูตร') {
+                        if (userRoles.includes('course_committee')) {
                             return link.label === 'รายชื่อผู้สมัครสำหรับพิจารณา';
                         }
-                        if (userRole === 'กรรมการสัมภาษณ์') {
+                        if (userRoles.includes('interview')) {
                             return link.label === 'รายชื่อผู้สมัครเข้ารับการสัมภาษณ์';
                         }
                         return true; // admin เห็นหมด
@@ -161,12 +163,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, userRole
 
                     // เงื่อนไขแยกตามสิทธิ์
                     const isMenuAccessible =
-                        userRole === 'admin' || // admin ได้หมด
-                        (userRole === 'กรรมการหลักสูตร' && isScreeningMenu) ||
-                        (userRole === 'กรรมการสัมภาษณ์' && isInterviewMenu);
+                        (userRoles.includes('education_department')) || // admin ได้หมด
+                        (userRoles.includes('course_committee') && isScreeningMenu) ||
+                        (userRoles.includes('interview') && isInterviewMenu);
 
                     // ถ้าเป็นกรรมการ และเมนูหลักไม่ใช่ของตัวเอง → ให้ disable
-                    const isDisabled = !isMenuAccessible;
+                    const isDisabled = (!isMenuAccessible) || (userRoles.includes('public_relations'));
                     // ด้านบนก่อน return JSX ของเมนูย่อย
                     return (
                         <div
@@ -185,14 +187,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, userRole
                                         }
                                     }}
                                     className={`flex justify-between w-full p-1.5 rounded-lg
-    ${(openMenu === label ||
+                                             ${(openMenu === label ||
                                             (isScreeningMenu && isPreliminaryPage) ||
                                             (isInterviewMenu && isInterviewPage))
                                             ? 'font-bold underline bg-[#00767A]'
                                             : 'hover:bg-[#00A2A8] transition'}
-    ${isDisabled ? 'text-[#565656] cursor-not-allowed' : ''}
-  `}
-                                >
+                                                ${isDisabled ? 'text-[#565656] cursor-not-allowed' : ''}
+                                            `}
+                                    >
                                     <div className="flex items-center gap-x-3">
                                         <Image
                                             src={`/images/admin/Sidebar/${icon}`}
@@ -215,22 +217,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, userRole
                                         {subLinks.map(({ href, label: subLabel }) => {
                                             const isSubActive = pathname === href || pathname.startsWith(href + "/");
                                             const isRestrictedForAdmin =
-                                                userRole === 'admin' &&
+                                                userRoles.includes('education_department') &&
                                                 (subLabel === 'รายชื่อผู้สมัครสำหรับพิจารณา' || subLabel === 'รายชื่อผู้สมัครเข้ารับการสัมภาษณ์');
 
                                             const isAllowed =
-                                                (userRole === 'admin' && !isRestrictedForAdmin) ||
-                                                (userRole === 'กรรมการหลักสูตร' && subLabel === 'รายชื่อผู้สมัครสำหรับพิจารณา') ||
-                                                (userRole === 'กรรมการสัมภาษณ์' && subLabel === 'รายชื่อผู้สมัครเข้ารับการสัมภาษณ์');
+                                                (userRoles.includes('education_department') && !isRestrictedForAdmin) ||
+                                                (userRoles.includes('course_committee') && subLabel === 'รายชื่อผู้สมัครสำหรับพิจารณา') ||
+                                                (userRoles.includes('interview') && subLabel === 'รายชื่อผู้สมัครเข้ารับการสัมภาษณ์');
 
                                             return (
                                                 <Link
                                                     key={subLabel}
                                                     href={isAllowed ? href : '#'}
                                                     className={`block px-4 py-2 rounded transition
-                ${isSubActive ? 'font-bold underline' : ''}
-                ${isAllowed ? 'hover:bg-[#00A2A8]' : 'text-[#A5A5A5] cursor-not-allowed'}
-            `}
+                                                        ${isSubActive ? 'font-bold underline' : ''}
+                                                        ${isAllowed ? 'hover:bg-[#00A2A8]' : 'text-[#A5A5A5] cursor-not-allowed'}
+                                                    `}
                                                     onClick={(e) => {
                                                         if (!isAllowed) e.preventDefault(); // ป้องกันการเข้าเมนู
                                                     }}
@@ -267,8 +269,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, userRole
                     return (
                         <Link key={label} href={isDisabled ? '#' : href}
                             className={`flex items-center gap-x-3 p-1.5 rounded-lg  
-        ${isActive ? 'font-bold underline bg-[#00767A]' : 'hover:bg-[#00A2A8] transition'}  
-        ${isDisabled ? 'text-[#565656] cursor-not-allowed' : ''}`}>
+                                ${isActive ? 'font-bold underline bg-[#00767A]' : 'hover:bg-[#00A2A8] transition'}  
+                                ${isDisabled ? 'text-[#565656] cursor-not-allowed' : ''}`}>
                             <Image
                                 src={`/images/admin/Sidebar/${icon}`}
                                 alt={label}

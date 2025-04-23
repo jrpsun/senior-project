@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { TokenAdminPayload } from "@components/types/token";
+import { jwtDecode } from "jwt-decode";
 
 // กำหนดชื่อของหน้าเพื่อนำไปแสดงใน Navbar
 const pageTitles = {
@@ -41,6 +43,15 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed, backToPage }) =>
     const [langDropdownOpen, setLangDropdownOpen] = useState(false);
     const pathname = usePathname();
     const isKnownPage = pathname in pageTitles;
+    const [name, setName] = useState("");
+
+    useEffect(() => {
+        const token = localStorage.getItem("access_token")
+        if (token) {
+            const decoded: TokenAdminPayload = jwtDecode(token!)
+            setName(decoded?.sub)
+        }
+    })
 
 
     return (
@@ -77,7 +88,7 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed, backToPage }) =>
                 >
                     <Image src="/images/admin/adminNavbar/AdminProfile.svg" alt="Admin" width={30} height={30} />
                     <span className="text-[#008A90] ">
-                        {pathname === "/admin/interviews/candidates" ? "WORAPONG.PAT" : "TESTADMIN.SYS"}
+                        {name}
                     </span>
 
                     <Image src="/images/dropdown_button.svg" alt="Dropdown" width={15} height={10} />

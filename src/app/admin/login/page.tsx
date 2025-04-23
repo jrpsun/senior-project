@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@components/hooks/LanguageContext";
 import Image from "next/image";
+import { adminLogin } from "@components/lib/auth";
+import { TokenAdminPayload } from "@components/types/token";
+import { jwtDecode } from "jwt-decode";
 
 export default function AdminLoginPage() {
     const [username, setUsername] = useState("");
@@ -17,14 +20,29 @@ export default function AdminLoginPage() {
         e.preventDefault();
 
         if (!username || !password) {
-            setError("กรุณากรอกชื่อผู้ใช้และรหัสผ่าน");
+            setError("กรุณากรอกอีเมลล์และรหัสผ่าน");
             return;
         }
 
-        if (username === "admin" && password === "admin1234") {
-            setError(null);
-            router.push("/admin/dashboard");
-        } else {
+        try {
+            await adminLogin(username, password);
+            const token = localStorage.getItem("access_token")
+
+            const decoded: TokenAdminPayload = jwtDecode(token!)
+            console.log("decoded", decoded)
+
+            if (["education_department", "public_relations"].some(role => decoded.roles.includes(role))) {
+                router.push("/admin/applicant");
+                return
+            } else if (decoded.roles.includes("course_committee")) {
+                router.push("/admin/screening/candidates");
+                return
+            } else if (decoded.roles.includes("interview")) {
+                router.push("/admin/interview/candidates")
+                return
+            }
+        }
+        catch (err) {
             setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
         }
     };
@@ -143,3 +161,5 @@ export default function AdminLoginPage() {
         </div>
     );
 }
+
+

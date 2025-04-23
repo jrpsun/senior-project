@@ -168,7 +168,7 @@ const ApplicationInfo = () => {
 
   return (
     <div className="bg-[white] min-h-screen">
-    {showModal && <Modal/>}
+    {showModal && <Modal role="applicant"/>}
     <div className="flex flex-col pt-10 pl-[10%] pr-[10%]">
       <div className="text-[30px] leading-[54px] font-semibold text-[#008A91]">
            {language === "TH" ? "ข้อมูลผู้สมัคร" : "Applicant Information"}

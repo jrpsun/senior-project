@@ -15,6 +15,8 @@ import { InterviewRound } from "@components/types/interviewRound";
 import { InterviewCom } from "@components/types/interviewCom";
 import { InterviewCommitteeMember, InterviewRoundDetailResponse } from "@components/types/roomDetails";
 import { RoomCommittee } from "@components/types/roomCommittee";
+import { getDecodedToken } from "@components/lib/auth";
+import Modal from "@components/components/common/popup-login";
 
 const InterviewSchedulePage = () => {
   const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
@@ -23,6 +25,19 @@ const InterviewSchedulePage = () => {
   const [roomDetails, setRoomDetails] = useState<InterviewRoundDetailResponse[][]>([]);
   const [roomCom, setRoomCom] = useState<RoomCommittee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [roles, setRoles] = useState<string[]>([]);
+  const [id, setId] = useState('');
+
+  useEffect(() => {
+      const decoded = getDecodedToken();
+      if (!decoded) {
+          setShowModal(true);
+          return;
+      }
+      setRoles(decoded.roles);
+      setId(decoded.id);
+  }, []);
 
 
   async function fetchData() {
@@ -505,12 +520,13 @@ const InterviewSchedulePage = () => {
 
   return (
     <div className="flex flex-col h-screen bg-white">
+      {showModal && <Modal role="admin"/>}
       <div className="relative z-[50]">
         <AdminNavbar isCollapsed={isCollapsed} />
       </div>
       <div className="flex flex-row flex-1 relative">
         <div className="relative z-50">
-          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin" />
+          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRoles={roles} />
         </div>
         <div
           className={`flex flex-col w-full p-6 mt-[64px] transition-all bg-white ${isCollapsed ? "ml-[80px]" : "ml-[300px]"
