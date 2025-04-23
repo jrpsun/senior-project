@@ -7,6 +7,8 @@ import Image from "next/image";
 import { mockGroupedData, GroupedData } from "@components/data/admin/Interview/summary/mockApplicant";
 import ConfirmEvalErrorPopup from "@components/components/common/admin/interview/interviewSummary/ConfirmEvalErrorPopup";
 import ConfirmEvaluationPopup from "@components/components/common/admin/interview/interviewSummary/ConfirmEvaluationPopup";
+import { getDecodedToken } from "@components/lib/auth";
+import Modal from "@components/components/common/popup-login";
 
 const SummaryResultPage = () => {
     const [filteredData, setFilteredData] = useState(mockGroupedData);
@@ -14,6 +16,19 @@ const SummaryResultPage = () => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isEvaluationConfirmed, setIsEvaluationConfirmed] = useState(false);
     const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [roles, setRoles] = useState<string[]>([]);
+    const [id, setId] = useState('');
+
+    useEffect(() => {
+        const decoded = getDecodedToken();
+        if (!decoded) {
+            setShowModal(true);
+            return;
+        }
+        setRoles(decoded.roles);
+        setId(decoded.id);
+    }, []);
 
     const [searchData, setSearchData] = useState({
         course: "",
@@ -202,6 +217,7 @@ const SummaryResultPage = () => {
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
+            {showModal && <Modal role="admin"/>}
             <AdminNavbar
                 isCollapsed={isCollapsed}
                 backToPage={{ href: "/camp", label: "กลับสู่หน้ารายการ" }}
@@ -209,7 +225,7 @@ const SummaryResultPage = () => {
 
             <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
             <div className="relative z-50">
-        <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}  userRole="admin"/>
+        <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}  userRoles={roles}/>
         </div>
 
                 <main

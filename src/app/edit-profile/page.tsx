@@ -117,7 +117,7 @@ export default function EditProfile() {
 
   return (
     <div className="bg-white min-h-screen">
-      {showModal && <Modal/>}
+      {showModal && <Modal role="applicant"/>}
       <Navbar />
 
       {/* Breadcrumb */}

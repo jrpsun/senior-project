@@ -2,12 +2,16 @@ import { useRouter } from 'next/navigation';
 import Image from "next/image";
 
 
-const Modal = () => {
+const Modal = ({ role }: { role: string }) => {
   const router = useRouter();
 
   const handleLoginRedirect = () => {
-    // เมื่อกดปุ่มจะไปที่หน้า login
-    router.push('/login');
+    if (role === "applicant") {
+      router.push('/login');
+    }
+    else if (role === "admin") {
+      router.push('/admin/login')
+    }
   };
 
   return (

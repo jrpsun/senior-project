@@ -9,12 +9,27 @@ import { format, parse } from "date-fns";
 import { th } from "date-fns/locale";
 import AlertAdmin from "../../../../components/common/admin/alertAdmin";
 import { Span } from "next/dist/trace";
+import { getDecodedToken } from "@components/lib/auth";
+import Modal from "@components/components/common/popup-login";
 
 
 const AdmissionRoundsPage = () => {
   const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
   const [admissionRound, setAdmissionRound] = useState<AdmissionRound[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [roles, setRoles] = useState<string[]>([]);
+  const [id, setId] = useState('');
+
+  useEffect(() => {
+      const decoded = getDecodedToken();
+      if (!decoded) {
+          setShowModal(true);
+          return;
+      }
+      setRoles(decoded.roles);
+      setId(decoded.id);
+  }, []);
 
 
   async function fetchData() {
@@ -335,12 +350,13 @@ const AdmissionRoundsPage = () => {
   console.log("current date", currentDate)
   return (
     <div className="flex flex-col h-screen bg-white">
+      {showModal && <Modal role="admin"/>}
       {alertMessage && <AlertAdmin message={alertMessage} onClose={() => setAlertMessage(null)} />}
       <AdminNavbar isCollapsed={isCollapsed} />
       <div className="flex flex-row flex-1">
         {/* Sidebar */}
         <div className="relative z-50">
-          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin" />
+          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRoles={roles} />
         </div>
         <div className={`flex flex-col w-full p-6 mt-[64px] transition-all bg-white ${isCollapsed ? "ml-[80px]" : "ml-[300px]"}`}>
 

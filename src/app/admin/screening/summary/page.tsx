@@ -5,6 +5,8 @@ import AdminNavbar from "../../../../components/adminNavbar";
 import SearchField from "../../../../components/form/searchField";
 import Image from "next/image";
 import { CourseComScreeningInterface } from "@components/types/screening";
+import { getDecodedToken } from "@components/lib/auth";
+import Modal from "@components/components/common/popup-login";
 
 interface GroupedData {
     committeeName: string;
@@ -50,6 +52,19 @@ const ScreeningResultPage = () => {
     const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
     const [applicants, setApplicants] = useState<CourseComScreeningInterface[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [roles, setRoles] = useState<string[]>([]);
+    const [eduId, setEduId] = useState('');
+
+    useEffect(() => {
+        const decoded = getDecodedToken();
+        if (!decoded) {
+            setShowModal(true);
+            return;
+        }
+        setRoles(decoded.roles);
+        setEduId(decoded.id);
+    }, []);
 
 
     async function fetchData() {
@@ -178,6 +193,7 @@ const ScreeningResultPage = () => {
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
+            {showModal && <Modal role="admin"/>}
             {isPopupVisible && (
                 <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center z-50 bg-black/20">
                     <div className="bg-white p-6 rounded-lg shadow-xl max-w-[600px] w-full min-h-[175px] text-[#565656]">
@@ -229,7 +245,7 @@ const ScreeningResultPage = () => {
 
             <div className="flex flex-row flex-1 min-h-screen overflow-hidden">
                 <div className="relative z-20">
-                    <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin" />
+                    <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRoles={roles} />
                 </div>
 
                 <main

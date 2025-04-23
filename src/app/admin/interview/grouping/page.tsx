@@ -19,6 +19,8 @@ import { useEditInterviewGrouping } from "@components/hooks/admin/groupingInterv
 import AlertAdmin from "@components/components/common/admin/alertAdmin";
 import { InterviewScreeningForEduInterface } from "@components/types/screening";
 import { InterviewRoomDetails } from "@components/types/interviewRooms";
+import { getDecodedToken } from "@components/lib/auth";
+import Modal from "@components/components/common/popup-login";
 //import InterviewTable from "@components/components/admin/interviewSchedule/InterviewTable";
 //import { useInterviewGrouping } from "@components/hooks/admin/groupingInterview/useInterviewGrouping";
 
@@ -42,6 +44,19 @@ const Page = () => {
     const [applicants, setApplicants] = useState<InterviewScreeningForEduInterface[]>([]);
     const [rooms, setRooms] = useState<InterviewRoomDetails[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [roles, setRoles] = useState<string[]>([]);
+    const [id, setId] = useState('');
+
+    useEffect(() => {
+        const decoded = getDecodedToken();
+        if (!decoded) {
+            setShowModal(true);
+            return;
+        }
+        setRoles(decoded.roles);
+        setId(decoded.id);
+    }, []);
 
     async function fetchData() {
         try {
@@ -409,6 +424,7 @@ const Page = () => {
     console.log('date time is --->', startTime, endTime)
     return (
         <div className="flex flex-col min-h-screen bg-white">
+            {showModal && <Modal role="admin"/>}
             <div>
                 <AdminNavbar
                     isCollapsed={isCollapsed}
@@ -418,7 +434,7 @@ const Page = () => {
                         <Sidebar
                             isCollapsed={isCollapsed}
                             setIsCollapsed={setIsCollapsed}
-                            userRole="admin"
+                            userRoles={roles}
                         />
                     </div>
                     <main

@@ -133,7 +133,7 @@ export default function Home() {
 
   return (
     <div>
-    {showModal && <Modal/>}
+    {showModal && <Modal role="applicant"/>}
     <div className='mr-[200px] ml-[200px]'>
         <div className='flex flex-col p-0 gap-16 pt-10'>
             <div className='font-bold text-[36px] leading-7 text-center'>โครงการรับสมัคร</div>
