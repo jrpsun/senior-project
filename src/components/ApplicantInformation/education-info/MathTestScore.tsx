@@ -111,14 +111,14 @@ const MathTestScore: React.FC<EducationLevelProps> = ({ data, onChange}) => {
             const base64String = event.target?.result as string;
     
             // ระบุฟิลด์ที่ต้องอัปเดตตามประเภทเอกสาร
-            let updatedData: Partial<typeof formData> = {};
             console.log("file name: ",URL.createObjectURL(file))
-            updatedData = { mathCer: base64String };
 
             // อัปเดต formData
             setFormData(prev => ({
                 ...prev,
-                ...updatedData
+                mathCer: base64String,
+                mathCerName: file.name,
+                mathCerSize: String(file.size)
             }));
     
             // อัปเดตข้อมูลที่เปลี่ยนแปลง
@@ -136,6 +136,30 @@ const MathTestScore: React.FC<EducationLevelProps> = ({ data, onChange}) => {
 
     }
 
+    const handleDeleteDocCopy = () => {
+        const updatedData = {
+            mathScore: "",
+            mathExamDate: "",
+            mathCer: "",
+            mathCerName: "",
+            mathCerSize: "",
+        };
+        
+        setFormData(updatedData);
+        setDisplayDate(null);
+        
+        const newChangedData = {
+            mathScore: "",
+            mathExamDate: "",
+            mathCer: "",
+            mathCerName: "",
+            mathCerSize: "",
+        };
+        
+        setChangedData(newChangedData);
+        onChange(newChangedData);
+    }
+
     return (
         <div className="flex justify-center py-5 bg-white">
             <div className="bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-3">
@@ -143,16 +167,39 @@ const MathTestScore: React.FC<EducationLevelProps> = ({ data, onChange}) => {
                     <h2 className="text-2xl text-[#008A90] font-semibold mb-6">
                         {currentTexts.mathProficiencyTestScore}
                     </h2>
-
-                    <FileUpload
-                        label={currentTexts.uploadMathTestScore}
-                        onChange={(file) => handleMathCerUpload(file)}
-                        fileType="pdf"
-                        maxSize="5 MB"
-                        accept=".pdf"
-                        infoMessage={<p>{currentTexts.infouploadMathTestScore}</p>}
-                        required={false}
-                    />
+                    {formData.mathCer !== "" ? (
+                        <div className="mb-4">
+                            <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
+                                <div className="flex justify-between items-center w-full gap-4">
+                                <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
+                                <div className="flex flex-col">
+                                    <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                                    {formData.mathCerName}
+                                    </span>
+                                    <span className="text-[#565656] text-xs md:text-sm">
+                                    {formData.mathCerSize} bytes
+                                    </span>
+                                </div>
+                                <button className="ml-auto" onClick={() => handleDeleteDocCopy()}>
+                                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="11" cy="11" r="10" stroke="#D92D20" strokeWidth="2" fill="none" />
+                                    <path d="M15.5833 11.9173H6.41667C5.86667 11.9173 5.5 11.5507 5.5 11.0007C5.5 10.4507 5.86667 10.084 6.41667 10.084H15.5833C16.1333 10.084 16.5 10.4507 16.5 11.0007C16.5 11.5507 16.1333 11.9173 15.5833 11.9173Z" fill="#D92D20" />
+                                    </svg>
+                                </button>
+                                </div> 
+                            </div>
+                        </div>
+                    ): (
+                        <FileUpload
+                            label={currentTexts.uploadMathTestScore}
+                            onChange={(file) => handleMathCerUpload(file)}
+                            fileType="pdf"
+                            maxSize="5 MB"
+                            accept=".pdf"
+                            infoMessage={<p>{currentTexts.infouploadMathTestScore}</p>}
+                            required={false}
+                        />
+                    )}
                     <div className="mb-4 grid grid-cols-1 sm:grid-cols-[400px_auto] gap-x-2 gap-y-1 items-center">
                         <div className="sm:w-[400px]">
                             <CustomSelect

@@ -89,6 +89,18 @@ const AdditionalDocuments = ({ setDoc, appId }: any) => {
     setDoc(updated);
   }
 
+  const handleDeleteDocCopy = (fieldfile: string, fieldName: string, fieldSize: string) => {
+    const updatedData = {
+      ...formData,
+      [fieldfile]: "",
+      [fieldName]: "",
+      [fieldSize]: ""
+    };
+    
+    setFormData(updatedData); 
+    setDoc(updatedData);
+  }
+
   return (
     <>
     <div className="flex justify-center pt-10 bg-[#FFFFFF] p-6">
@@ -99,6 +111,29 @@ const AdditionalDocuments = ({ setDoc, appId }: any) => {
 
           {/* Statement of Purpose */}
           <div className="mb-6">
+          {formData.stateOfPurpose !== "" ? (
+            <div className="mb-4">
+              <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
+                <div className="flex justify-between items-center w-full gap-4">
+                  <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
+                  <div className="flex flex-col">
+                    <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                      {formData.stateOfPurposeName}
+                    </span>
+                    <span className="text-[#565656] text-xs md:text-sm">
+                      {formData.stateOfPurposeSize} bytes
+                    </span>
+                  </div>
+                  <button className="ml-auto" onClick={() => handleDeleteDocCopy("stateOfPurpose", "stateOfPurposeName", "stateOfPurposeSize")}>
+                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="11" cy="11" r="10" stroke="#D92D20" strokeWidth="2" fill="none" />
+                      <path d="M15.5833 11.9173H6.41667C5.86667 11.9173 5.5 11.5507 5.5 11.0007C5.5 10.4507 5.86667 10.084 6.41667 10.084H15.5833C16.1333 10.084 16.5 10.4507 16.5 11.0007C16.5 11.5507 16.1333 11.9173 15.5833 11.9173Z" fill="#D92D20" />
+                    </svg>
+                  </button>
+                </div> 
+              </div>
+            </div>
+              ) : (
             <FileUpload
               label={`${currentTexts.statementOfPurpose} `}
               onChange={(file) => handleUploadFile(file, "stateOfPurpose")}
@@ -107,10 +142,34 @@ const AdditionalDocuments = ({ setDoc, appId }: any) => {
               accept=".pdf"
               infoMessage={<p>{currentTexts.statementInfo}</p>}
             />
+            )}
           </div>
 
           {/* Portfolio */}
           <div className="mb-6">
+          {formData.portfolio !== "" ? (
+            <div className="mb-4">
+              <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
+                <div className="flex justify-between items-center w-full gap-4">
+                  <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
+                  <div className="flex flex-col">
+                    <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                      {formData.portfolioName}
+                    </span>
+                    <span className="text-[#565656] text-xs md:text-sm">
+                      {formData.portfolioSize} bytes
+                    </span>
+                  </div>
+                  <button className="ml-auto" onClick={() => handleDeleteDocCopy("portfolio", "portfolioName", "portfolioSize")}>
+                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="11" cy="11" r="10" stroke="#D92D20" strokeWidth="2" fill="none" />
+                      <path d="M15.5833 11.9173H6.41667C5.86667 11.9173 5.5 11.5507 5.5 11.0007C5.5 10.4507 5.86667 10.084 6.41667 10.084H15.5833C16.1333 10.084 16.5 10.4507 16.5 11.0007C16.5 11.5507 16.1333 11.9173 15.5833 11.9173Z" fill="#D92D20" />
+                    </svg>
+                  </button>
+                </div> 
+              </div>
+            </div>
+              ) : (
             <FileUpload
               label={`${currentTexts.portfolio} `}
               onChange={(file) => handleUploadFile(file, "portfolio")}
@@ -118,7 +177,7 @@ const AdditionalDocuments = ({ setDoc, appId }: any) => {
               maxSize="5 MB"
               accept=".pdf"
               infoMessage={<p>{currentTexts.portfolioInfo}</p>}
-            />
+            />)}
           </div>
           {/* Video (ใช้ FormField) */}
           <div className="mb-6 ">
@@ -148,6 +207,29 @@ const AdditionalDocuments = ({ setDoc, appId }: any) => {
 
           {/* Resume */}
           <div className="mb-6">
+          {formData.applicantResume !== "" ? (
+            <div className="mb-4">
+              <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
+                <div className="flex justify-between items-center w-full gap-4">
+                  <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
+                  <div className="flex flex-col">
+                    <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                      {formData.applicantResumeName}
+                    </span>
+                    <span className="text-[#565656] text-xs md:text-sm">
+                      {formData.applicantResumeSize} bytes
+                    </span>
+                  </div>
+                  <button className="ml-auto" onClick={() => handleDeleteDocCopy("applicantResume", "applicantResumeName", "applicantResumeSize")}>
+                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="11" cy="11" r="10" stroke="#D92D20" strokeWidth="2" fill="none" />
+                      <path d="M15.5833 11.9173H6.41667C5.86667 11.9173 5.5 11.5507 5.5 11.0007C5.5 10.4507 5.86667 10.084 6.41667 10.084H15.5833C16.1333 10.084 16.5 10.4507 16.5 11.0007C16.5 11.5507 16.1333 11.9173 15.5833 11.9173Z" fill="#D92D20" />
+                    </svg>
+                  </button>
+                </div> 
+              </div>
+            </div>
+              ): (
             <FileUpload
               label={currentTexts.resume}
               onChange={(file) => handleUploadFile(file, "applicantResume")}
@@ -156,11 +238,34 @@ const AdditionalDocuments = ({ setDoc, appId }: any) => {
               accept=".pdf"
               infoMessage={<p>{currentTexts.resumeInfo}</p>}
               required={false}
-            />
+            />)}
           </div>
 
           {/* Other Documents */}
           <div className="mb-6">
+          {formData.additional !== "" ? (
+            <div className="mb-4">
+              <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
+                <div className="flex justify-between items-center w-full gap-4">
+                  <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
+                  <div className="flex flex-col">
+                    <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                      {formData.additionalName}
+                    </span>
+                    <span className="text-[#565656] text-xs md:text-sm">
+                      {formData.additionalSize} bytes
+                    </span>
+                  </div>
+                  <button className="ml-auto" onClick={() => handleDeleteDocCopy("additional", "additionalName", "additionalSize")}>
+                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="11" cy="11" r="10" stroke="#D92D20" strokeWidth="2" fill="none" />
+                      <path d="M15.5833 11.9173H6.41667C5.86667 11.9173 5.5 11.5507 5.5 11.0007C5.5 10.4507 5.86667 10.084 6.41667 10.084H15.5833C16.1333 10.084 16.5 10.4507 16.5 11.0007C16.5 11.5507 16.1333 11.9173 15.5833 11.9173Z" fill="#D92D20" />
+                    </svg>
+                  </button>
+                </div> 
+              </div>
+            </div>
+              ):(
             <FileUpload
               label={currentTexts.otherDocuments}
               onChange={(file) => handleUploadFile(file, "additional")}
@@ -169,7 +274,7 @@ const AdditionalDocuments = ({ setDoc, appId }: any) => {
               accept=".pdf"
               infoMessage={<p>{currentTexts.otherDocumentsInfo}</p>}
               required={false}
-            />
+            />)}
           </div>
         </div>
       </div>

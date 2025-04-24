@@ -14,6 +14,7 @@ import Modal from "@components/components/common/popup-login";
 import { TokenApplicantPayload } from "@components/types/token";
 import { jwtDecode } from "jwt-decode";
 import { authFetch } from "@components/lib/auth";
+import { SaveStatusModal } from "@components/components/SaveApplicantInfo";
 
 
 const ApplicationInfo = () => {
@@ -23,6 +24,8 @@ const ApplicationInfo = () => {
   const [selected, setSelected] = useState(0);
   const [isPopupOpen, setPopupOpen] = useState(false);
   const currentTexts = generalInfoTexts[language as keyof typeof generalInfoTexts] || generalInfoTexts["ENG"];
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [editedGeneralData, setEditedGeneralData] = useState({})
   const [editedEducationData, setEditedEducationData] = useState({})
   const [editedAwardData, setEditedAwardData] = useState([{}])
@@ -87,34 +90,35 @@ const ApplicationInfo = () => {
   ];
 
   const handleSave = async () => {
-    if (selected === 0) {
-      console.log("Saving Combined Changes:", editedGeneralData);
-      updatedGeneralInfo();
-    } else if (selected === 1) {
-      console.log("click edu tab", editedEducationData)
-      updatedEducationInfo();
-    } else if (selected === 2) {
-      console.log("award tab:", editedAwardData)
-      console.log("talent tab:", editedTalentData)
-      if (editedAwardData.length > 0 && Object.keys(editedAwardData[0]).length > 0) {
-        console.log("reward pass");
-        updatedAward();
+    setIsSaving(true);
+    setIsSuccess(false);
+    try {
+        if (selected === 0) {
+          await updatedGeneralInfo();
+      } else if (selected === 1) {
+          await updatedEducationInfo();
+      } else if (selected === 2) {
+        if (editedAwardData.length > 0 && Object.keys(editedAwardData[0]).length > 0) {
+          await updatedAward();
+        } 
+        if (editedTalentData.length > 0 && Object.keys(editedTalentData[0]).length > 0) {
+          await upDatedTalent();
+        }
+      } else if (selected === 3) {
+        if (editedTrainData.length > 0 && Object.keys(editedTrainData[0]).length > 0) {
+          await updatedTraining();
+        }
+      } else if (selected === 4) {
+          await updatedDocument();
+      } else if (selected === 5) {
+          await submitForm();
       } 
-      if (editedTalentData.length > 0 && Object.keys(editedTalentData[0]).length > 0) {
-        console.log("talent pass");
-        upDatedTalent();
-      }
-    } else if (selected === 3) {
-      console.log("Training Data tab:", editedTrainData);
-      if (editedTrainData.length > 0 && Object.keys(editedTrainData[0]).length > 0) {
-        updatedTraining();
-      }
-    } else if (selected === 4) {
-      console.log("Doc tab: ", editedDocData);
-      updatedDocument();
-    } else if (selected === 5) {
-      submitForm();
+    } catch (error) {
+      console.error("Save error", error);
+    } finally {
+      setIsSuccess(true);
     }
+    
   }
 
   const updatedGeneralInfo = async() => {
@@ -168,6 +172,11 @@ const ApplicationInfo = () => {
 
   return (
     <div className="bg-[white] min-h-screen">
+      <SaveStatusModal
+        open={isSaving}
+        success={isSuccess}
+        onClose={() => setIsSaving(false)}
+      />
     {showModal && <Modal role="applicant"/>}
     <div className="flex flex-col pt-10 pl-[10%] pr-[10%]">
       <div className="text-[30px] leading-[54px] font-semibold text-[#008A91]">
@@ -295,7 +304,11 @@ const ApplicationInfo = () => {
       </div>
       <div className="flex justify-center mt-6 mb-6 gap-x-4">
         <BackButton onClick={prevStep}>{currentTexts.backButton}</BackButton>
-        <button onClick={handleSave}>Save</button>
+        <button
+            className='bg-[#008A90] hover:bg-[#00767B] text-white font-medium py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out'
+            onClick={handleSave}
+            >บันทึก
+        </button>
         <NextButton onClick={nextStep}>{currentTexts.nextButton}</NextButton>
       </div>
       

@@ -20,19 +20,18 @@ interface InterviewEvaProps {
 }
 
 const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
-
-    console.log("app_id", props.app_id)
-    console.log("com_id", props.interviewCom)
+    console.log("interviewCom", props.interviewCom)
     const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
     const [applicants, setApplicants] = useState<InterviewEvaList[]>([]);
     const [applicant, setApplicant] = useState<InterviewEvaList[]>([]);
     const [loading, setLoading] = useState(true);
 
-    if (props.interviewCom === 'N') {
+    if (props.interviewCom === 'N') { // edu
         async function fetchData() {
+            console.log("appIdId", props.app_id)
             try {
                 const [res_apps] = await Promise.all([
-                    fetch(`${API_BASE_URL}/education-department/get-applicant-interview-eva/${props.app_id}`)
+                    fetch(`${API_BASE_URL}/education-department/get-applicant-interview-evas/${props.app_id}`)
                 ])
 
 
@@ -57,7 +56,7 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
         async function fetchData() {
             try {
                 const [res_apps, res_app] = await Promise.all([
-                    fetch(`${API_BASE_URL}/education-department/get-applicant-interview-eva/${props.app_id}`),
+                    fetch(`${API_BASE_URL}/education-department/get-applicant-interview-evas/${props.app_id}`),
                     fetch(`${API_BASE_URL}/education-department/get-applicant-interview-eva/${props.app_id}/${props.interviewCom}`)
                 ])
 

@@ -11,6 +11,7 @@ import { formatGPAValue, validateTestScore, preventInvalidTestScoreInput, valida
 import DateInput from "../../common/date";
 import { useSearchParams } from "next/navigation";
 import { EducationBackground, OCRTranscriptICTResponse } from "@components/types/educationInfoType";
+import { OCRLoadingModal } from "@components/components/OCRLoading";
 
 
 const generateGraduationYears = (language: string) => {
@@ -168,7 +169,7 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
             return (
                 <FileUpload
                     label={currentTexts.transcript}
-                    onChange={(file) => console.log(file)}
+                    onChange={(file) => handletranscript(file)}
                     fileType="pdf"
                     maxSize="5 MB"
                     accept=".pdf"
@@ -208,6 +209,8 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
         </div>
     );
 
+    const [isOcrLoading, setOcrLoading] = useState(false)
+
     const handletranscript = async (file: File) => {
         if (!file) return;
         console.log("file", file)
@@ -222,7 +225,10 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
             return;
         }
 
+        
         const reader = new FileReader();
+        setOcrLoading(true)
+        console.log("isOcr", isOcrLoading)
 
         reader.onload = async (event) => {
             const base64String = event.target?.result as string;
@@ -271,6 +277,8 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
             } catch (error) {
               console.error('OCR Error:', error);
               alert('การอ่านข้อมูล Transcript ล้มเหลว');
+            } finally {
+                setOcrLoading(false)
             }
           };     
           reader.readAsDataURL(file);
@@ -381,8 +389,76 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
         fetchProvinces();
     }, [language]);
 
+    const handleDeleteDocCopy = () => {
+        const updatedData = {
+            ...formData,
+            graduateDate: "",
+            graduateYear: "",
+            gedMathematics: "",
+            gedScience: "",
+            gedSocialStudies: "",
+            gedLanguageArts: "",
+            docCopyTrans: "",
+            docCopyName: "",
+            docCopySize: "",
+            customAcademicType: "",
+            academicProvince: "",
+            schoolName: "",
+            studyPlan: "",
+            customStudyPlan: "",
+            cumulativeGPA: "",
+            dstMathematics: "",
+            dstEnglish: "",
+            dstScitech: "",
+            comSciCredit: "",
+            comSciTitle: "",
+            g12MathCredit: "",
+            g12MathTitle: "",
+            g12SciCredit: "",
+            g12SciTitle: "",
+            g12EnCredit: "",
+            g12EnTitle: "",
+        };
+        
+        setFormData(updatedData);
+        
+        const newChangedData = {
+            ...changedData,
+            graduateDate: "",
+            graduateYear: "",
+            gedMathematics: "",
+            gedScience: "",
+            gedSocialStudies: "",
+            gedLanguageArts: "",
+            docCopyTrans: "",
+            docCopyName: "",
+            docCopySize: "",
+            customAcademicType: "",
+            academicProvince: "",
+            schoolName: "",
+            studyPlan: "",
+            customStudyPlan: "",
+            cumulativeGPA: "",
+            dstMathematics: "",
+            dstEnglish: "",
+            dstScitech: "",
+            comSciCredit: "",
+            comSciTitle: "",
+            g12MathCredit: "",
+            g12MathTitle: "",
+            g12SciCredit: "",
+            g12SciTitle: "",
+            g12EnCredit: "",
+            g12EnTitle: "",
+        };
+        
+        setChangedData(newChangedData);
+        onChange(newChangedData);
+    }
+
     return (
         <div className="flex justify-center py-5 bg-white">
+            {isOcrLoading && <OCRLoadingModal open={isOcrLoading}/>}
             <div className="bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-3">
                 <div className="p-6 bg-white rounded-lg w-full max-w-5xl mx-auto">
                     {/* หัวข้อเปลี่ยนตามภาษา */}
@@ -401,7 +477,31 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
                     </div>
 
                     {/* อัปโหลดเอกสาร */}
-                    <div className="mt-4">{renderFileUpload()}</div>
+                    {formData.docCopyTrans !== "" ? (
+                        <div className="mb-4">
+                            <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
+                                <div className="flex justify-between items-center w-full gap-4">
+                                <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
+                                <div className="flex flex-col">
+                                    <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                                    {formData.docCopyName}
+                                    </span>
+                                    <span className="text-[#565656] text-xs md:text-sm">
+                                    {formData.docCopySize} bytes
+                                    </span>
+                                </div>
+                                <button className="ml-auto" onClick={() => handleDeleteDocCopy()}>
+                                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="11" cy="11" r="10" stroke="#D92D20" strokeWidth="2" fill="none" />
+                                    <path d="M15.5833 11.9173H6.41667C5.86667 11.9173 5.5 11.5507 5.5 11.0007C5.5 10.4507 5.86667 10.084 6.41667 10.084H15.5833C16.1333 10.084 16.5 10.4507 16.5 11.0007C16.5 11.5507 16.1333 11.9173 15.5833 11.9173Z" fill="#D92D20" />
+                                    </svg>
+                                </button>
+                                </div> 
+                            </div>
+                        </div>
+                        ): (
+                        <div className="mt-4">{renderFileUpload()}</div>
+                    )}
 
                     <div className="grid grid-cols-1 lg:grid-cols-[350px_350px] lg:gap-x-[100px] gap-y-1 mb-1">
                         {/* Dropdown เลือกระดับการศึกษา */}

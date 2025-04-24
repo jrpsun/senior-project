@@ -13,6 +13,7 @@ import { useLanguage } from "../../hooks/LanguageContext";
 import { trainingTexts, trainingYearOptions, trainingModeOptions } from "../../translation/TrainingInfo";
 import Popup from '../../components/common/popup'; // เพิ่ม import popup
 import { authFetch } from '@components/lib/auth';
+import { OCRLoadingModal } from '../OCRLoading';
 
 const Training = ({ setTrain, appId }: any) => {
   const { language } = useLanguage();
@@ -43,6 +44,14 @@ const Training = ({ setTrain, appId }: any) => {
       console.log("Updated Training formData:", formData);
     }, [formData]); 
 
+  const generateLongId = () => {
+    const part1 = Date.now().toString(36); // เวลาปัจจุบันในฐาน 36
+    const part2 = Math.random().toString(36).substring(2); // สุ่มส่วนแรก
+    const part3 = Math.random().toString(36).substring(2); // สุ่มส่วนเพิ่ม
+    const part4 = performance.now().toString(36).replace('.',''); // เวลาแบบละเอียด
+    return part1 + part2 + part3 + part4;
+  }
+
   const fetchTrining = async() => {
     const response = await authFetch(`${process.env.API_BASE_URL}/applicant/training/${appId}`, {
       method: 'GET',
@@ -51,15 +60,22 @@ const Training = ({ setTrain, appId }: any) => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const data = await response.json()
-    setFormData(data)
-  }
-
-  const generateLongId = () => {
-    const part1 = Date.now().toString(36); // เวลาปัจจุบันในฐาน 36
-    const part2 = Math.random().toString(36).substring(2); // สุ่มส่วนแรก
-    const part3 = Math.random().toString(36).substring(2); // สุ่มส่วนเพิ่ม
-    const part4 = performance.now().toString(36).replace('.',''); // เวลาแบบละเอียด
-    return part1 + part2 + part3 + part4;
+    if (data.length === 0) {
+      setFormData([{
+        trainingId: generateLongId(),
+        applicantId: appId,
+        nameOfCourse: "",
+        institution: "",
+        trainingYear: "",
+        trainingMode: "",
+        trainingCountry: "",
+        trainingCer: "",
+        trainingCerName: "",
+        trainingCerSize: "",
+    }])} 
+    else {
+      setFormData(data)
+    }
   }
 
   // Function to add a new container
@@ -147,7 +163,8 @@ const Training = ({ setTrain, appId }: any) => {
     fetchCountries();
   }, [language]);
 
-  
+  const [isOcrLoading, setOcrLoading] = useState(false);
+
   const handleFileUpload = (trainingId: string, field: string, file: File) => {
     if (!file) return;
 
@@ -166,6 +183,7 @@ const Training = ({ setTrain, appId }: any) => {
 
     const reader = new FileReader();
 
+    setOcrLoading(true)
     reader.onload = async (event) => {
       const base64String = event.target?.result as string;
       try {
@@ -203,13 +221,16 @@ const Training = ({ setTrain, appId }: any) => {
       } catch (error) {
         console.error('OCR Error:', error);
         alert('การอ่านข้อมูล Award ล้มเหลว');
+      } finally {
+        setOcrLoading(false)
       }
-    }
+    } 
     reader.readAsDataURL(file);
   }
 
   return (
     <div>
+      {isOcrLoading && <OCRLoadingModal open={isOcrLoading}/>}
       {formData.map(container => (
         <div key={container.trainingId}>
           <div className="flex justify-center pt-10 bg-[#FFFFFF] p-6">
@@ -226,15 +247,44 @@ const Training = ({ setTrain, appId }: any) => {
                 </button>
               </div>
               <div className="mb-6">
-                <FileUpload
-                  label={currentTexts.trainingCertificate}
-                  onChange={(file) => handleFileUpload(container.trainingId, "trainingCer", file)}
-                  fileType="jpg., png., jpeg., pdf."
-                  maxSize="5 MB"
-                  accept="jpg., png., jpeg., pdf."
-                  infoMessage={<p>{currentTexts.uploadCertificate}</p>}
-                  required={false}
-                />
+                {container.trainingCer !== "" ? (
+                  container.trainingCer.startsWith("data:image/") ? (
+                    <div className="flex items-center mb-4">
+                      <img
+                        src={container.trainingCer}
+                        alt="Uploaded"
+                        className="w-full max-w-sm rounded-lg shadow-md object-contain"
+                      />
+                    </div>
+                  ) : container.trainingCer.startsWith("data:application/pdf") ? (
+                    <div className="mb-4">
+                      <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
+                        <div className="flex items-center w-full gap-4">
+                          <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
+                          <div className="flex flex-col">
+                            <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                              {container.trainingCerName}
+                            </span>
+                            <span className="text-[#565656] text-xs md:text-sm">
+                              {container.trainingCerSize} bytes
+                            </span>
+                          </div>
+                        </div> 
+                      </div>
+                    </div>
+                  ) : null
+                ) : (
+                  <FileUpload
+                    label={currentTexts.trainingCertificate}
+                    onChange={(file) => handleFileUpload(container.trainingId, "trainingCer", file)}
+                    fileType="jpg., png., jpeg., pdf."
+                    maxSize="5 MB"
+                    accept="jpg., png., jpeg., pdf."
+                    infoMessage={<p>{currentTexts.uploadCertificate}</p>}
+                    required={false}
+                  />
+              )}
+
               </div>
               <div className='flex flex-col gap-y-5'>
                 <div className="flex flex-col md:flex-row md:space-x-9">
