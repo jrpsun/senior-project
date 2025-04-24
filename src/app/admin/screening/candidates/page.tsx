@@ -10,6 +10,7 @@ import { CourseComScreeningInterface } from "@components/types/screening";
 import Link from "next/link";
 import { getDecodedToken } from "@components/lib/auth";
 import Modal from "@components/components/common/popup-login";
+import { useRouter } from "next/navigation";
 
 const applicant = [
     { round: 'DST01', applicantId: '0000001', name: 'อาทิตย์ แสงจันทร์', course: 'ITDS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 09.04 น.' },
@@ -47,7 +48,6 @@ const admitStatusOptions = [
 const Page = () => {
 
     const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
-    const committee_id = "eze5aytf3"
     const [applicants, setApplicants] = useState<CourseComScreeningInterface[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -61,11 +61,12 @@ const Page = () => {
             return;
         }
         setRoles(decoded.roles);
+        console.log("id", decoded.id)
         setId(decoded.id);
     }, []);
 
     async function fetchAllApplicants() {
-        const res = await fetch(`${API_BASE_URL}/course-committee/all-applicant-courseC/${committee_id}`);
+        const res = await fetch(`${API_BASE_URL}/course-committee/all-applicant-courseC/${id}`);
         if (!res.ok) {
             throw new Error("Failed to fetch applicants");
         }
@@ -153,6 +154,12 @@ const Page = () => {
         setItemsPerPage(Number(event.target.value)); // Update items per page
         setCurrentPage(1); // Reset to first page when changing items per page
     };
+
+    const router = useRouter();
+
+    const handleClickView = ( appId: string ) => {
+        router.push(`/admin/applicant/view?id=${appId}`);
+    }
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
@@ -369,15 +376,15 @@ const Page = () => {
                                                 <td className="text-center whitespace-nowrap">{app.program}</td>
                                                 <td>
                                                     <div className={`mr-4 whitespace-nowrap
-          ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-          ${app.admissionStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : "py-2"}
-          ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-          ${app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
-          ${app.admissionStatus === "06 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520] " : "py-2"}
-          ${app.admissionStatus === "07 - ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-          ${app.admissionStatus === "08 - ไม่ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
-          ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "h-[30px] pt-[2px] rounded-xl text-red-600 " : "py-2"}
-        `}>
+                                                        ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+                                                        ${app.admissionStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : "py-2"}
+                                                        ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+                                                        ${app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
+                                                        ${app.admissionStatus === "06 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520] " : "py-2"}
+                                                        ${app.admissionStatus === "07 - ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+                                                        ${app.admissionStatus === "08 - ไม่ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
+                                                        ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "h-[30px] pt-[2px] rounded-xl text-red-600 " : "py-2"}
+                                                        `}>
                                                         {app.admissionStatus}
                                                     </div>
                                                 </td>
@@ -388,10 +395,10 @@ const Page = () => {
                                                         <div >ไม่ต้องดำเนินการต่อ</div>
                                                     ) : (
                                                         <div className={`mr-4 whitespace-nowrap
-      ${app.docStatus === "02 - รอตรวจสอบเอกสาร" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
-      ${app.docStatus === "03 - เอกสารครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
-      ${app.docStatus === "04-เอกสารไม่ครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600" : ""}
-    `}>
+                                                            ${app.docStatus === "02 - รอตรวจสอบเอกสาร" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
+                                                            ${app.docStatus === "03 - เอกสารครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
+                                                            ${app.docStatus === "04-เอกสารไม่ครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600" : ""}
+                                                            `}>
                                                             {app.docStatus}
                                                         </div>
                                                     )}
@@ -422,7 +429,7 @@ const Page = () => {
                                                 </td>
 
                                                 <td className="py-2 text-center whitespace-nowrap">
-                                                    {(app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" || app.admissionStatus === "03 - รอพิจารณา") && (
+                                                    {/* {(app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" || app.admissionStatus === "03 - รอพิจารณา") && (
                                                         <Link
                                                             key='view'
                                                             href={{
@@ -452,7 +459,21 @@ const Page = () => {
                                                                 <div>view</div>
                                                             </div>
                                                         </Link>
+                                                    )} */}
+                                                    {(app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" || app.admissionStatus === "03 - รอพิจารณา") && (
+                                                        <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] "
+                                                        onClick={() => handleClickView(app.applicantId || "")}>
+                                                            <div className="flex flex-row gap-1">
+                                                                <div className="pt-1">
+                                                                    <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M18.6438 16.6993L14.5879 12.6365C15.6817 11.3031 16.335 9.59495 16.335 7.73621C16.335 3.46403 12.8738 0 8.60502 0C4.33626 0 0.875 3.46403 0.875 7.73621C0.875 12.0084 4.33626 15.4724 8.60502 15.4724C10.4696 15.4724 12.1801 14.8112 13.5161 13.7092L17.572 17.7683C18.0455 18.2018 18.4896 17.9226 18.6438 17.7683C18.9521 17.4634 18.9521 17.0042 18.6438 16.6993ZM2.38356 7.73621C2.38356 4.29789 5.16945 1.50977 8.60502 1.50977C12.0406 1.50977 14.8301 4.29789 14.8301 7.73621C14.8301 11.1745 12.0442 13.9626 8.60869 13.9626C5.17312 13.9626 2.38356 11.1745 2.38356 7.73621Z" fill="#008A91" />
+                                                                    </svg>
+                                                                </div>
+                                                                <div>view</div>
+                                                            </div>
+                                                        </button>
                                                     )}
+
 
                                                     {app.admissionStatus === "09 - ยกเลิกการสมัคร" && (
                                                         <button className="bg-red px-1 py-1 my-2 rounded-lg border border-red-500 text-red-500 text-[14px] font-bold w-[130px]">

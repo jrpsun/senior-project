@@ -152,7 +152,7 @@ const viewApplicantInfo = () => {
     // const QcourseComId = searchParams.get('QcourseComId') ?? 'N';
     // const QinterviewComId = searchParams.get('QinterviewComId') ?? 'N';
 
-    // console.log("result", QpreEva, "comment", Qcomment)
+
     const { language } = useLanguage();
     const texts = generalInfoTexts[language] || generalInfoTexts["ENG"];
     const titletexts = summaryTexts[language] || summaryTexts["ENG"];
@@ -266,17 +266,9 @@ const viewApplicantInfo = () => {
 
     const [showModal, setShowModal] = useState(false);
     const [roles, setRoles] = useState<string[]>([]);
-    const [eduId, setEduId] = useState('');
-
-    useEffect(() => {
-        const decoded = getDecodedToken();
-        if (!decoded) {
-            setShowModal(true);
-            return;
-        }
-        setRoles(decoded.roles);
-        setEduId(decoded.id);
-    }, []);
+    const [adminId, setAdminId] = useState('');
+    const [Qpath, setQpath] = useState('');
+    const [name, setName] = useState('');
 
     const fetchGeneralInfoData = async () => {
         try {
@@ -487,19 +479,56 @@ const viewApplicantInfo = () => {
         dateStr ? new Date(dateStr).toISOString().split("T")[0] : "";
 
     useEffect(() => {
+        fetchApplicantStatus();
         fetchGeneralInfoData();
         fetchEducationData();
         fetchAward();
         fetchTalent();
         fetchTrining();
         fetchDocuments();
-        fetchApplicantStatus();
         fetchApplicantProblem();
     }, []);
+    
+    const [QinterviewComId, setQinterviewComId] = useState('N');
+    const [eduId, setEduId] = useState('');
+    const [ccId, setccId] = useState('');
+
+    useEffect(() => {
+        if (appInfo) {
+            const decoded = getDecodedToken();
+            if (!decoded) {
+                setShowModal(true);
+                return;
+            }
+            setRoles(decoded.roles);
+            setAdminId(decoded.id);
+            setName(decoded.sub);
+            if (decoded.roles.includes('course_committee')) {
+                setQpath('/admin/screening/candidates');
+                setccId(decoded.id)
+            } else if (decoded.roles.includes("interview")) {
+                setQpath('/admin/interview/candidates');
+                setQinterviewComId(decoded?.id);
+            } else if (decoded.roles.includes('public_relations')) {
+                setQpath('/admin/applicant');
+            } else {
+                setEduId(decoded.id);
+                if (appInfo?.admissionStatus === "03 - รอพิจารณา" ||
+                    appInfo?.admissionStatus === "04 - ผ่านการพิจารณา" ||
+                    appInfo?.admissionStatus === "05 - ไม่ผ่านการพิจารณา" ){
+                    setQpath('/admin/screening/tracking')
+                } else if (appInfo?.interviewStatus !== null) {
+                    setQpath('/admin/interview/tracking');
+                } else {
+                    setQpath('/admin/applicant');
+                }
+            }
+        }
+    }, [appInfo]);
 
     const handleDocumentComplete = async () => {
         try {
-            const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-applicant-status/${appId}/${eduId}`, {
+            const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-applicant-status/${appId}/${adminId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'text/plain',
@@ -527,7 +556,7 @@ const viewApplicantInfo = () => {
         try {
             const allEmpty = Object.values(report).every(value => value === "");
             const dataToSend = allEmpty ? "เอกสารครบถ้วน" : JSON.stringify(report);
-            const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-applicant-status/${appId}/${eduId}`, {
+            const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-applicant-status/${appId}/${adminId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'text/plain',
@@ -725,8 +754,6 @@ const viewApplicantInfo = () => {
         }
       }
 
-    const Qpath = '/admin/applicant'
-
     return (
         <div>
             {showModal && <Modal role="admin"/>}
@@ -748,7 +775,7 @@ const viewApplicantInfo = () => {
                     docStatus={appInfo?.docStatus|| ""}
                     paymentStatus={appInfo?.paymentStatus|| ""}
                 />
-                {problem ? (
+                {problem && ["01 - ยังไม่ยื่นใบสมัคร", "02 - ยื่นใบสมัครแล้ว", "03 - รอพิจารณา"].includes(appInfo?.admissionStatus || "") ? (
                     problem.details?.trim() === "เอกสารครบถ้วน" && Object.values(report).every(value => value === "") ? (
                         // ครบ
                         <div className='flex flex-cols gap-2 text-[16px] mt-2 text-[#13522B]'>
@@ -802,7 +829,8 @@ const viewApplicantInfo = () => {
                     ) : null
                 )}
 
-                { (roles as string[]).includes('education_department') && (
+                { (roles as string[]).includes('education_department') && 
+                ["01 - ยังไม่ยื่นใบสมัคร", "02 - ยื่นใบสมัครแล้ว", "03 - รอพิจารณา"].includes(appInfo?.admissionStatus || "") && (
                     <div className='mt-[-70px] ml-[950px] text-[13px]'>
                         <div className="relative inline-block">
                             <button
@@ -951,7 +979,7 @@ const viewApplicantInfo = () => {
                                 />
                             </div>
                         ): (
-                            <GeneralInformation key="general" onUpdate={handleGeneralInfoUpdate}/>
+                            <GeneralInformation key="general" onUpdate={handleGeneralInfoUpdate} appId={appId}/>
                         ))
                     }
 
@@ -981,7 +1009,7 @@ const viewApplicantInfo = () => {
                                 />
                             </div>
                         ): (
-                            <EducationInformation key="education" onUpdate={handleEducationUpdate}/>
+                            <EducationInformation key="education" onUpdate={handleEducationUpdate} appId={appId}/>
                         ))
                     }
 
@@ -1003,7 +1031,7 @@ const viewApplicantInfo = () => {
                                 />
                             </div>
                         ): (
-                            <Award key="award" setAward={setEditedAwardData} setTalent={setEditedTalentData}/>
+                            <Award key="award" setAward={setEditedAwardData} setTalent={setEditedTalentData} appId={appId}/>
                         ))
                     }
 
@@ -1019,7 +1047,7 @@ const viewApplicantInfo = () => {
                                 />
                             </div>
                         ):(
-                            <Training key="training" setTrain={setEditedTrainData}/>
+                            <Training key="training" setTrain={setEditedTrainData} appId={appId}/>
                         ))
                     }
 
@@ -1035,7 +1063,7 @@ const viewApplicantInfo = () => {
                                 />
                             </div>
                         ):(
-                            <AdditionalDocuments key="documents" setDoc={setEditedDocData}/>
+                            <AdditionalDocuments key="documents" setDoc={setEditedDocData} appId={appId}/>
                         ))
                     }
 
@@ -1044,12 +1072,12 @@ const viewApplicantInfo = () => {
                         <div>
                             <PreliminaryEvaSummary
                                 props={{
-                                    applicantId: QapplicantId,
-                                    courseComId: QcourseComId,
-                                    committeeName: QcourseComFullname,
-                                    preEvaDate: QpreEvaDate,
-                                    preEvaResult: QpreEva,
-                                    comment: Qcomment,
+                                    applicantId: appId || "",
+                                    courseComId: ccId || "Y",
+                                    committeeName: name || "",
+                                    // preEvaDate: QpreEvaDate,
+                                    // preEvaResult: QpreEva,
+                                    // comment: Qcomment,
                                     path: Qpath,
                                 }}
                             />
@@ -1061,8 +1089,8 @@ const viewApplicantInfo = () => {
                         <div>
                             <InterviewEvaSummary
                                 props={{
-                                    app_id: QapplicantId,
-                                    edu_id: "300001",
+                                    app_id: appId || "",
+                                    edu_id: eduId || "",
                                     path: Qpath,
                                     interviewCom: QinterviewComId
                                 }}

@@ -540,9 +540,9 @@ const Page = () => {
                                                 <tr
                                                     key={app.applicantId}
                                                     className={`text-[#565656] h-[50px] items-center 
-          ${app.admissionStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
-          ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
-        `}
+                                                    ${app.admissionStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
+                                                    ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
+                                                    `}
                                                 >
                                                     {isGroupingMode && (
                                                         <td className="text-center">
@@ -563,16 +563,16 @@ const Page = () => {
                                                     <td className="text-center whitespace-nowrap">{app.program}</td>
                                                     <td>
                                                         <div className={`mr-4 whitespace-nowrap
-            ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : ""}
-            ${app.admissionStatus === "06 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
-          `}>
+                                                            ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : ""}
+                                                            ${app.admissionStatus === "06 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
+                                                            `}>
                                                             {app.admissionStatus}
                                                         </div>
                                                     </td>
                                                     <td>
                                                         <div className={`mr-4 whitespace-nowrap
-            ${app.docStatus === "03 - เอกสารครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
-          `}>
+                                                            ${app.docStatus === "03 - เอกสารครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
+                                                        `}>
                                                             {app.docStatus}
                                                         </div>
                                                     </td>

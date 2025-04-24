@@ -227,7 +227,7 @@ const InterviewSchedulePage = () => {
       interviewDate: interviewDetail.interviewDate,
       startTime: interviewDetail.startTime,
       endTime: interviewDetail.endTime,
-      duration: interviewDetail.duration,
+      duration: interviewDetail.duration.toString(),
     }
     try {
       const response = await fetch(
