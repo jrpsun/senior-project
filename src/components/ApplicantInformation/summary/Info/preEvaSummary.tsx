@@ -20,6 +20,7 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
     //const [applicants, setApplicants] = useState<CourseComScreeningInterface[]>([]);
     const [preEva, setPreEva] = useState<PreEvaDataInterface[]>([]);
     const [loading, setLoading] = useState(true);
+    console.log("xxxxxxxxxx", props.path)
 
     async function fetchData() {
         try {
@@ -51,9 +52,20 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
 
     //console.log('applicants', applicants)
     console.log('preEva', preEva)
+
+    function getThaiDate(): string {
+        const date = new Date();
+      
+        const day = date.getDate().toString().padStart(2, "0");
+        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+        const year = (date.getFullYear() + 543).toString();
+      
+        return `${day}/${month}/${year}`;
+    }
     //
     const handleSubmit = async () => {
         try {
+            const today = getThaiDate();
             const response = await fetch("http://localhost:8000/course-committee/update-pre-Eva", {
                 method: "PUT",
                 headers: {
@@ -64,6 +76,7 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
                     com_id: props.courseComId,
                     preEvaResult: result,
                     comment: note,
+                    preEvaDate: today
                 }),
             });
 
@@ -100,7 +113,7 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
         <div className='flex justify-center py-5 bg-[white]'>
             <div className='flex flex-col w-[1280px]'>
                 <div className='bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-3'>
-                    {(props.path === '/admin/screening/tracking' || props.path === '/admin/interview/candidates') && checkForEdit !== "null" ? (
+                    {["/admin/screening/tracking", "/admin/interview/candidates", "/admin/interview/tracking"].includes(props.path || "") && checkForEdit !== "null" ? (
                         <div className='p-6 bg-white rounded-lg w-full max-w-5xl mx-auto'>
 
                             <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mb-[50px]">ข้อมูลกรรมการหลักสูตร</h2>
@@ -112,7 +125,7 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
 
                                 <div className='ml-[125px]'>
                                     <p className="text-[#565656] font-bold mb-[25px]">วันที่ประเมิน</p>
-                                    <p className="text-[#565656] text-left pl-6">{props?.preEvaDate}</p>
+                                    <p className="text-[#565656] text-left pl-6">{preEva?.preEvaDate}</p>
                                 </div>
                             </div>
 
@@ -173,7 +186,7 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
 
                                     <div className='ml-[125px]'>
                                         <p className="text-[#565656] font-bold mb-[25px]">วันที่ประเมิน</p>
-                                        <p className="text-[#565656] text-left pl-6">{props?.preEvaDate}</p>
+                                        <p className="text-[#565656] text-left pl-6">{preEva?.preEvaDate}</p>
                                     </div>
                                 </div>
                                 {isEdit === false ? (
@@ -286,11 +299,10 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
 
 
                 </div>
-                {(props.path !== '/admin/screening/tracking') && (props.path !== '/admin/interview/candidates') && (
+                {(props.path !== '/admin/screening/tracking') && (props.path !== '/admin/interview/candidates') && result &&(
                     <div className='flex mt-4 justify-center'>
                         <button
                             className={`flex flex-row space-x-1 ml-[25px] border bg-[#008A90] rounded-md px-8 py-2 text-white 
-                            ${!result ? 'opacity-50 cursor-not-allowed' : ''}
                         `}
                             onClick={handleSubmit}
                         >

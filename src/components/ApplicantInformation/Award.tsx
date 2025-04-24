@@ -12,6 +12,7 @@ import { awardTexts, YearOptions, competitionLevelOptions } from "../../translat
 import Popup from '../../components/common/popup';
 import { AwardResponse } from '@components/types/AwardType';
 import { authFetch } from '@components/lib/auth';
+import { OCRLoadingModal } from '../OCRLoading';
 //import Alert from '../../components/common/alert';
 
 const Award = ({ setAward, setTalent, appId }: any) => {
@@ -56,19 +57,35 @@ const Award = ({ setAward, setTalent, appId }: any) => {
     });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data: AwardResponse[] = await response.json()
-    const mappedData = data.map(item => ({
-      rewardId: item.rewardId ?? "",
-      applicantId: item.applicantId ?? "",
-      nameOfCompetition: item.nameOfCompetition ?? "",
-      rewardYear: item.rewardYear ?? "",
-      rewardLevel: item.rewardLevel ?? "",
-      rewardAwards: item.rewardAwards ?? "",
-      project: item.project ?? "",
-      rewardCer: item.rewardCer ?? "",
-      rewardCerName: item.rewardCerName ?? "",
-      rewardCerSize: item.rewardCerSize ?? "",
-    }));
-    setFormData(mappedData)
+    if (data.length === 0) {
+      // ถ้าไม่มีข้อมูล สร้าง container เปล่า 1 อัน
+      setFormData([{
+        rewardId: generateLongId(),
+        applicantId: appId,
+        nameOfCompetition: "",
+        rewardYear: "",
+        rewardLevel: "",
+        rewardAwards: "",
+        project: "",
+        rewardCer: "",
+        rewardCerName: "",
+        rewardCerSize: "",
+      }]);
+    } else {
+        const mappedData = data.map(item => ({
+        rewardId: item.rewardId ?? "",
+        applicantId: item.applicantId ?? "",
+        nameOfCompetition: item.nameOfCompetition ?? "",
+        rewardYear: item.rewardYear ?? "",
+        rewardLevel: item.rewardLevel ?? "",
+        rewardAwards: item.rewardAwards ?? "",
+        project: item.project ?? "",
+        rewardCer: item.rewardCer ?? "",
+        rewardCerName: item.rewardCerName ?? "",
+        rewardCerSize: item.rewardCerSize ?? "",
+      }));
+      setFormData(mappedData)
+    }
   }
 
   // Function to add a new container
@@ -131,6 +148,8 @@ const Award = ({ setAward, setTalent, appId }: any) => {
     setAward(updatedFormData)
   };
 
+  const [isOcrLoading, setOcrLoading] = useState(false);
+
   const handleFileUpload = (rewardId: string, field: string, file: File) => {
     console.log("handleFileUpload")
     if (!file) return;
@@ -149,6 +168,7 @@ const Award = ({ setAward, setTalent, appId }: any) => {
     }
     console.log("file pass")
     const reader = new FileReader();
+    setOcrLoading(true)
     console.log("reader")
     reader.onload = async (event) => {
       const base64String = event.target?.result as string;
@@ -185,10 +205,13 @@ const Award = ({ setAward, setTalent, appId }: any) => {
         
         setFormData(updatedData);
         setAward(updatedData);
+        console.log("formData", formData)
 
       } catch (error) {
         console.error('OCR Error:', error);
         alert('การอ่านข้อมูล Award ล้มเหลว');
+      } finally {
+        setOcrLoading(false)
       }
     }
     reader.readAsDataURL(file);
@@ -197,6 +220,7 @@ const Award = ({ setAward, setTalent, appId }: any) => {
 
   return (
     <div>
+      {isOcrLoading && <OCRLoadingModal open={isOcrLoading}/>}
       {/* แสดง Alert เมื่อพบปัญหา OCR */}
       {/*alertMessage && <Alert message={alertMessage} onClose={() => setAlertMessage("")} />*/}
       {formData.map(container => (
@@ -216,16 +240,46 @@ const Award = ({ setAward, setTalent, appId }: any) => {
                 </button>
               </div>
               <div className="mb-6">
-                <FileUpload
-                  label={currentTexts.uploadCertificate}
-                  onChange={(file) => {handleFileUpload(container.rewardId, "rewardCer", file);}}
-                  fileType="jpg., png., jpeg., pdf."
-                  maxSize="5 MB"
-                  accept="jpg., png., jpeg., pdf."
-                  infoMessage={<p>{currentTexts.uploadCertificateInfo}</p>}
-                  required={false}
-                />
-              </div>
+                {container.rewardCer !== "" ? (
+                  container.rewardCer.startsWith("data:image/") ? (
+                    <div className="flex items-center mb-4">
+                      <img
+                        src={container.rewardCer}
+                        alt="Uploaded"
+                        className="w-full max-w-sm rounded-lg shadow-md object-contain"
+                      />
+                    </div>
+                  ) : container.rewardCer.startsWith("data:application/pdf") ? (
+                    <div className="mb-4">
+                      <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
+                        <div className="flex items-center w-full gap-4">
+                          <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
+                          <div className="flex flex-col">
+                            <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                              {container.rewardCerName}
+                            </span>
+                            <span className="text-[#565656] text-xs md:text-sm">
+                              {container.rewardCerSize} bytes
+                            </span>
+                          </div>
+                        </div> 
+                      </div>
+                    </div>
+                  ) : null
+                ) : (
+                  <FileUpload
+                    label={currentTexts.uploadCertificate}
+                    onChange={(file) => {
+                      handleFileUpload(container.rewardId, "rewardCer", file);
+                    }}
+                    fileType="jpg., png., jpeg., pdf."
+                    maxSize="5 MB"
+                    accept="jpg., png., jpeg., pdf."
+                    infoMessage={<p>{currentTexts.uploadCertificateInfo}</p>}
+                    required={false}
+                  />
+                )}
+                </div>
 
               <div className='flex flex-col gap-y-5'>
                 <div className="w-[330px]">

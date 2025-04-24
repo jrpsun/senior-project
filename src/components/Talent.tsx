@@ -11,6 +11,7 @@ import { talentTexts, talentTypeOptions, YearOptions } from "../translation/Awar
 import Popup from '../components/common/popup'; // เพิ่ม import popup
 import { TalentResponse } from '@components/types/TalentTypes';
 import { authFetch } from '@components/lib/auth';
+import { OCRLoadingModal } from './OCRLoading';
 
 const Talent = ({ setTalent, appId }: any) => {
   const { language } = useLanguage();
@@ -52,7 +53,24 @@ const Talent = ({ setTalent, appId }: any) => {
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json()
-    setFormData(data)
+
+    if (data.length === 0) {
+      setFormData([{
+        talentId: generateLongId(),
+        applicantId: appId,
+        kindOfTalent: "",
+        nameOfCompetition: "",
+        talentYear: "",
+        talentAwards: "",
+        url: "",
+        moreDetails: "",
+        talentCer: "",
+        talentCerName: "",
+        talentCerSize: "",
+      }])
+    } else {
+      setFormData(data)
+    }
   }
 
   useEffect(() => {
@@ -121,6 +139,8 @@ const Talent = ({ setTalent, appId }: any) => {
     setTalent(updatedFormData)
   };
 
+  const [isOcrLoading, setOcrLoading] = useState(false);
+
   const handleFileUpload = (talentId: string, file: File) => {
     console.log("File", file)
     if (!file) return;
@@ -137,6 +157,7 @@ const Talent = ({ setTalent, appId }: any) => {
       alert('ขนาดไฟล์ไม่ควรเกิน 5MB');
       return;
     }
+    setOcrLoading(true)
 
     const reader = new FileReader();
 
@@ -178,6 +199,8 @@ const Talent = ({ setTalent, appId }: any) => {
       } catch (error) {
         console.error('OCR Error:', error);
         alert('การอ่านข้อมูล Award ล้มเหลว');
+      } finally {
+        setOcrLoading(false)
       }
     }
     reader.readAsDataURL(file);
@@ -186,6 +209,7 @@ const Talent = ({ setTalent, appId }: any) => {
 
   return (
     <div>
+      {isOcrLoading && <OCRLoadingModal open={isOcrLoading}/>}
       {formData.map(container => (
         <div key={container.talentId}>
           <div className="flex justify-center pt-10 bg-[#FFFFFF] p-6">
@@ -202,6 +226,33 @@ const Talent = ({ setTalent, appId }: any) => {
                 </button>
               </div>
               <div className="mb-6">
+              {container.talentCer !== "" ? (
+                container.talentCer.startsWith("data:image/") ? (
+                  <div className="flex items-center mb-4">
+                    <img
+                      src={container.talentCer}
+                      alt="Uploaded"
+                      className="w-full max-w-sm rounded-lg shadow-md object-contain"
+                    />
+                  </div>
+                ) : container.talentCer.startsWith("data:application/pdf") ? (
+                  <div className="mb-4">
+                    <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
+                      <div className="flex items-center w-full gap-4">
+                        <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
+                        <div className="flex flex-col">
+                          <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                            {container.talentCerName}
+                          </span>
+                          <span className="text-[#565656] text-xs md:text-sm">
+                            {container.talentCerSize} bytes
+                          </span>
+                        </div>
+                      </div> 
+                    </div>
+                  </div>
+                ) : null
+              ) : (
                 <FileUpload
                   label={currentTexts.certificatesOrAwards}
                   onChange={(file) => handleFileUpload(container.talentId, file)}
@@ -211,6 +262,8 @@ const Talent = ({ setTalent, appId }: any) => {
                   infoMessage={<p>{currentTexts.uploadCertificateInfo}</p>}
                   required={false}
                 />
+)}
+
               </div>
               <div className="flex flex-col gap-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

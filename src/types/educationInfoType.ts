@@ -88,6 +88,7 @@ export interface EducantionApplicantView {
     docStatus: string;
     paymentStatus: string;
     academicYear: string;
+    interviewStatus: string;
 }
 
 

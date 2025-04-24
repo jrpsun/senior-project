@@ -147,6 +147,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
   // โหลดข้อมูลจังหวัด อำเภอ ตำบล และประเทศ/สัญชาติ
   useEffect(() => {
     if (data) {
+      console.log("data", data)
       const subDistrictData = subDistricts.find((s) => s.label === data?.subDistrict);
       const subDistrictValue = subDistrictData ? subDistrictData.value : "";
 
@@ -171,7 +172,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
       setFormData({
         postalCode: data?.nationality || "",
         profileImageUrl: data.profileImageUrl ? data.profileImageUrl : "",
-        title: "",
+        title: data?.prefix || "",
         firstnameTH: data?.firstnameTH || "",
         middlenameTH: data?.middlenameTH || "",
         lastnameTH: data?.lastnameTH || "",
@@ -201,15 +202,15 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
         addr1: data?.addr1 || "",
         addr2: data?.addr2 || "",
         applicantPicture: "",
-        docCopyIdCard: "",
-        docCopyIdCardName: "",
-        docCopyIdCardSize: "",
-        docCopyPassport: "",
-        docCopyPassportName: "",
-        docCopyPassportSize: "",
-        docCopyHouseRegis: "",
-        docCopyHouseRegisName: "",
-        docCopyHouseRegisSize: ""
+        docCopyIdCard: data?.docCopyIdCard || "",
+        docCopyIdCardName: data?.docCopyIdCardName || "",
+        docCopyIdCardSize: data?.docCopyIdCardSize || "",
+        docCopyPassport: data?.docCopyPassport || "",
+        docCopyPassportName: data?.docCopyPassportName || "",
+        docCopyPassportSize: data?.docCopyPassportSize || "",
+        docCopyHouseRegis: data?.docCopyHouseRegis || "",
+        docCopyHouseRegisName: data?.docCopyHouseRegisName || "",
+        docCopyHouseRegisSize: data?.docCopyHouseRegisSize || ""
       })
       // ตั้งค่าเริ่มต้นสำหรับ dropdowns
       setSelectedProvince(provinceValue || null);
@@ -425,24 +426,20 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
         const base64String = event.target?.result as string;
 
         // ระบุฟิลด์ที่ต้องอัปเดตตามประเภทเอกสาร
-        let updatedData: Partial<typeof formData> = {};
         let fieldfile = "";
         let fieldName = "";
         let fieldSize = "";
         console.log("file name: ",URL.createObjectURL(file))
 
         if (documentType === 'idCard') {
-            updatedData = { docCopyIdCard: base64String };
             fieldfile = "docCopyIdCard";
             fieldName = "docCopyIdCardName";
             fieldSize = "docCopyIdCardSize"
         } else if (documentType === 'passport') {
-            updatedData = { docCopyPassport: base64String };
             fieldfile = "docCopyPassport";
             fieldName = "docCopyPassportName";
             fieldSize = "docCopyPassportSize";
         } else if (documentType === 'houseRegis') {
-            updatedData = { docCopyHouseRegis: base64String };
             fieldfile = "docCopyHouseRegis";
             fieldName = "docCopyHouseRegisName";
             fieldSize = "docCopyHouseRegisSize";
@@ -451,7 +448,9 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
         // อัปเดต formData
         setFormData(prev => ({
             ...prev,
-            ...updatedData
+            [fieldfile]: base64String,
+            [fieldName]: file.name,
+            [fieldSize]: String(file.size)
         }));
 
         // อัปเดตข้อมูลที่เปลี่ยนแปลง
@@ -463,10 +462,32 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
         };
         setChangedData(newChangedData);
         onChange(newChangedData);
+        console.log("formData", formData)
     };
 
     reader.readAsDataURL(file);
-};
+  };
+
+  const handleDeleteDocCopy = (fieldfile: string, fieldName: string, fieldSize: string) => {
+    const updatedData = {
+      ...formData,
+      [fieldfile]: "",
+      [fieldName]: "",
+      [fieldSize]: ""
+    };
+    
+    setFormData(updatedData);
+    
+    const newChangedData = {
+      ...changedData,
+      [fieldfile]: "",
+      [fieldName]: "",
+      [fieldSize]: ""
+    };
+    
+    setChangedData(newChangedData);
+    onChange(newChangedData);
+  }
 
   return (
     <div className="flex justify-center py-5 bg-[white]">
@@ -523,7 +544,7 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
           {/* คำนำหน้า*/}
           <div className="mb-4">
             <label className="block text-[#565656] mb-1">{currentTexts.title} <span className="text-red-500">*</span></label>
-            <p className="text-[#565656]   indent-5">{currentTexts.titleText}</p>
+            <p className="text-[#565656]   indent-5">{formData?.title}</p>
           </div>
 
           {/* ชื่อภาษาไทย*/}
@@ -600,19 +621,42 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
           {/* แสดงเอกสารที่ต้องอัปโหลดตามสัญชาติ */}
           {formData.nationality === "Thai" ? (
             <>
-              <FileUpload
-                label={currentTexts?.uploadIdCard || "สำเนาบัตรประชาชน"}
-                onChange={(file) => handleDocumentUpload(file, 'idCard')}
-                fileType="pdf"
-                maxSize="5 MB"
-                accept=".pdf"
-                infoMessage={
-                  <p>
-                    {currentTexts?.uploadIdCardInfo ||
-                      "กรุณาอัปโหลดสำเนาบัตรประชาชน พร้อมรับรองสำเนาถูกต้อง (ไฟล์ประเภท pdf ขนาดไม่เกิน 5 MB)"}
-                  </p>
-                }
-              />
+              {formData.docCopyIdCard !== "" ? (
+                <div className="mb-4">
+                  <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
+                    <div className="flex justify-between items-center w-full gap-4">
+                      <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
+                      <div className="flex flex-col">
+                        <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                          {formData.docCopyIdCardName}
+                        </span>
+                        <span className="text-[#565656] text-xs md:text-sm">
+                          {formData.docCopyIdCardSize} bytes
+                        </span>
+                      </div>
+                      <button className="ml-auto" onClick={() => handleDeleteDocCopy("docCopyIdCard", "docCopyIdCardName", "docCopyIdCardSize")}>
+                        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="11" cy="11" r="10" stroke="#D92D20" strokeWidth="2" fill="none" />
+                          <path d="M15.5833 11.9173H6.41667C5.86667 11.9173 5.5 11.5507 5.5 11.0007C5.5 10.4507 5.86667 10.084 6.41667 10.084H15.5833C16.1333 10.084 16.5 10.4507 16.5 11.0007C16.5 11.5507 16.1333 11.9173 15.5833 11.9173Z" fill="#D92D20" />
+                        </svg>
+                      </button>
+                    </div> 
+                  </div>
+                </div>
+              ) : (
+                <FileUpload
+                  label={currentTexts?.uploadIdCard || "สำเนาบัตรประชาชน"}
+                  onChange={(file) => handleDocumentUpload(file, 'idCard')}
+                  fileType="pdf"
+                  maxSize="5 MB"
+                  accept=".pdf"
+                  infoMessage={
+                    <p>
+                      {currentTexts?.uploadIdCardInfo ||
+                        "กรุณาอัปโหลดสำเนาบัตรประชาชน พร้อมรับรองสำเนาถูกต้อง (ไฟล์ประเภท pdf ขนาดไม่เกิน 5 MB)"}
+                    </p>
+                  }
+                />)}
 
               {/* หมายเลขบัตรประชาชน และ วันหมดอายุ */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
@@ -654,6 +698,29 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
             </>
           ) : (
             <>
+              {formData.docCopyPassport !== "" ? (
+                <div className="mb-4">
+                  <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
+                    <div className="flex justify-between items-center w-full gap-4">
+                      <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
+                      <div className="flex flex-col">
+                        <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                          {formData.docCopyPassportName}
+                        </span>
+                        <span className="text-[#565656] text-xs md:text-sm">
+                          {formData.docCopyPassportSize} bytes
+                        </span>
+                      </div>
+                      <button className="ml-auto" onClick={() => handleDeleteDocCopy("docCopyPassport", "docCopyPassportName", "docCopyPassportSize")}>
+                        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="11" cy="11" r="10" stroke="#D92D20" strokeWidth="2" fill="none" />
+                          <path d="M15.5833 11.9173H6.41667C5.86667 11.9173 5.5 11.5507 5.5 11.0007C5.5 10.4507 5.86667 10.084 6.41667 10.084H15.5833C16.1333 10.084 16.5 10.4507 16.5 11.0007C16.5 11.5507 16.1333 11.9173 15.5833 11.9173Z" fill="#D92D20" />
+                        </svg>
+                      </button>
+                    </div> 
+                  </div>
+                </div>
+              ) : (
               <FileUpload
                 label={currentTexts?.uploadPassport || "สำเนาหนังสือเดินทาง"}
                 onChange={(file) => handleDocumentUpload(file, 'passport')}
@@ -666,7 +733,7 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
                       "กรุณาอัปโหลดสำเนาหนังสือเดินทาง พร้อมรับรองสำเนาถูกต้อง (ไฟล์ประเภท pdf ขนาดไม่เกิน 5 MB)"}
                   </p>
                 }
-              />
+              />)}
 
               {/* หมายเลขพาสปอร์ต */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
@@ -729,7 +796,29 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
           </div>
 
           <h2 className="text-2xl text-[#008A90] font-semibold mb-6">{currentTexts.titleAddress}</h2>
-          {formData.country === "TH" && (
+          {formData.docCopyHouseRegis !== "" ? (
+            <div className="mb-4">
+            <div className="border border-gray-300 rounded-lg p-3 flex flex-wrap items-center gap-4 shadow-sm">
+              <div className="flex justify-between items-center w-full gap-4">
+                <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
+                <div className="flex flex-col">
+                  <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                    {formData.docCopyHouseRegisName}
+                  </span>
+                  <span className="text-[#565656] text-xs md:text-sm">
+                    {formData.docCopyHouseRegisSize} bytes
+                  </span>
+                </div>
+                <button className="ml-auto" onClick={() => handleDeleteDocCopy("docCopyHouseRegis", "docCopyHouseRegisName", "docCopyHouseRegisSize")}>
+                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="11" cy="11" r="10" stroke="#D92D20" strokeWidth="2" fill="none" />
+                    <path d="M15.5833 11.9173H6.41667C5.86667 11.9173 5.5 11.5507 5.5 11.0007C5.5 10.4507 5.86667 10.084 6.41667 10.084H15.5833C16.1333 10.084 16.5 10.4507 16.5 11.0007C16.5 11.5507 16.1333 11.9173 15.5833 11.9173Z" fill="#D92D20" />
+                  </svg>
+                </button>
+              </div> 
+            </div>
+          </div>
+          ) : formData.country === "TH" ? (
             <FileUpload
               label={currentTexts?.uploadHouseReg || "สำเนาทะเบียนบ้าน"}
               onChange={(file) => handleDocumentUpload(file, 'houseRegis')}
@@ -743,6 +832,8 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
                 </p>
               }
             />
+          ):(
+            <div></div>
           )}
           {/* เลือกประเทศ */}
           <div className="w-full max-w-full sm:max-w-[315px]">

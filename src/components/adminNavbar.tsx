@@ -27,11 +27,6 @@ const pageTitles = {
     "/admin/interview/summary": "สรุปผลการสัมภาษณ์",
 };
 
-// รายการเมนูใน Dropdown ของ Admin
-const adminMenuItems = [
-    { href: "/admin/change-password", label: "เปลี่ยนรหัสผ่าน", icon: "/images/Navbar/ChangePassword.svg" },
-    { href: "/logout", label: "ออกจากระบบ", icon: "/images/Navbar/Logout.svg" },
-];
 
 interface AdminNavbarProps {
     isCollapsed: boolean;
@@ -52,6 +47,18 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed, backToPage }) =>
             setName(decoded?.sub)
         }
     })
+
+    const handleLogout = () => {
+        localStorage.removeItem("access_token");
+        
+        window.location.href = "/admin/login";
+    };
+
+    // รายการเมนูใน Dropdown ของ Admin
+    const adminMenuItems = [
+        { href: "/admin/change-password", label: "เปลี่ยนรหัสผ่าน", icon: "/images/Navbar/ChangePassword.svg" , onClick: null},
+        { href: "/logout", label: "ออกจากระบบ", icon: "/images/Navbar/Logout.svg" , onClick: handleLogout},
+    ];
 
 
     return (
@@ -95,9 +102,18 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ isCollapsed, backToPage }) =>
                     {dropdownOpen && (
                         <div className="absolute right-0 top-full w-56 bg-white border rounded-md shadow-lg p-2">
                             {adminMenuItems.map((item, index) => (
-                                <Link key={index} href={item.href} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded">
-                                    <Image src={item.icon} alt={item.label} width={20} height={20} />
-                                    <span>{item.label}</span>
+                                <Link 
+                                    key={index} 
+                                    href={item.href}
+                                    onClick={(e) => {
+                                        if (item.onClick) {
+                                          e.preventDefault();
+                                          item.onClick();
+                                        }
+                                      }}
+                                    className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded">
+                                        <Image src={item.icon} alt={item.label} width={20} height={20} />
+                                        <span>{item.label}</span>
                                 </Link>
                             ))}
                         </div>
