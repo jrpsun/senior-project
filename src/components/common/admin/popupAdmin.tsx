@@ -130,7 +130,7 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
       setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
-  console.log("current formData",formData)  
+  console.log("current formData ๒๒๒๒๒",formData)  
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
@@ -183,10 +183,10 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
               <CheckboxDropdown
                 label="บทบาท"
                 options={[
-                  { value: "Course Committee", label: "Course Committee" },
-                  { value: "Interview Committee", label: "Interview Committee" },
-                  { value: "Public Relations", label: "Public Relations" },
-                  { value: "Education Department", label: "Education Department" },
+                  { value: "กรรมการหลักสูตร", label: "กรรมการหลักสูตร" },
+                  { value: "กรรมการสัมภาษณ์", label: "กรรมการสัมภาษณ์" },
+                  { value: "ประชาสัมพันธ์ (PR)", label: "ประชาสัมพันธ์ (PR)" },
+                  { value: "เจ้าหน้าที่งานการศึกษา", label: "เจ้าหน้าที่งานการศึกษา" },
                 ]}
                 selected={formData.roles}
                 onChange={(selected) => setFormData((prev) => ({ ...prev, roles: selected }))}
@@ -280,6 +280,15 @@ const PopupAdmin: React.FC<PopupAdminProps> = ({ isOpen, onClose, isEdit = false
                     boldLabel={true}
                   />
                 )}
+
+                {/* รหัสผ่าน */}
+                <FormField 
+                  label="รหัสผ่าน"
+                  value={formData.password}
+                  onChange={(value) => handleChange("password", value)}
+                  placeholder="กรอกรหัสผ่าน"
+                  boldLabel={true}
+                />
               </div>
             </>
           )}

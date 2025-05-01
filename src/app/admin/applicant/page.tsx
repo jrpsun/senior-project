@@ -16,13 +16,16 @@ import { jwtDecode } from "jwt-decode";
 import Modal from "@components/components/common/popup-login";
 import { getDecodedToken } from "@components/lib/auth";
 
-const courseOptions = ["ITDS/B", "ITCS/B"];
+const courseOptions = [
+    {label: "ITDS/B", value: "หลักสูตร DST (ไทย)"},
+    {label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)"}
+];
 const roundOptions = [
-    { label: "1/68 - MU – Portfolio (TCAS 1)", value: "DST01" },
-    { label: "1/68 - ICT Portfolio", value: "ICT01" },
+    { label: "1/68 - MU – Portfolio (TCAS 1)", value: "1/68 - MU – Portfolio (TCAS 1)" },
+    { label: "1/68 - ICT Portfolio", value: "1/68 - ICT Portfolio" },
 ];
 
-const admitStatusOptions = ["01 - ยังไม่ยื่นใบสมัคร", "02 - ยื่นใบสมัครแล้ว", "03 - รอพิจารณา", "04 - ผ่านการพิจารณา", "05 - ไม่ผ่านการพิจารณา", "06 - รอสัมภาษณ์", "07-ผ่านการสัมภาษณ์", "08-ไม่ผ่านการสัมภาษณ์", "09 - ยกเลิกการสมัคร"];
+const admitStatusOptions = ["01 - ยังไม่ยื่นใบสมัคร", "02 - ยื่นใบสมัครแล้ว", "03 - รอพิจารณา", "04 - ผ่านการพิจารณา", "05 - ไม่ผ่านการพิจารณา", "06 - รอสัมภาษณ์", "07 - ผ่านการสัมภาษณ์", "08 - ไม่ผ่านการสัมภาษณ์", "09 - ยกเลิกการสมัคร"];
 const docStatusOptions = ["01 - ยังไม่มีเอกสาร", "02 - รอตรวจสอบเอกสาร", "03 - เอกสารครบถ้วน", "04 - เอกสารไม่ครบถ้วน"];
 const paymentStatusOptions = ["01 - ยังไม่ได้ชำระเงิน", "02 - รอตรวจสอบการชำระเงิน", "03 - ชำระเงินเรียบร้อย", "04 - ชำระเงินไม่สำเร็จ"];
 
@@ -207,7 +210,7 @@ const Page = () => {
                                                 setFilterValues({ ...filterValues, course: "" });
                                             }
                                         }}
-                                        options={courseOptions.map(value => ({ label: value, value }))}
+                                        options={courseOptions}
                                         placeholder="เลือกหลักสูตร"
                                     />
                                 </div>
@@ -594,8 +597,8 @@ const Page = () => {
                                                             <button
                                                                 onClick={() => {
                                                                     setCancelReasonData({
-                                                                        reason: "สมัครผิดหลักสูตร",
-                                                                        details: "ต้องการสมัครหลักสูตร DST"
+                                                                        reason: app.reason,
+                                                                        details: app.moreDetail
                                                                     });
                                                                     setCancelPopupVisible(true);
                                                                 }}

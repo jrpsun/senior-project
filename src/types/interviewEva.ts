@@ -21,9 +21,22 @@ export interface InterviewEvaInterface {
     totalRemark?: string 
     comment?: string 
     interviewRemark?: string
+    educationId?: string
+    evaDate?: string
+    educationName?: string
+    outstandingLevel?: string
 }
 
 
 export interface InterviewEvaList {
     applicants: InterviewEvaInterface[]
+}
+
+
+export interface InterviewEvaEduInterface {
+    applicantId?: string 
+    educationId?: string 
+    comment?: string 
+    evaDate?: string 
+    firstName?: string 
 }

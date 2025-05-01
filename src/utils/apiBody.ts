@@ -11,16 +11,16 @@ type NewAdmin = {
   password: string;
 };
 
-export const generateAdmissionBody = (newAdmin: NewAdmin, role: string, methodChecker: string) => {
+export const generateAdmissionBody = (newAdmin: NewAdmin, role: string, methodChecker: string, shareId: string) => {
   if (methodChecker === "create") {
     const baseCreate = {
       prefix: newAdmin.prefix,
       firstName: newAdmin.firstName,
       lastName: newAdmin.lastName,
-      username: Math.random().toString(36).substring(2, 11),
+      username: newAdmin.email,
       email: newAdmin.email,
       phoneNumber: newAdmin.phoneNumber,
-      password: Math.random().toString(36).substring(2, 11),
+      password: newAdmin.password,
     };
 
     switch (role) {
@@ -52,31 +52,31 @@ export const generateAdmissionBody = (newAdmin: NewAdmin, role: string, methodCh
       prefix: newAdmin.prefix,
       firstName: newAdmin.firstName,
       lastName: newAdmin.lastName,
-      username: newAdmin.username,
+      username: newAdmin.email,
       email: newAdmin.email,
       phoneNumber: newAdmin.phoneNumber,
       password: newAdmin.password,
     };
 
     switch (role) {
-      case "Course Committee":
+      case "กรรมการหลักสูตร":
         return {
-          courseComId: newAdmin.adminId,
+          courseComId: shareId,
           ...baseRole,
         };
-      case "Interview Committee":
+      case "กรรมการสัมภาษณ์":
         return {
-          interviewComId: newAdmin.adminId,
+          interviewComId: shareId,
           ...baseRole,
         };
-      case "Education Department":
+      case "เจ้าหน้าที่งานการศึกษา":
         return {
-          educationId: newAdmin.adminId,
+          educationId: shareId,
           ...baseRole,
         };
       default:
         return {
-          PRid: newAdmin.adminId,
+          PRid: shareId,
           ...baseRole,
         };
     }
@@ -88,7 +88,8 @@ export const generateAdmissionBody = (newAdmin: NewAdmin, role: string, methodCh
       firstName: newAdmin.firstName,
       lastName: newAdmin.lastName,
       email: newAdmin.email,
-      phoneNumber: newAdmin.phoneNumber
+      phoneNumber: newAdmin.phoneNumber,
+      password: newAdmin.password
     };
 
     switch (role) {

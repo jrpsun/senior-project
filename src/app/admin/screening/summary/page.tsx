@@ -4,7 +4,7 @@ import SideBar from "../../../../components/SideBar";
 import AdminNavbar from "../../../../components/adminNavbar";
 import SearchField from "../../../../components/form/searchField";
 import Image from "next/image";
-import { CourseComScreeningInterface } from "@components/types/screening";
+import { CourseComScreeningInterface, PreEvaSummaryApplicantsResponse } from "@components/types/screening";
 import { getDecodedToken } from "@components/lib/auth";
 import Modal from "@components/components/common/popup-login";
 
@@ -50,7 +50,7 @@ const mockGroupedData: GroupedData[] = [
 
 const ScreeningResultPage = () => {
     const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
-    const [applicants, setApplicants] = useState<CourseComScreeningInterface[]>([]);
+    const [preEvaSum, setPreEvaSum] = useState<PreEvaSummaryApplicantsResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [roles, setRoles] = useState<string[]>([]);
@@ -69,7 +69,7 @@ const ScreeningResultPage = () => {
 
     async function fetchData() {
         try {
-            const res = await fetch(`${API_BASE_URL}/course-committee/all-applicant-courseC`)
+            const res = await fetch(`${API_BASE_URL}/education-department/get-pre-eva-sum`)
 
             if (!res.ok) {
                 throw new Error("Failed to fetch one or more resources");
@@ -77,7 +77,7 @@ const ScreeningResultPage = () => {
 
             const data_app = await res.json();
 
-            setApplicants(data_app.applicants || []);
+            setPreEvaSum(data_app.preEva || []);
 
         } catch (err) {
             console.error("Error fetching data:", err);
@@ -89,7 +89,7 @@ const ScreeningResultPage = () => {
     useEffect(() => {
         fetchData();
     }, []);
-    console.log(applicants);
+    console.log('pre eva summary #####', preEvaSum);
 
     const [isPopupVisible, setIsPopupVisible] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -156,44 +156,98 @@ const ScreeningResultPage = () => {
 
 
     // ฟังก์ชันค้นหาข้อมูล
+    // const handleSearch = () => {
+    //     const filtered = mockGroupedData
+    //         .filter(group => {
+    //             const matchCourse =
+    //                 searchData.course === "" || group.course === searchData.course;
+    //             return matchCourse;
+    //         })
+    //         .map(group => {
+    //             const filteredApplicants = group.applicants.filter(applicant => {
+    //                 const matchCommittee =
+    //                     searchData.committee === "ทั้งหมด" ||
+    //                     group.committeeName.includes(searchData.committee);
+    //                 const matchResult =
+    //                     searchData.result === "ทั้งหมด" || applicant.result === searchData.result;
+    //                 const matchId =
+    //                     searchData.applicantId === "" || applicant.id.includes(searchData.applicantId);
+    //                 const matchName =
+    //                     searchData.applicantName === "" || applicant.name.includes(searchData.applicantName);
+
+    //                 return matchCommittee && matchResult && matchId && matchName;
+    //             });
+
+    //             return {
+    //                 ...group,
+    //                 applicants: filteredApplicants,
+    //                 passed: filteredApplicants.filter(a => a.result === "ผ่าน").length,
+    //                 failed: filteredApplicants.filter(a => a.result === "ไม่ผ่าน").length,
+    //                 pending: filteredApplicants.filter(a => a.result === "รอ").length
+    //             };
+    //         })
+    //         .filter(group => group.applicants.length > 0);
+
+    //     setFilteredData(filtered); // อัปเดตข้อมูลที่กรองแล้ว
+    // };
+
+
+    const totals = preEvaSum.reduce(
+        (acc, curr) => {
+            acc.passed += curr.passed;
+            acc.failed += curr.failed;
+            acc.pending += curr.pending;
+            return acc;
+        },
+        { passed: 0, failed: 0, pending: 0 }
+    );
+
+    // handle search and filter
     const handleSearch = () => {
-        const filtered = mockGroupedData
-            .filter(group => {
-                const matchCourse =
-                    searchData.course === "" || group.course === searchData.course;
-                return matchCourse;
-            })
-            .map(group => {
-                const filteredApplicants = group.applicants.filter(applicant => {
-                    const matchCommittee =
-                        searchData.committee === "ทั้งหมด" ||
-                        group.committeeName.includes(searchData.committee);
-                    const matchResult =
-                        searchData.result === "ทั้งหมด" || applicant.result === searchData.result;
-                    const matchId =
-                        searchData.applicantId === "" || applicant.id.includes(searchData.applicantId);
-                    const matchName =
-                        searchData.applicantName === "" || applicant.name.includes(searchData.applicantName);
-
-                    return matchCommittee && matchResult && matchId && matchName;
-                });
-
-                return {
-                    ...group,
-                    applicants: filteredApplicants,
-                    passed: filteredApplicants.filter(a => a.result === "ผ่าน").length,
-                    failed: filteredApplicants.filter(a => a.result === "ไม่ผ่าน").length,
-                    pending: filteredApplicants.filter(a => a.result === "รอ").length
-                };
-            })
-            .filter(group => group.applicants.length > 0);
-
-        setFilteredData(filtered); // อัปเดตข้อมูลที่กรองแล้ว
+        setFilters(filterValues);
     };
+
+    interface FilterState {
+        program?: string;
+        roundName?: string;
+        preEvaResult?: string;
+        applicantId?: string;
+        applicantName?: string;
+        committeeId?: string;
+    }
+
+    const [filters, setFilters] = useState<FilterState>();
+    const [filterValues, setFilterValues] = useState<FilterState>();
+
+    const filteredApplicant = preEvaSum
+        .map(group => {
+            const filteredApplicants = group.applicants.filter(applicant =>
+                (!filters?.program || applicant.program?.includes(filters.program)) &&
+                (!filters?.roundName || applicant.roundName?.includes(filters.roundName)) &&
+                (!filters?.preEvaResult || applicant.preliminaryEva?.includes(filters.preEvaResult)) &&
+                (!filters?.applicantId || applicant.applicantId?.includes(filters.applicantId)) &&
+                (!filters?.applicantName || `${applicant.firstnameEN} ${applicant.lastnameEN}`.includes(filters.applicantName)) &&
+                (!filters?.committeeId || group.courseComId?.includes(filters.committeeId))
+            );
+
+            if (filteredApplicants.length === 0) return null; // no applicants matched
+
+            return {
+                ...group, // courseComId, prefix, firstName, lastName, passed, failed, pending
+                applicants: filteredApplicants // only matched applicants
+            };
+        })
+        .filter(group => group !== null); // remove groups with no matched applicants
+
+    const committeeGroups = preEvaSum.map((com) => ({
+        label: `อ. ${com.firstName}`,
+        value: `${com.courseComId}`,
+        full: `${com.prefix} ${com.firstName} ${com.lastName}`
+    }));
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            {showModal && <Modal role="admin"/>}
+            {showModal && <Modal role="admin" />}
             {isPopupVisible && (
                 <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center z-50 bg-black/20">
                     <div className="bg-white p-6 rounded-lg shadow-xl max-w-[600px] w-full min-h-[175px] text-[#565656]">
@@ -262,16 +316,17 @@ const ScreeningResultPage = () => {
                                 <SearchField
                                     label="หลักสูตร"
                                     type="dropdown"
-                                    value={searchData.course}
-                                    onChange={(option) =>
-                                        setSearchData({
-                                            ...searchData,
-                                            course: typeof option === "object" && option !== null ? option.value : ""
-                                        })
-                                    }
+                                    value={filterValues?.program || ""}
+                                    onChange={(option) => {
+                                        if (typeof option === "object" && option !== null && "value" in option) {
+                                            setFilterValues({ ...filterValues, program: option.value });
+                                        } else {
+                                            setFilterValues({ ...filterValues, program: "" });
+                                        }
+                                    }}
                                     options={[
-                                        { value: "ICT01", label: "ICT01" },
-                                        { value: "DST01", label: "DST01" },
+                                        { value: "หลักสูตร ICT (นานาชาติ)", label: "หลักสูตร ICT (นานาชาติ)" },
+                                        { value: "หลักสูตร DST (ไทย)", label: "หลักสูตร DST (ไทย)" },
                                     ]}
                                     placeholder="เลือกหลักสูตร"
                                 />
@@ -281,12 +336,17 @@ const ScreeningResultPage = () => {
                                 <SearchField
                                     label="รอบรับสมัคร"
                                     type="dropdown"
-                                    value={searchData.round}
-                                    onChange={(option) => setSearchData({
-                                        ...searchData,
-                                        round: typeof option === "object" && option !== null ? option.value : ""
-                                    })}
-                                    options={[{ value: "1/68 - ICT Portfolio", label: "1/68 - ICT Portfolio" }]}
+                                    value={filterValues?.roundName || ""}
+                                    onChange={(option) => {
+                                        if (typeof option === "object" && option !== null && "value" in option) {
+                                            setFilterValues({ ...filterValues, roundName: option.value });
+                                        } else {
+                                            setFilterValues({ ...filterValues, roundName: "" });
+                                        }
+                                    }}
+                                    options={[{ value: "1/68 - ICT Portfolio", label: "1/68 - ICT Portfolio" },
+                                    { value: "1/68 - MU – Portfolio (TCAS 1)", label: "1/68 - MU – Portfolio (TCAS 1)" }
+                                    ]}
                                     placeholder="เลือกรอบรับสมัคร"
                                 />
                             </div>
@@ -294,16 +354,15 @@ const ScreeningResultPage = () => {
                                 <SearchField
                                     label="กรรมการหลักสูตร"
                                     type="dropdown"
-                                    value={searchData.committee}
-                                    onChange={(option) => setSearchData({
-                                        ...searchData,
-                                        committee: typeof option === "object" && option !== null && "value" in option ? option.value : ""
-                                    })}
-                                    options={[
-                                        { value: "ทั้งหมด", label: "แสดงทั้งหมด" },
-                                        { value: "พิสุทธิ์ธร", label: "อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์" },
-                                        { value: "อารดา", label: "อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล" },
-                                    ]}
+                                    value={filterValues?.committeeId || ""}
+                                    onChange={(option) => {
+                                        if (typeof option === "object" && option !== null && "value" in option) {
+                                            setFilterValues({ ...filterValues, committeeId: option.value });
+                                        } else {
+                                            setFilterValues({ ...filterValues, committeeId: "" });
+                                        }
+                                    }}
+                                    options={committeeGroups}
                                     placeholder="เลือกกรรมการหลักสูตร"
                                 />
                             </div>
@@ -311,16 +370,18 @@ const ScreeningResultPage = () => {
                                 <SearchField
                                     label="ผลการคัดกรองเบื้องต้น"
                                     type="dropdown"
-                                    value={searchData.result}
-                                    onChange={(option) => setSearchData({
-                                        ...searchData,
-                                        result: typeof option === "object" && option !== null && "value" in option ? option.value : ""
-                                    })}
+                                    value={filterValues?.preEvaResult || ""}
+                                    onChange={(option) => {
+                                        if (typeof option === "object" && option !== null && "value" in option) {
+                                            setFilterValues({ ...filterValues, preEvaResult: option.value });
+                                        } else {
+                                            setFilterValues({ ...filterValues, preEvaResult: "" });
+                                        }
+                                    }}
                                     options={[
-                                        { value: "ทั้งหมด", label: "แสดงทั้งหมด" },
-                                        { value: "ผ่าน", label: "ผ่านการพิจารณาเบื้องต้น" },
-                                        { value: "ไม่ผ่าน", label: "ไม่ผ่านการพิจารณาเบื้องต้น" },
-                                        { value: "รอ", label: "รอพิจารณาเพิ่มเติม" },
+                                        { value: "ผ่านการคัดกรอง", label: "ผ่านการคัดกรอง" },
+                                        { value: "ไม่ผ่านการคัดกรอง", label: "ไม่ผ่านการคัดกรอง" },
+                                        { value: "รอพิจารณาเพิ่มเติม", label: "รอพิจารณาเพิ่มเติม" },
                                     ]}
                                     placeholder="เลือกผลการคัดกรอง"
                                 />
@@ -348,15 +409,15 @@ const ScreeningResultPage = () => {
                                 {/* ปุ่มล้างค่า */}
                                 <button
                                     onClick={() => {
-                                        setSearchData({
-                                            course: "",
-                                            round: "",
-                                            committee: "",
-                                            result: "",
+                                        setFilterValues({
+                                            program: "",
+                                            roundName: "",
+                                            preEvaResult: "",
                                             applicantId: "",
                                             applicantName: "",
+                                            committeeId: "",
                                         });
-                                        setFilteredData(mockGroupedData);
+                                        setFilters({});
                                     }}
 
                                     className="px-4 h-[40px] border border-gray-400 rounded-md text-[#565656] bg-white flex items-center gap-1"
@@ -384,8 +445,14 @@ const ScreeningResultPage = () => {
                                 <div className="w-[185px]">
                                     <SearchField
                                         label="เลขที่สมัคร"
-                                        value={searchData.applicantId}
-                                        onChange={(value) => setSearchData({ ...searchData, applicantId: typeof value === "string" ? value : "" })}
+                                        value={filterValues?.applicantId || ""}
+                                        onChange={(value) => {
+                                            if (typeof value === "object" && value !== null && "value" in value) {
+                                                setFilterValues({ ...filterValues, applicantId: value.value });
+                                            } else {
+                                                setFilterValues({ ...filterValues, applicantId: value ?? undefined });
+                                            }
+                                        }}
                                         placeholder="กรุณากรอกข้อมูล"
                                     />
                                 </div>
@@ -393,8 +460,14 @@ const ScreeningResultPage = () => {
                                 <div className="w-[350px]">
                                     <SearchField
                                         label="ชื่อ – นามสกุล ผู้สมัคร"
-                                        value={searchData.applicantName}
-                                        onChange={(value) => setSearchData({ ...searchData, applicantName: typeof value === "string" ? value : "" })}
+                                        value={filterValues?.applicantName || ""}
+                                        onChange={(value) => {
+                                            if (typeof value === "object" && value !== null && "value" in value) {
+                                                setFilterValues({ ...filterValues, applicantName: value.value });
+                                            } else {
+                                                setFilterValues({ ...filterValues, applicantName: value ?? undefined });
+                                            }
+                                        }}
                                         placeholder="กรุณากรอกข้อมูล"
                                     />
                                 </div>
@@ -426,7 +499,7 @@ const ScreeningResultPage = () => {
                             <div className="flex items-center gap-2 w-full md:w-auto">
                                 <Image src="/images/admin/preliminaryResult/pass_icon.svg" alt="ผ่าน" width={24} height={24} />
                                 <span className="text-[#565656] text-lg">
-                                    ผ่านการพิจารณาเบื้องต้น <span className="text-[#388E3C]">{summaryData.passed || 0} คน</span>
+                                    ผ่านการพิจารณาเบื้องต้น <span className="text-[#388E3C]">{totals.passed || 0} คน</span>
                                 </span>
                             </div>
 
@@ -434,7 +507,7 @@ const ScreeningResultPage = () => {
                             <div className="flex items-center gap-2 w-full md:w-auto">
                                 <Image src="/images/admin/preliminaryResult/fail_icon.svg" alt="ไม่ผ่าน" width={24} height={24} />
                                 <span className="text-[#565656] text-lg">
-                                    ไม่ผ่านการพิจารณาเบื้องต้น <span className="text-[#D92D20]">{summaryData.failed || 0} คน</span>
+                                    ไม่ผ่านการพิจารณาเบื้องต้น <span className="text-[#D92D20]">{totals.failed || 0} คน</span>
                                 </span>
                             </div>
 
@@ -442,17 +515,17 @@ const ScreeningResultPage = () => {
                             <div className="flex items-center gap-2 w-full md:w-auto">
                                 <Image src="/images/admin/preliminaryResult/pending_icon.svg" alt="รอพิจารณา" width={24} height={24} />
                                 <span className="text-[#565656] text-lg">
-                                    รอพิจารณาเพิ่มเติม <span className="text-[#DAA520]">{summaryData.pending || 0} คน</span>
+                                    รอพิจารณาเพิ่มเติม <span className="text-[#DAA520]">{totals.pending || 0} คน</span>
                                 </span>
                             </div>
                         </div>
 
                         {/* Loop รายกรรมการ */}
-                        {filteredData.map((group, index) => (
+                        {filteredApplicant.map((group, index) => (
                             <div key={index} className="border-t border-gray-200">
                                 {/* หัวกรรมการ */}
                                 <div className="bg-[#C4C4C4] text-[#333] font-semibold px-6 py-3">
-                                    กรรมการหลักสูตร: {group.committeeName}
+                                    กรรมการหลักสูตร: {group.prefix} {group.firstName} {group.lastName}
                                 </div>
 
                                 <div className="flex flex-wrap md:flex-nowrap gap-4 md:gap-6 px-6 py-2 font-semibold text-[#565656]">
@@ -481,25 +554,25 @@ const ScreeningResultPage = () => {
                                         </thead>
                                         <tbody>
                                             {group.applicants.map((a, idx) => (
-                                                <tr key={a.id} className="border-t">
+                                                <tr key={idx} className="border-t">
                                                     <td className="px-4 py-2 truncate">{idx + 1}</td>
-                                                    <td className="px-4 py-2 truncate">{a.id}</td>
-                                                    <td className="px-4 py-2 truncate">{a.name}</td>
+                                                    <td className="px-4 py-2 truncate">{a.applicantId}</td>
+                                                    <td className="px-4 py-2 truncate">{a.firstnameEN} {a.lastnameEN}</td>
                                                     <td
-                                                        className={`px-4 py-2 truncate ${a.result === "ผ่าน"
+                                                        className={`px-4 py-2 truncate ${a.preliminaryEva === "ผ่านการคัดกรอง"
                                                             ? "text-green-600"
-                                                            : a.result === "ไม่ผ่าน"
+                                                            : a.preliminaryEva === "ไม่ผ่านการคัดกรอง"
                                                                 ? "text-red-600"
                                                                 : "text-yellow-600"
                                                             }`}
                                                     >
-                                                        {a.result === "ผ่าน"
+                                                        {a.preliminaryEva === "ผ่านการคัดกรอง"
                                                             ? "ผ่านการคัดกรอง"
-                                                            : a.result === "ไม่ผ่าน"
+                                                            : a.preliminaryEva === "ไม่ผ่านการคัดกรอง"
                                                                 ? "ไม่ผ่านการคัดกรอง"
                                                                 : "รอพิจารณา"}
                                                     </td>
-                                                    <td className="px-4 py-2 truncate">{a.comment || "-"}</td>
+                                                    <td className="px-4 py-2 truncate">{a.preliminaryComment || "-"}</td>
                                                 </tr>
                                             ))}
                                         </tbody>

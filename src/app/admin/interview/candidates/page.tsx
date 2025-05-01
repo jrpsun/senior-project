@@ -13,7 +13,10 @@ import { getDecodedToken } from "@components/lib/auth";
 import Modal from "@components/components/common/popup-login";
 import { useRouter } from "next/navigation";
 
-const courseOptions = ["ITDS/B", "ITCS/B"];
+const courseOptions = [
+    { label: "ITDS/B", value: "หลักสูตร DST (ไทย)" },
+    { label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)" }
+];
 const roundOptions = [
     { label: "1/68 - MU – Portfolio (TCAS 1)", value: "DST01" },
     { label: "1/68 - ICT Portfolio", value: "ICT01" },
@@ -209,7 +212,7 @@ const Page = () => {
                                                 setFilterValues({ ...filterValues, course: "" });
                                             }
                                         }}
-                                        options={courseOptions.map(value => ({ label: value, value }))}
+                                        options={courseOptions}
                                         placeholder="เลือกหลักสูตร"
                                     />
                                 </div>
@@ -388,7 +391,7 @@ const Page = () => {
                                                         ${(app.interviewStatus) === "03 - รอพิจารณาเพิ่มเติม" ? "bg-[#FFF4E2] text-[#DAA520]" : ""}
                                                         ${(app.interviewStatus) === "04 - ผ่านการสัมภาษณ์" ? "bg-[#E2F5E2] text-[#13522B]" : ""}
                                                         ${(app.interviewStatus) === "05 - ไม่ผ่านการสัมภาษณ์" ? "bg-[#FEE2E2] text-red-600" : ""}
-                                                        ${(app.interviewStatus) === "06 - รอผลการประเมินเพิ่มเติม" ? "bg-[#E3F2FD] text-[#0D47A1]" : ""}
+                                                        ${(app.interviewStatus) === "06 - รอผลการประเมิน" ? "bg-[#E3F2FD] text-[#0D47A1]" : ""}
                                                         `}>
                                                         {(app.interviewStatus)}
                                                     </div>

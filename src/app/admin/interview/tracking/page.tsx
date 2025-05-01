@@ -47,7 +47,10 @@ const applicant = [
     { round: 'ICT01', applicantId: '0000025', name: 'ธนบดี มิ่งมงคลทรัพย์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.24 น.' }
 ]
 
-const courseOptions = ["ITDS/B", "ITCS/B"];
+const courseOptions = [
+    { label: "ITDS/B", value: "หลักสูตร DST (ไทย)" },
+    { label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)" }
+];
 const roundOptions = [
     { label: "1/68 - MU – Portfolio (TCAS 1)", value: "DST01" },
     { label: "1/68 - ICT Portfolio", value: "ICT01" },
@@ -189,7 +192,7 @@ const Page = () => {
         { label: "04 - ไม่ผ่านการสัมภาษณ์", value: "04 - ไม่ผ่านการสัมภาษณ์" },
         { label: "02 - ไม่มาสัมภาษณ์", value: "02 - ไม่มาสัมภาษณ์" },
         { label: "05 - รอพิจารณาเพิ่มเติม", value: "05 - รอพิจารณาเพิ่มเติม" },
-        { label: "06 - รอผลการประเมินเพิ่มเติม", value: "06 - รอผลการประเมินเพิ่มเติม" },
+        { label: "06 - รอผลการประเมิน", value: "06 - รอผลการประเมิน" },
     ];
 
     const interviewRoomOptions = [
@@ -199,14 +202,14 @@ const Page = () => {
     ];
 
     const router = useRouter();
-    
-    const handleClickView = ( appId: string ) => {
+
+    const handleClickView = (appId: string) => {
         router.push(`/admin/applicant/view?id=${appId}`);
     }
-    
+
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            {showModal && <Modal role="admin"/>}
+            {showModal && <Modal role="admin" />}
             <div>
                 <AdminNavbar
                     isCollapsed={isCollapsed}
@@ -237,7 +240,7 @@ const Page = () => {
                                                 setFilterValues({ ...filterValues, course: "" });
                                             }
                                         }}
-                                        options={courseOptions.map(value => ({ label: value, value }))}
+                                        options={courseOptions}
                                         placeholder="เลือกหลักสูตร"
                                     />
                                 </div>
@@ -428,7 +431,7 @@ const Page = () => {
                                                         ${app.interviewStatus === "01 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : "py-2"}
                                                         ${app.interviewStatus === "05 - ไม่ผ่านการสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
                                                         ${app.interviewStatus === "03 - รอพิจารณาเพิ่มเติม" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520] " : "py-2"}
-                                                        ${app.interviewStatus === "06 - รอผลการประเมินเพิ่มเติม" ? "h-[30px] pt-[2px] rounded-xl bg-[#E3F2FD] text-[#0D47A1]" : "py-2"}
+                                                        ${app.interviewStatus === "06 - รอผลการประเมิน" ? "h-[30px] pt-[2px] rounded-xl bg-[#E3F2FD] text-[#0D47A1]" : "py-2"}
                                                         `}>
                                                         {app.interviewStatus}
                                                     </div>
@@ -456,9 +459,11 @@ const Page = () => {
                                                                             ? "/images/admin/interview/statusFollowUp/pass_icon.svg"
                                                                             : com.InterviewResult === "ไม่ผ่านการสัมภาษณ์"
                                                                                 ? "/images/admin/interview/statusFollowUp/fail_icon.svg"
-                                                                                : com.InterviewResult === "รอพิจารณาเพิ่มเติม" || com.InterviewResult === "รอผลการประเมินเพิ่มเติม" || com.InterviewResult === null
+                                                                                : com.InterviewResult === "รอพิจารณาเพิ่มเติม"
                                                                                     ? "/images/admin/interview/statusFollowUp/wait_icon.svg"
-                                                                                    : "/images/admin/interview/statusFollowUp/calendar_icon.svg"
+                                                                                    : com.InterviewResult === "รอผลการประเมิน" || com.InterviewResult === null
+                                                                                        ? ""
+                                                                                        : "/images/admin/interview/statusFollowUp/calendar_icon.svg"
                                                                     }
                                                                     alt={com.InterviewResult || ""}
                                                                     width={16}
@@ -473,14 +478,14 @@ const Page = () => {
 
                                                     <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] "
                                                         onClick={() => handleClickView(app.applicantId || "")}>
-                                                            <div className="flex flex-row gap-1">
-                                                                <div className="pt-1">
-                                                                    <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M18.6438 16.6993L14.5879 12.6365C15.6817 11.3031 16.335 9.59495 16.335 7.73621C16.335 3.46403 12.8738 0 8.60502 0C4.33626 0 0.875 3.46403 0.875 7.73621C0.875 12.0084 4.33626 15.4724 8.60502 15.4724C10.4696 15.4724 12.1801 14.8112 13.5161 13.7092L17.572 17.7683C18.0455 18.2018 18.4896 17.9226 18.6438 17.7683C18.9521 17.4634 18.9521 17.0042 18.6438 16.6993ZM2.38356 7.73621C2.38356 4.29789 5.16945 1.50977 8.60502 1.50977C12.0406 1.50977 14.8301 4.29789 14.8301 7.73621C14.8301 11.1745 12.0442 13.9626 8.60869 13.9626C5.17312 13.9626 2.38356 11.1745 2.38356 7.73621Z" fill="#008A91" />
-                                                                    </svg>
-                                                                </div>
-                                                                <div>view</div>
+                                                        <div className="flex flex-row gap-1">
+                                                            <div className="pt-1">
+                                                                <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M18.6438 16.6993L14.5879 12.6365C15.6817 11.3031 16.335 9.59495 16.335 7.73621C16.335 3.46403 12.8738 0 8.60502 0C4.33626 0 0.875 3.46403 0.875 7.73621C0.875 12.0084 4.33626 15.4724 8.60502 15.4724C10.4696 15.4724 12.1801 14.8112 13.5161 13.7092L17.572 17.7683C18.0455 18.2018 18.4896 17.9226 18.6438 17.7683C18.9521 17.4634 18.9521 17.0042 18.6438 16.6993ZM2.38356 7.73621C2.38356 4.29789 5.16945 1.50977 8.60502 1.50977C12.0406 1.50977 14.8301 4.29789 14.8301 7.73621C14.8301 11.1745 12.0442 13.9626 8.60869 13.9626C5.17312 13.9626 2.38356 11.1745 2.38356 7.73621Z" fill="#008A91" />
+                                                                </svg>
                                                             </div>
+                                                            <div>view</div>
+                                                        </div>
                                                     </button>
 
                                                 </td>

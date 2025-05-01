@@ -47,7 +47,10 @@ const applicant = [
     { round: 'ICT01', applicantId: '0000025', name: 'ธนบดี มิ่งมงคลทรัพย์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.24 น.' }
 ]
 
-const courseOptions = ["ITDS/B", "ITCS/B"];
+const courseOptions = [
+    { label: "ITDS/B", value: "หลักสูตร DST (ไทย)" },
+    { label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)" }
+];
 const roundOptions = [
     { label: "1/68 - MU – Portfolio (TCAS 1)", value: "DST01" },
     { label: "1/68 - ICT Portfolio", value: "ICT01" },
@@ -56,7 +59,7 @@ const roundOptions = [
 const ScreeningStatusOptions = [
     { label: "แสดงทั้งหมด", value: '' },
     { label: "ผ่านการพิจารณา", value: "04 - ผ่านการพิจารณา" },
-    { label: "ผ่านการพิจารณา", value: "04 - ผ่านการพิจารณา" },
+    //{ label: "ผ่านการพิจารณา", value: "04 - ผ่านการพิจารณา" },
     { label: "ไม่ผ่านการพิจารณา", value: "05 - ไม่ผ่านการพิจารณา" },
     { label: "รอพิจารณา", value: "03 - รอพิจารณา" }
 ];
@@ -195,14 +198,14 @@ const Page = () => {
     };
 
     const router = useRouter();
-    
-    const handleClickView = ( appId: string ) => {
+
+    const handleClickView = (appId: string) => {
         router.push(`/admin/applicant/view?id=${appId}`);
     }
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            {showModal && <Modal role="admin"/>}
+            {showModal && <Modal role="admin" />}
             <div>
                 <AdminNavbar
                     isCollapsed={isCollapsed}
@@ -233,7 +236,7 @@ const Page = () => {
                                                 setFilterValues({ ...filterValues, course: "" });
                                             }
                                         }}
-                                        options={courseOptions.map(value => ({ label: value, value }))}
+                                        options={courseOptions}
                                         placeholder="เลือกหลักสูตร"
                                     />
                                 </div>
@@ -383,22 +386,24 @@ const Page = () => {
                                     </thead>
 
                                     <tbody>
-                                        {paginatedApplicants.map((app, index) => (
-                                            <tr
-                                                key={index}
-                                                className={`text-[#565656] h-[50px] items-center 
+                                        {paginatedApplicants
+                                            .filter(app => app.admissionStatus !== "09 - ยกเลิกการสมัคร")
+                                            .map((app, index) => (
+                                                <tr
+                                                    key={index}
+                                                    className={`text-[#565656] h-[50px] items-center 
                                               ${app.admissionStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
                                               ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
                                             `}
-                                            >
+                                                >
 
-                                                <td className="text-center whitespace-nowrap">{startIndex + index + 1}</td>
-                                                <td className="text-center whitespace-nowrap">{app.roundName}</td>
-                                                <td className="text-center whitespace-nowrap">{app.applicantId}</td>
-                                                <td className="whitespace-nowrap">{app.firstnameEN} {app.lastnameEN}</td>
-                                                <td className="text-center whitespace-nowrap">{app.program}</td>
-                                                <td>
-                                                    <div className={`mr-4 whitespace-nowrap
+                                                    <td className="text-center whitespace-nowrap">{startIndex + index + 1}</td>
+                                                    <td className="text-center whitespace-nowrap">{app.roundName}</td>
+                                                    <td className="text-center whitespace-nowrap">{app.applicantId}</td>
+                                                    <td className="whitespace-nowrap">{app.firstnameEN} {app.lastnameEN}</td>
+                                                    <td className="text-center whitespace-nowrap">{app.program}</td>
+                                                    <td>
+                                                        <div className={`mr-4 whitespace-nowrap
                                                         ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
                                                         ${app.admissionStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : "py-2"}
                                                         ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
@@ -408,51 +413,51 @@ const Page = () => {
                                                         ${app.admissionStatus === "08 - ไม่ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
                                                         ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "h-[30px] pt-[2px] rounded-xl text-red-600 " : "py-2"}
                                                         `}>
-                                                        {app.admissionStatus}
-                                                    </div>
-                                                </td>
+                                                            {app.admissionStatus}
+                                                        </div>
+                                                    </td>
 
-                                                {/* Document Status with Conditional Highlight */}
-                                                <td>
-                                                    {app.admissionStatus === "09 - ยกเลิกการสมัคร" ? (
-                                                        <div >ไม่ต้องดำเนินการต่อ</div>
-                                                    ) : (
-                                                        <div className={`mr-4 whitespace-nowrap
+                                                    {/* Document Status with Conditional Highlight */}
+                                                    <td>
+                                                        {app.admissionStatus === "09 - ยกเลิกการสมัคร" ? (
+                                                            <div >ไม่ต้องดำเนินการต่อ</div>
+                                                        ) : (
+                                                            <div className={`mr-4 whitespace-nowrap
                                                             ${app.docStatus === "02 - รอตรวจสอบเอกสาร" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
                                                             ${app.docStatus === "03 - เอกสารครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
                                                             ${app.docStatus === "04-เอกสารไม่ครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600" : ""}
                                                             `}>
-                                                            {app.docStatus}
-                                                        </div>
-                                                    )}
-                                                </td>
-                                                <td className="py-2 whitespace-nowrap"><span>{app.prefix} {app.firstName} {app.lastName}</span></td>
-                                                <td className="py-2 whitespace-nowrap text-center">
-                                                    {app.preEvaDate ? (
-                                                        app.preEvaDate
-                                                    ) : (
-                                                        <div className="flex justify-center items-center text-[#DAA520] gap-1">
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                className="h-4 w-4"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                stroke="currentColor"
-                                                                strokeWidth={2}
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    d="M12 6v6l4 2m4-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                                />
-                                                            </svg>
-                                                            <span >รอผลการประเมิน</span>
-                                                        </div>
-                                                    )}
-                                                </td>
+                                                                {app.docStatus}
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-2 whitespace-nowrap"><span>{app.prefix} {app.firstName} {app.lastName}</span></td>
+                                                    <td className="py-2 whitespace-nowrap text-center">
+                                                        {app.preEvaDate ? (
+                                                            app.preEvaDate
+                                                        ) : (
+                                                            <div className="flex justify-center items-center text-[#DAA520] gap-1">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    className="h-4 w-4"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth={2}
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        d="M12 6v6l4 2m4-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                    />
+                                                                </svg>
+                                                                <span >รอผลการประเมิน</span>
+                                                            </div>
+                                                        )}
+                                                    </td>
 
-                                                <td className="py-2 text-center whitespace-nowrap">
-                                                    {/* {(app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" || app.admissionStatus === "03 - รอพิจารณา") && (
+                                                    <td className="py-2 text-center whitespace-nowrap">
+                                                        {/* {(app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" || app.admissionStatus === "03 - รอพิจารณา") && (
 
                                                         <Link
                                                             key='view'
@@ -486,37 +491,37 @@ const Page = () => {
                                                         </Link>
                                                     )} */}
 
-                                                    {(app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" || app.admissionStatus === "03 - รอพิจารณา") && (
-                                                        <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] "
-                                                        onClick={() => handleClickView(app.applicantId || "")}>
-                                                            <div className="flex flex-row gap-1">
-                                                                <div className="pt-1">
-                                                                    <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M18.6438 16.6993L14.5879 12.6365C15.6817 11.3031 16.335 9.59495 16.335 7.73621C16.335 3.46403 12.8738 0 8.60502 0C4.33626 0 0.875 3.46403 0.875 7.73621C0.875 12.0084 4.33626 15.4724 8.60502 15.4724C10.4696 15.4724 12.1801 14.8112 13.5161 13.7092L17.572 17.7683C18.0455 18.2018 18.4896 17.9226 18.6438 17.7683C18.9521 17.4634 18.9521 17.0042 18.6438 16.6993ZM2.38356 7.73621C2.38356 4.29789 5.16945 1.50977 8.60502 1.50977C12.0406 1.50977 14.8301 4.29789 14.8301 7.73621C14.8301 11.1745 12.0442 13.9626 8.60869 13.9626C5.17312 13.9626 2.38356 11.1745 2.38356 7.73621Z" fill="#008A91" />
-                                                                    </svg>
+                                                        {(app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" || app.admissionStatus === "03 - รอพิจารณา") && (
+                                                            <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] "
+                                                                onClick={() => handleClickView(app.applicantId || "")}>
+                                                                <div className="flex flex-row gap-1">
+                                                                    <div className="pt-1">
+                                                                        <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                            <path d="M18.6438 16.6993L14.5879 12.6365C15.6817 11.3031 16.335 9.59495 16.335 7.73621C16.335 3.46403 12.8738 0 8.60502 0C4.33626 0 0.875 3.46403 0.875 7.73621C0.875 12.0084 4.33626 15.4724 8.60502 15.4724C10.4696 15.4724 12.1801 14.8112 13.5161 13.7092L17.572 17.7683C18.0455 18.2018 18.4896 17.9226 18.6438 17.7683C18.9521 17.4634 18.9521 17.0042 18.6438 16.6993ZM2.38356 7.73621C2.38356 4.29789 5.16945 1.50977 8.60502 1.50977C12.0406 1.50977 14.8301 4.29789 14.8301 7.73621C14.8301 11.1745 12.0442 13.9626 8.60869 13.9626C5.17312 13.9626 2.38356 11.1745 2.38356 7.73621Z" fill="#008A91" />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <div>view</div>
                                                                 </div>
-                                                                <div>view</div>
-                                                            </div>
-                                                        </button>
-                                                    )}
+                                                            </button>
+                                                        )}
 
 
 
-                                                    {app.admissionStatus === "09 - ยกเลิกการสมัคร" && (
-                                                        <button className="bg-red px-1 py-1 my-2 rounded-lg border border-red-500 text-red-500 text-[14px] font-bold w-[130px]">
-                                                            <div className="flex flex-row gap-1">
-                                                                <div className="pt-1">
-                                                                    <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M5.02655 0.00736992C2.26224 -0.00847055 0.0160495 2.21504 0.0094537 4.97341C0.00286904 7.73769 2.23391 9.99135 4.9923 10.0072C7.7566 10.023 10.0028 7.79951 10.0094 5.04114C10.0219 2.27687 7.78494 0.0232018 5.02655 0.00736992ZM4.95821 1.35397C5.20038 1.35433 5.40137 1.44322 5.56708 1.61475C5.73869 1.78039 5.82177 1.98724 5.82223 2.22941C5.82269 2.47158 5.74037 2.67228 5.56941 2.84333C5.40434 3.00847 5.19776 3.09086 4.9615 3.09052C4.71342 3.09015 4.51244 3.00717 4.34084 2.84154C4.17514 2.67591 4.08615 2.46905 4.08569 2.22688C4.08522 1.9788 4.17344 1.7781 4.34442 1.61297C4.50948 1.44192 4.71604 1.35362 4.95821 1.35397ZM3.55078 3.59052L5.84843 3.59387L5.85653 7.87616L6.5476 7.87717L6.54864 8.42648L3.55991 8.42213L3.55888 7.87281L4.24404 7.87381L4.23698 4.14083L3.55181 4.13984L3.55078 3.59052Z" fill="#D92D20" />
-                                                                    </svg>
+                                                        {app.admissionStatus === "09 - ยกเลิกการสมัคร" && (
+                                                            <button className="bg-red px-1 py-1 my-2 rounded-lg border border-red-500 text-red-500 text-[14px] font-bold w-[130px]">
+                                                                <div className="flex flex-row gap-1">
+                                                                    <div className="pt-1">
+                                                                        <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                            <path d="M5.02655 0.00736992C2.26224 -0.00847055 0.0160495 2.21504 0.0094537 4.97341C0.00286904 7.73769 2.23391 9.99135 4.9923 10.0072C7.7566 10.023 10.0028 7.79951 10.0094 5.04114C10.0219 2.27687 7.78494 0.0232018 5.02655 0.00736992ZM4.95821 1.35397C5.20038 1.35433 5.40137 1.44322 5.56708 1.61475C5.73869 1.78039 5.82177 1.98724 5.82223 2.22941C5.82269 2.47158 5.74037 2.67228 5.56941 2.84333C5.40434 3.00847 5.19776 3.09086 4.9615 3.09052C4.71342 3.09015 4.51244 3.00717 4.34084 2.84154C4.17514 2.67591 4.08615 2.46905 4.08569 2.22688C4.08522 1.9788 4.17344 1.7781 4.34442 1.61297C4.50948 1.44192 4.71604 1.35362 4.95821 1.35397ZM3.55078 3.59052L5.84843 3.59387L5.85653 7.87616L6.5476 7.87717L6.54864 8.42648L3.55991 8.42213L3.55888 7.87281L4.24404 7.87381L4.23698 4.14083L3.55181 4.13984L3.55078 3.59052Z" fill="#D92D20" />
+                                                                        </svg>
+                                                                    </div>
                                                                 </div>
-                                                                <div>เหตุผลการยกเลิก</div>
-                                                            </div>
-                                                        </button>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                            </button>
+
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
 
                                     </tbody>
                                 </table>
