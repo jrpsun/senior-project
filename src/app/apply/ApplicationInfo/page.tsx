@@ -15,12 +15,15 @@ import { TokenApplicantPayload } from "@components/types/token";
 import { jwtDecode } from "jwt-decode";
 import { authFetch } from "@components/lib/auth";
 import { SaveStatusModal } from "@components/components/SaveApplicantInfo";
+import { useSearchParams } from "next/navigation";
 
 
 const ApplicationInfo = () => {
+  const searchParams = useSearchParams();
   const { language } = useLanguage();
   const [showModal, setShowModal] = useState(false);
   const [appId, setAppId] = useState("");
+  const admissionId = searchParams.get("id")
   const [selected, setSelected] = useState(0);
   const [isPopupOpen, setPopupOpen] = useState(false);
   const currentTexts = generalInfoTexts[language as keyof typeof generalInfoTexts] || generalInfoTexts["ENG"];
@@ -81,12 +84,12 @@ const ApplicationInfo = () => {
   };
   
   const contents = [
-    <GeneralInformation key="general" onUpdate={handleGeneralInfoUpdate} appId={appId}/>,
-    <EducationInformation key="education" onUpdate={handleEducationUpdate} appId={appId}/>,
-    <Award key="award" setAward={setEditedAwardData} setTalent={setEditedTalentData} appId={appId}/>,
-    <Training key="training" setTrain={setEditedTrainData} appId={appId}/>,
-    <AdditionalDocuments key="documents" setDoc={setEditedDocData} appId={appId}/>,
-    <Summary key="summary" onOpenPopup={handleOpenPopup} appId={appId}/>,
+    <GeneralInformation key="general" onUpdate={handleGeneralInfoUpdate} appId={appId} admId={admissionId}/>,
+    <EducationInformation key="education" onUpdate={handleEducationUpdate} appId={appId} admId={admissionId}/>,
+    <Award key="award" setAward={setEditedAwardData} setTalent={setEditedTalentData} appId={appId} admId={admissionId}/>,
+    <Training key="training" setTrain={setEditedTrainData} appId={appId} admId={admissionId}/>,
+    <AdditionalDocuments key="documents" setDoc={setEditedDocData} appId={appId} admId={admissionId}/>,
+    <Summary key="summary" onOpenPopup={handleOpenPopup} appId={appId} admId={admissionId}/>,
   ];
 
   const handleSave = async () => {
@@ -122,14 +125,15 @@ const ApplicationInfo = () => {
   }
 
   const updatedGeneralInfo = async() => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/general/${appId}`, {
+    console.log("admissionId", admissionId)
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/general/${appId}/${admissionId}`, {
       method: 'PUT',
       body: JSON.stringify(editedGeneralData.generalInfo),
     });
   }
 
   const updatedEducationInfo = async() => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/education/${appId}`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/education/${appId}/${admissionId}`, {
       method: 'PUT',
       body: JSON.stringify(editedEducationData.education),
     });
@@ -157,14 +161,14 @@ const ApplicationInfo = () => {
   }
 
   const updatedDocument = async() => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/document/${appId}`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/document/${appId}/${admissionId}`, {
       method: 'PUT',
       body: JSON.stringify(editedDocData),
     });
   }
 
   const submitForm = async() => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/submit/${appId}`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/submit/${appId}/${admissionId}`, {
       method: 'PUT',
     });
   }

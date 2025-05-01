@@ -13,7 +13,7 @@ import { TalentResponse } from '@components/types/TalentTypes';
 import { authFetch } from '@components/lib/auth';
 import { OCRLoadingModal } from './OCRLoading';
 
-const Talent = ({ setTalent, appId }: any) => {
+const Talent = ({ setTalent, appId, admId }: any) => {
   const { language } = useLanguage();
   const currentTexts = talentTexts[language] || talentTexts["ENG"];
   const currentTalentOptions = talentTypeOptions[language] || talentTypeOptions["ENG"];
@@ -23,6 +23,7 @@ const Talent = ({ setTalent, appId }: any) => {
   const [formData, setFormData] = useState([{
     talentId: "",
     applicantId: "",
+    programRegistered: "",
     kindOfTalent: "",
     nameOfCompetition: "",
     talentYear: "",
@@ -47,7 +48,7 @@ const Talent = ({ setTalent, appId }: any) => {
   }
 
   const fetchTalent = async() => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/talent/${appId}`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/talent/${appId}/${admId}`, {
       method: 'GET',
     });
 
@@ -58,6 +59,7 @@ const Talent = ({ setTalent, appId }: any) => {
       setFormData([{
         talentId: generateLongId(),
         applicantId: appId,
+        programRegistered: admId,
         kindOfTalent: "",
         nameOfCompetition: "",
         talentYear: "",
@@ -74,10 +76,10 @@ const Talent = ({ setTalent, appId }: any) => {
   }
 
   useEffect(() => {
-    if (appId) {
+    if (appId && admId) {
       fetchTalent();
     }
-  },[appId])
+  },[appId, admId])
 
 
   // Function to add a new container
@@ -86,6 +88,7 @@ const Talent = ({ setTalent, appId }: any) => {
     setFormData([...formData, {
       talentId: id,
       applicantId: appId,
+      programRegistered: admId,
       kindOfTalent: "",
       nameOfCompetition: "",
       talentYear: "",

@@ -17,9 +17,10 @@ interface ContactSummaryProps {
   isVisible: boolean;
   setIsVisible: (value: boolean) => void;
   setReport: any;
+  email?: string;
 }
 
-const ContactSummary: React.FC<ContactSummaryProps> = ({ props, isVisible, setIsVisible, setReport }) => {
+const ContactSummary: React.FC<ContactSummaryProps> = ({ props, isVisible, setIsVisible, setReport, email }) => {
   const { language } = useLanguage();
   const texts = generalInfoTexts[language] ?? generalInfoTexts["ENG"];
 
@@ -44,7 +45,7 @@ const ContactSummary: React.FC<ContactSummaryProps> = ({ props, isVisible, setIs
             {/* อีเมล */}
             <div>
               <p className="text-[#565656] font-bold">{texts.email}</p>
-              <p className="text-[#565656] text-left pl-6">{props?.applicantEmail}</p>
+              <p className="text-[#565656] text-left pl-6">{email}</p>
             </div>
           </div>
 

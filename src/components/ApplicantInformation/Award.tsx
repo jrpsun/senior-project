@@ -15,7 +15,7 @@ import { authFetch } from '@components/lib/auth';
 import { OCRLoadingModal } from '../OCRLoading';
 //import Alert from '../../components/common/alert';
 
-const Award = ({ setAward, setTalent, appId }: any) => {
+const Award = ({ setAward, setTalent, appId, admId }: any) => {
   const { language } = useLanguage();
   const currentTexts = awardTexts[language] || awardTexts["ENG"];
   const [isPopupOpen, setPopupOpen] = useState(false);
@@ -23,6 +23,7 @@ const Award = ({ setAward, setTalent, appId }: any) => {
   const [formData, setFormData] = useState([{
       rewardId: "",
       applicantId: "",
+      programRegistered:"",
       nameOfCompetition: "",
       rewardYear: "",
       rewardLevel: "",
@@ -42,17 +43,13 @@ const Award = ({ setAward, setTalent, appId }: any) => {
   }
 
   useEffect(() => {
-    if (appId) {
+    if (appId && admId) {
       fetchAward();
     }
-  },[appId])
-
-  useEffect(() => {
-    console.log("Updated formData:", formData);
-  }, [formData]); 
+  },[appId, admId])
 
   const fetchAward = async () => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/reward/${appId}`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/reward/${appId}/${admId}`, {
       method: 'GET',
     });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -62,6 +59,7 @@ const Award = ({ setAward, setTalent, appId }: any) => {
       setFormData([{
         rewardId: generateLongId(),
         applicantId: appId,
+        programRegistered: admId,
         nameOfCompetition: "",
         rewardYear: "",
         rewardLevel: "",
@@ -75,6 +73,7 @@ const Award = ({ setAward, setTalent, appId }: any) => {
         const mappedData = data.map(item => ({
         rewardId: item.rewardId ?? "",
         applicantId: item.applicantId ?? "",
+        programRegistered: item.programRegistered ?? "",
         nameOfCompetition: item.nameOfCompetition ?? "",
         rewardYear: item.rewardYear ?? "",
         rewardLevel: item.rewardLevel ?? "",
@@ -94,6 +93,7 @@ const Award = ({ setAward, setTalent, appId }: any) => {
     setFormData([...formData, {
       rewardId: id,
       applicantId: appId,
+      programRegistered: admId,
       nameOfCompetition: "",
       rewardYear: "",
       rewardLevel: "",
@@ -351,7 +351,9 @@ const Award = ({ setAward, setTalent, appId }: any) => {
         </button>
       </div>
 
-      <div><Talent setTalent={setTalent} appId={appId}/></div>
+      <div>
+        <Talent setTalent={setTalent} appId={appId} admId={admId}/>
+      </div>
 
       <Popup
         type="deleteConfirmation"

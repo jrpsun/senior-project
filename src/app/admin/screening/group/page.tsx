@@ -85,8 +85,6 @@ const Page = () => {
     const applicantCommitteePairs = createApplicantCommitteePairs(selectedApplicantIds, selectedCommittees);
     const editApplicantCommitteePairs = createApplicantCommitteePairs(editSelectedApplicantIds, editSelectedCommittees);
 
-    console.log("Applicant-Committee Pairs:", applicantCommitteePairs);
-    console.log("Edit Applicant-Committee Pairs:", editApplicantCommitteePairs);
 
     const sendPairsToBackend = async (pairs: { app_id: string; com_id: string }[]) => {
         try {
@@ -109,11 +107,6 @@ const Page = () => {
             alert('An error occurred while updating data');
         }
     };
-
-    console.log("Selected Committees:", selectedCommittees);
-    console.log("Selected Applicant IDs:", selectedApplicantIds);
-    console.log("Selected edit applicant:", editSelectedApplicantIds);
-    console.log("Selected edit committees:", editSelectedCommittees);
 
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -622,14 +615,14 @@ const Page = () => {
 
                                             <td className="text-center whitespace-nowrap">{startIndex + index + 1}</td>
                                             <td className="text-center whitespace-nowrap">{app.roundName}</td>
-                                            <td className="text-center whitespace-nowrap">{app.applicantId}</td>
+                                            <td className="text-center whitespace-nowrap">{app.applicantNumber}</td>
                                             <td className="whitespace-nowrap">{app.firstnameEN} {app.lastnameEN}</td>
                                             <td className="text-center whitespace-nowrap">{app.program}</td>
                                             <td>
                                                 <div className={`mr-4 whitespace-nowrap
-            ${app.admissionStatus === "02 - ยื่นใบสมัครแล้ว" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : ""}
-            ${app.admissionStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
-          `}>
+                                                    ${app.admissionStatus === "02 - ยื่นใบสมัครแล้ว" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : ""}
+                                                    ${app.admissionStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
+                                                `}>
                                                     {app.admissionStatus}
                                                 </div>
                                             </td>
@@ -640,18 +633,18 @@ const Page = () => {
                                                     <div >ไม่ต้องดำเนินการต่อ</div>
                                                 ) : (
                                                     <div className={`mr-4 whitespace-nowrap
-      ${app.docStatus === "02 - รอตรวจสอบเอกสาร" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
-      ${app.docStatus === "03 - เอกสารครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
-      ${app.docStatus === "04-เอกสารไม่ครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600" : ""}
-    `}>
+                                                        ${app.docStatus === "02 - รอตรวจสอบเอกสาร" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
+                                                        ${app.docStatus === "03 - เอกสารครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
+                                                        ${app.docStatus === "04-เอกสารไม่ครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600" : ""}
+                                                        `}>
                                                         {app.docStatus}
                                                     </div>
                                                 )}
                                             </td>
                                             <td>
                                                 <div className={`mr-4 whitespace-nowrap
-            ${app.paymentStatus === "03 - ชำระเงินเรียบร้อย" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
-          `}>
+                                                    ${app.paymentStatus === "03 - ชำระเงินเรียบร้อย" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
+                                                `}>
                                                     {app.paymentStatus}
                                                 </div>
                                             </td>

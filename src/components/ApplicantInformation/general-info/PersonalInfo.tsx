@@ -14,7 +14,7 @@ import FileUpload from "../../form/FileUpload";
 import { generalInfoTexts, genderOptions } from "../../../translation/generalInfo";
 import { validateThaiCharacters, preventThaiInput, validateEnglishCharacters, preventEnglishInput, allowHouseNumber, allowOnlyNumbers, preventNonHouseNumberInput, preventNonNumericInput } from "../../../utils/validation";
 import DateInput from "../../common/date";
-import { GeneralInfoInterface } from "@components/types/generalInfoType";
+import { ApplicantRegistrationsInfoResponse, GeneralInfoInterface } from "@components/types/generalInfoType";
 
 
 const fetchData = async (url: string, isLocal: boolean = false) => {
@@ -56,10 +56,11 @@ const sortByLanguage = (data: CountryOrNationality[], lang: string, type: "count
 
 interface PersonalInfoProps {
   data: GeneralInfoInterface;
+  regisData: ApplicantRegistrationsInfoResponse;
   onChange: (data: any) => void;
 }
 
-const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
+const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, regisData, onChange }) => {
   const { language } = useLanguage();
   const currentTexts = generalInfoTexts[language as keyof typeof generalInfoTexts] || generalInfoTexts["ENG"];
   const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
@@ -146,7 +147,8 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
 
   // โหลดข้อมูลจังหวัด อำเภอ ตำบล และประเทศ/สัญชาติ
   useEffect(() => {
-    if (data) {
+    if ((data) && (regisData)) {
+      console.log("regisData", regisData)
       console.log("data", data)
       const subDistrictData = subDistricts.find((s) => s.label === data?.subDistrict);
       const subDistrictValue = subDistrictData ? subDistrictData.value : "";
@@ -170,21 +172,21 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
       }
 
       setFormData({
-        postalCode: data?.nationality || "",
+        postalCode: data?.postalCode || "",
         profileImageUrl: data.profileImageUrl ? data.profileImageUrl : "",
-        title: data?.prefix || "",
-        firstnameTH: data?.firstnameTH || "",
+        title: regisData?.prefix || "",
+        firstnameTH: regisData?.firstnameTH || "",
         middlenameTH: data?.middlenameTH || "",
-        lastnameTH: data?.lastnameTH || "",
-        firstnameEN: data?.firstnameEN || "",
+        lastnameTH: regisData?.lastnameTH || "",
+        firstnameEN: regisData?.firstnameEN || "",
         middlenameEN: data?.middlenameEN || "",
-        lastnameEN: data?.lastnameEN || "",
+        lastnameEN: regisData?.lastnameEN || "",
         nicknameTH: data?.nicknameTH || "",
         nicknameEN: data?.nicknameEN || "",
-        nationality: data?.nationality || "", //
-        idCardNumber: data?.idCardNumber || "", //
+        nationality: regisData?.nationality || "", //
+        idCardNumber: regisData?.idCardNumber || "", //
         idCardExpiry: data?.idCardExpDate || "",
-        passportId: data?.passportId || "",
+        passportId: regisData?.passportId || "",
         passportExpDate: data?.passportExpDate || "",
         birthDate: data?.birthDate || "",
         age:"",
@@ -275,7 +277,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, onChange }) => {
     };
 
     loadData();
-  }, [language, data]);
+  }, [language, data, regisData]);
 
   const handleAddressChange = () => {
     const addressData = {

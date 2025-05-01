@@ -43,24 +43,24 @@ const Page = () => {
     }, []);
 
 
-    async function fetchAllApplicants() {
-        const res = await fetch(`${process.env.API_BASE_URL}/education-department/all-applicant-edu`);
-        if (!res.ok) {
-            throw new Error("Failed to fetch applicants");
+    const fetchAllApplicants = async () => {
+        try {
+            const res = await fetch(`${process.env.API_BASE_URL}/education-department/all-applicant-edu`);
+            if (!res.ok) {
+                throw new Error("Failed to fetch applicants");
+            }
+            const data = await res.json();
+            console.log("data", data)
+            setApplicants(data || []);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
         }
-        return res.json();
     }
 
     useEffect(() => {
-        fetchAllApplicants()
-            .then((data) => {
-                console.log("Fetched data:", data);
-                setApplicants(data.applicants || []);
-            })
-            .catch((err) => {
-                console.error(err);
-            })
-            .finally(() => setLoading(false));
+        fetchAllApplicants();
     }, []);
 
 
@@ -166,8 +166,8 @@ const Page = () => {
     };
 
     
-    const handleClickView = ( appId: string ) => {
-        router.push(`/admin/applicant/view?id=${appId}`);
+    const handleClickView = ( appId: string, admId: string ) => {
+        router.push(`/admin/applicant/view?id=${appId}&admId=${admId}`);
     }
 
     return (
@@ -477,9 +477,9 @@ const Page = () => {
                                                 <tr
                                                     key={index}
                                                     className={`text-[#565656] h-[50px] items-center 
-          ${app.admissionStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
-          ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
-        `}
+                                                    ${app.admissionStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
+                                                    ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
+                                                    `}
                                                 >
                                                     <td className="text-center">
                                                         {showCheckboxes ? (
@@ -489,29 +489,29 @@ const Page = () => {
                                                                 onChange={() => handleCheckboxChange(app.applicantId)}
                                                                 disabled={!isSelectable}
                                                                 className={`w-5 h-5 rounded border-2 
-                ${isSelectable ? "accent-[#008A90]" : "border-gray-300 bg-white cursor-not-allowed"}
-              `}
+                                                                    ${isSelectable ? "accent-[#008A90]" : "border-gray-300 bg-white cursor-not-allowed"}
+                                                                `}
                                                             />
                                                         ) : null}
                                                     </td>
 
                                                     <td className="text-center whitespace-nowrap">{startIndex + index + 1}</td>
                                                     <td className="text-center whitespace-nowrap">{app.roundName}</td>
-                                                    <td className="text-center whitespace-nowrap">{app.applicantId}</td>
+                                                    <td className="text-center whitespace-nowrap">{app.applicantNumber}</td>
                                                     <td className="whitespace-nowrap">{app.firstnameEN} {app.lastnameEN}</td>
                                                     <td className="text-center whitespace-nowrap">{app.program}</td>
 
                                                     <td>
                                                         <div className={`mr-4 whitespace-nowrap
-            ${app.admissionStatus === "02 - ยื่นใบสมัครแล้ว" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-            ${app.admissionStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : "py-2"}
-            ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-            ${app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600 " : "py-2"}
-            ${app.admissionStatus === "06 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520] " : "py-2"}
-            ${app.admissionStatus === "07 - ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
-            ${app.admissionStatus === "08 - ไม่ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600 " : "py-2"}
-            ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "h-[30px] pt-[2px] rounded-xl text-red-600 " : "py-2"}
-          `}>
+                                                            ${app.admissionStatus === "02 - ยื่นใบสมัครแล้ว" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+                                                            ${app.admissionStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : "py-2"}
+                                                            ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+                                                            ${app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600 " : "py-2"}
+                                                            ${app.admissionStatus === "06 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520] " : "py-2"}
+                                                            ${app.admissionStatus === "07 - ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : "py-2"}
+                                                            ${app.admissionStatus === "08 - ไม่ผ่านการสอบสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600 " : "py-2"}
+                                                            ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "h-[30px] pt-[2px] rounded-xl text-red-600 " : "py-2"}
+                                                        `}>
                                                             {app.admissionStatus}
                                                         </div>
                                                     </td>
@@ -521,10 +521,10 @@ const Page = () => {
                                                             <div>ไม่ต้องดำเนินการต่อ</div>
                                                         ) : (
                                                             <div className={`mr-4 whitespace-nowrap
-              ${app.docStatus === "02 - รอตรวจสอบเอกสาร" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
-              ${app.docStatus === "03 - เอกสารครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
-              ${app.docStatus === "04-เอกสารไม่ครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600" : ""}
-            `}>
+                                                                ${app.docStatus === "02 - รอตรวจสอบเอกสาร" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
+                                                                ${app.docStatus === "03 - เอกสารครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
+                                                                ${app.docStatus === "04-เอกสารไม่ครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600" : ""}
+                                                                `}>
                                                                 {app.docStatus}
                                                             </div>
                                                         )}
@@ -535,10 +535,10 @@ const Page = () => {
                                                             <div>ยกเลิกการชำระเงิน</div>
                                                         ) : (
                                                             <div className={`mr-4 whitespace-nowrap
-              ${app.paymentStatus === "02 - รอตรวจสอบการชำระเงิน" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
-              ${app.paymentStatus === "03 - ชำระเงินเรียบร้อย" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
-              ${app.paymentStatus === "04 - ชำระเงินไม่สำเร็จ" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600" : ""}
-            `}>
+                                                                ${app.paymentStatus === "02 - รอตรวจสอบการชำระเงิน" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
+                                                                ${app.paymentStatus === "03 - ชำระเงินเรียบร้อย" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
+                                                                ${app.paymentStatus === "04 - ชำระเงินไม่สำเร็จ" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600" : ""}
+                                                                `}>
                                                                 {app.paymentStatus}
                                                             </div>
                                                         )}
@@ -578,7 +578,7 @@ const Page = () => {
                                                         )} */}
                                                         {app.admissionStatus !== "01 - ยังไม่ยื่นใบสมัคร" && (
                                                             <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] "
-                                                            onClick={() => handleClickView(app.applicantId || "")}>
+                                                            onClick={() => handleClickView(app.applicantId || "", app.admissionId || "")}>
                                                                 <div className="flex flex-row gap-1">
                                                                     <div className="pt-1">
                                                                         <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">

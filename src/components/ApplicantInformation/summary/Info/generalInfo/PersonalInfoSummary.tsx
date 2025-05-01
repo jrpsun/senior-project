@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useLanguage } from "../../../../../hooks/LanguageContext"; // Import Hook สำหรับการเลือกภาษา
 import { generalInfoTexts } from "../../../../../translation/generalInfo";
-import { GeneralInfoInterface } from "@components/types/generalInfoType";
+import { ApplicantRegistrationsInfoResponse, GeneralInfoInterface } from "@components/types/generalInfoType";
 import ReportProb from "@components/components/common/admin/reportProb";
 
 /*interface PersonalInfoProps {
@@ -49,10 +49,11 @@ interface PersonalInfoProps {
     props: GeneralInfoInterface;
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
-    setReport: any
+    setReport: any;
+    regisData: ApplicantRegistrationsInfoResponse;
 }
 
-const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, setIsVisible, setReport }) => {
+const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, setIsVisible, setReport, regisData }) => {
     const { language } = useLanguage(); // ดึงภาษาปัจจุบันจาก Context
     const texts = generalInfoTexts[language] ?? generalInfoTexts["ENG"];
 
@@ -72,12 +73,12 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                         {/* ข้อมูลส่วนตัว */}
                         <div className="mb-4">
                             <p className="text-[#565656] font-bold">{texts.title}</p>
-                            <p className="text-[#565656] text-left pl-6">{props?.prefix}</p>
+                            <p className="text-[#565656] text-left pl-6">{regisData?.prefix}</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-1">
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.firstName}</p>
-                                <p className="text-[#565656] text-left pl-6">{props?.firstnameTH}</p>
+                                <p className="text-[#565656] text-left pl-6">{regisData?.firstnameTH}</p>
                             </div>
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.middleName}</p>
@@ -85,7 +86,7 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                             </div>
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.lastName}</p>
-                                <p className="text-[#565656] text-left pl-6">{props?.lastnameTH}</p>
+                                <p className="text-[#565656] text-left pl-6">{regisData?.lastnameTH}</p>
                             </div>
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.nickname}</p>
@@ -94,7 +95,7 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
 
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.firstNameEng}</p>
-                                <p className="text-[#565656] text-left pl-6">{props?.firstnameEN}</p>
+                                <p className="text-[#565656] text-left pl-6">{regisData?.firstnameEN}</p>
                             </div>
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.middleNameEng}</p>
@@ -102,7 +103,7 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                             </div>
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.lastNameEng}</p>
-                                <p className="text-[#565656] text-left pl-6">{props?.lastnameEN}</p>
+                                <p className="text-[#565656] text-left pl-6">{regisData?.lastnameEN}</p>
                             </div>
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.nicknameEng}</p>
@@ -111,7 +112,7 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                         </div>
                         <div className="mb-4">
                             <p className="text-[#565656] font-bold">{texts.nationality}</p>
-                            <p className="text-[#565656] text-left pl-6">{props?.nationality}</p>
+                            <p className="text-[#565656] text-left pl-6">{regisData?.nationality}</p>
                         </div>
 
                         {/*สำเนาบัตรประชาชน */}
@@ -138,7 +139,7 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                             </div>
                         )}
                         {/* กรณีเป็นชาวต่างชาติ แสดงสำเนาพาสปอร์ต */}
-                        {props?.nationality !== "Thai" && props?.docCopyPassportName && (
+                        {regisData?.nationality !== "Thai" && props?.docCopyPassportName && (
                             <div className="mb-4">
                                 <div className="flex flex-cols gap-2">
                                     <h3 className="text-[#565656] font-semibold">{texts.uploadPassport}</h3>
@@ -161,7 +162,7 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
 
                         {/* ข้อมูลบัตรประชาชน หรือ พาสปอร์ต */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-1 mt-6">
-                            {props?.nationality === "ไทย" || props?.nationality === "Thai" ? (
+                            {regisData?.nationality === "ไทย" || regisData?.nationality === "Thai" ? (
                                 <>
                                     {/* กรณีเป็นคนไทย แสดงเลขบัตรประชาชน */}
                                     <div>
@@ -169,7 +170,7 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                                             <p className="text-[#565656] font-bold">{texts.idCardNumber}</p>
                                             <ReportProb isVisible={isVisible} problem={texts.idCardNumber} setReport={setReport} reportColumn={"idCardNumber"}/>
                                         </div>
-                                        <p className="text-[#565656] text-left pl-6">{props?.idCardNumber || "-"}</p>
+                                        <p className="text-[#565656] text-left pl-6">{regisData?.idCardNumber || "-"}</p>
                                     </div>
                                     <div>
                                         <div className="flex flex-cols gap-2">
@@ -187,7 +188,7 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                                             <p className="text-[#565656] font-bold">{texts.passportNumber}</p>
                                             <ReportProb isVisible={isVisible} problem={texts.passportNumber} setReport={setReport} reportColumn={"passportNumber"}/>
                                         </div>
-                                        <p className="text-[#565656] text-left pl-6">{props?.passportId || "-"}</p>
+                                        <p className="text-[#565656] text-left pl-6">{regisData?.passportId || "-"}</p>
                                     </div>
                                     <div>
                                         <div className="flex flex-cols gap-2">

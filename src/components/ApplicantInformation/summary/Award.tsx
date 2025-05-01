@@ -56,13 +56,14 @@ import { authFetch } from "@components/lib/auth";
 //     },
 //   ];
 
-const AwardPage = ({appId}: any) => {
+const AwardPage = ({appId, admId}: any) => {
   const { language } = useLanguage();
   const texts = summaryTexts[language] || summaryTexts["ENG"];
   const [isVisible, setIsVisible] = useState(false)
   const [awardsData, setAwardsData] = useState([{
       rewardId: "",
       applicantId: "",
+      programRegistered: "",
       nameOfCompetition: "",
       rewardYear: "",
       rewardLevel: "",
@@ -75,6 +76,7 @@ const AwardPage = ({appId}: any) => {
   const [talentsData, setTalentsData] = useState([{
       talentId: "",
       applicantId: "",
+      programRegistered: "",
       kindOfTalent: "",
       nameOfCompetition: "",
       talentYear: "",
@@ -87,7 +89,7 @@ const AwardPage = ({appId}: any) => {
     }])
 
   const fetchAward = async () => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/reward/${appId}`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/reward/${appId}/${admId}`, {
         method: 'GET',
     });
 
@@ -98,7 +100,7 @@ const AwardPage = ({appId}: any) => {
   }
 
   const fetchTalent = async() => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/talent/${appId}`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/talent/${appId}/${admId}`, {
       method: 'GET',
     });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -108,11 +110,11 @@ const AwardPage = ({appId}: any) => {
   }
 
   useEffect(() => {
-    if (appId) {
+    if (appId && admId) {
       fetchAward();
       fetchTalent();
     }
-  },[appId])
+  },[appId, admId])
 
   const hasAwards = awardsData.length > 0;
   const hasTalents = talentsData.length > 0;
@@ -136,11 +138,13 @@ const AwardPage = ({appId}: any) => {
             awards={awardsData}
             isVisible={isVisible}
             setIsVisible={setIsVisible}
+            setReport={null}
           />
           <TalentSummary
             talents={talentsData}
             isVisible={isVisible}
             setIsVisible={setIsVisible}
+            setReport={null}
           />
         </>
       )}

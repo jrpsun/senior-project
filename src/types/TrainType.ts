@@ -1,6 +1,7 @@
 export interface TrainingResponse {
     trainingId?: string;
     applicantId?: string;
+    programRegistered?: string;
     nameOfCourse?: string;
     institution?: string;
     trainingYear?: string;

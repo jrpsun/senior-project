@@ -1,6 +1,7 @@
 export interface AwardResponse {
     rewardId?: string;
     applicantId?: string;
+    programRegistered?: string;
     nameOfCompetition?: string;
     rewardYear?: string;
     rewardLevel?: string;

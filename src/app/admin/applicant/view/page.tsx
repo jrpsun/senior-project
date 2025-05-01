@@ -15,7 +15,7 @@ import TalentSummary from '@components/components/ApplicantInformation/summary/I
 import TrainingSummary from '@components/components/ApplicantInformation/summary/Info/trainingSummary';
 import AdditionalDocumentsSummary from '@components/components/ApplicantInformation/summary/Info/additionalSummary';
 import ViewInfoAdmin from '@components/components/common/admin/viewInfoAdmin';
-import { ApplicantGeneralInformationResponse, GeneralInfoInterface, ContactInfoInterface, EmergencyContactInterface } from '@components/types/generalInfoType';
+import { ApplicantGeneralInformationResponse, GeneralInfoInterface, ContactInfoInterface, EmergencyContactInterface, ApplicantRegistrationsInfoResponse } from '@components/types/generalInfoType';
 import PreliminaryEvaSummary from '@components/components/ApplicantInformation/summary/Info/preEvaSummary';
 import AdminNavbar from '@components/components/adminNavbar';
 import { Inter } from 'next/font/google';
@@ -35,99 +35,11 @@ import { summaryTexts } from '@components/translation/summary';
 import { TokenAdminPayload } from '@components/types/token';
 import { jwtDecode } from 'jwt-decode';
 import Modal from '@components/components/common/popup-login';
-import { getDecodedToken } from '@components/lib/auth';
-
-// const awardsData = [
-//     {
-//         competitionName: "ACM-ICPC Thailand National Contest",
-//         competitionYear: "2024",
-//         competitionLevel: "ระดับประเทศ",
-//         awardsReceived: "รางวัลรองชนะเลิศอันดับ 1",
-//         projectWorks: "Algorithm Optimization for Data Analysis",
-//         document: "/documents/ACM-ICPC_Certificate.pdf",
-//         documentSize: "840 KB",
-//     },
-//     {
-//         competitionName: "Hackathon Asia",
-//         competitionYear: "2023",
-//         competitionLevel: "ระดับนานาชาติ",
-//         awardsReceived: "รางวัลชนะเลิศ",
-//         projectWorks: "AI-Driven Data Visualization Tools",
-//         document: "/documents/Hackaton_Asia_Certificate.pdf",
-//         documentSize: "840 KB",
-//     },
-//     {
-//         competitionName: "Web Design Challenge",
-//         competitionYear: "2023",
-//         competitionLevel: "ระดับภูมิภาค",
-//         awardsReceived: "รางวัลรองชนะเลิศอันดับ 2",
-//         projectWorks: "Web Application for Community Engagement",
-//         document: "/documents/Web_Design_Certificate.pdf",
-//         documentSize: "840 KB",
-//     },
-// ];
-// const talentData = [
-//     {
-//         talentType: "ความสามารถด้านกีฬา",
-//         talentYear: "2023",
-//         talentActivity: "การแข่งขันฟุตบอลระดับจังหวัดนครปฐม",
-//         talentAward: "รางวัลรองชนะเลิศอันดับ 1",
-//         talentURL: "https://drive.google.com/file/d/xyz123",
-//         document: "/documents/Football_Competition_Cert.pdf",
-//         documentSize: "840 KB",
-//     },
-//     {
-//         talentType: "ความสามารถด้านผู้นำและจิตอาสา",
-//         talentYear: "2023",
-//         talentActivity: 'โครงการจิตอาสา "สร้างชุมชนสีเขียว"',
-//         talentAward: "-",
-//         talentURL: "-",
-//         document: "/documents/GreenLeader_Certificate.pdf",
-//         documentSize: "840 KB",
-//     },
-// ];
-// const trainingsData = [
-//     {
-//         programName: "Data Science Bootcamp",
-//         institution: "Udemy",
-//         trainingYear: "2024",
-//         trainingMode: "ออนไลน์(Online)",
-//         country: "-",
-//         document: "/documents/DataScience_Bootcamp_Certificate.pdf",
-//         documentSize: "846 KB",
-//     },
-//     {
-//         programName: "Cybersecurity Fundamentals",
-//         institution: "จุฬาลงกรณ์มหาวิทยาลัย",
-//         trainingYear: "2023",
-//         trainingMode: "สถานที่จริง (On-Site)",
-//         country: "ไทย",
-//         document: "/documents/Cybersecurity_Certificate.pdf",
-//         documentSize: "920 KB",
-//     },
-//     {
-//         programName: "AI & Machine Learning Workshop",
-//         institution: "มหาวิทยาลัยเกษตรศาสตร์",
-//         trainingYear: "2022",
-//         trainingMode: "สถานที่จริง (On-Site)",
-//         country: "ไทย",
-//         document: "/documents/AI_ML_Workshop_Certificate.pdf",
-//         documentSize: "780 KB",
-//     },
-// ];
-// const additionalDocumentsData = {
-//     statementOfPurpose: {
-//         name: "Statement_of_Purpose_Test_Raboobsamak.pdf",
-//         size: "1.1 MB",
-//         url: "/documents/Statement_of_Purpose_Test.pdf",
-//     },
-//     portfolio: {
-//         name: "Portfolio_Test_Raboobsamak.pdf",
-//         size: "3.8 MB",
-//         url: "/documents/Portfolio_Test.pdf",
-//     },
-//     videoLink: "https://drive.google.com/file/d/1aBeFgHiJkLmNoPqRStUvWxYz/view?usp=sharing",
-// };
+import { authFetch, getDecodedToken } from '@components/lib/auth';
+import { AwardResponse } from '@components/types/AwardType';
+import { TalentResponse } from '@components/types/TalentTypes';
+import { TrainingResponse } from '@components/types/TrainType';
+import { AdditionalDoc } from '@components/types/additionalDoc';
 
 
 const viewApplicantInfo = () => {
@@ -158,6 +70,7 @@ const viewApplicantInfo = () => {
     const titletexts = summaryTexts[language] || summaryTexts["ENG"];
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const appId = searchParams.get('id')
+    const admId = searchParams.get('admId')
 
 
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -176,58 +89,11 @@ const viewApplicantInfo = () => {
     const [appInfo, setAppInfo] = useState<EducantionApplicantView | null>(null);
     const [generalData, setGeneralData] = useState<ApplicantGeneralInformationResponse | null>(null);
     const [eduData, setEduData] = useState<ApplicantEducationResponse | null>(null);
-    const [awardsData, setAwardsData] = useState([{
-        rewardId: "",
-        applicantId: "",
-        nameOfCompetition: "",
-        rewardYear: "",
-        rewardLevel: "",
-        rewardAwards: "",
-        project: "",
-        rewardCer: "",
-        rewardCerName: "",
-        rewardCerSize: "",
-    }])
-    const [talentsData, setTalentsData] = useState([{
-        talentId: "",
-        applicantId: "",
-        kindOfTalent: "",
-        nameOfCompetition: "",
-        talentYear: "",
-        talentAwards: "",
-        url: "",
-        moreDetails: "",
-        talentCer: "",
-        talentCerName: "",
-        talentCerSize: "",
-    }])
-    const [trainData, setTrainData] = useState([{
-        trainingId: "",
-        applicantId: "",
-        nameOfCourse: "",
-        institution: "",
-        trainingYear: "",
-        trainingMode: "",
-        trainingCountry: "",
-        trainingCer: "",
-        trainingCerName: "",
-        trainingCerSize: "",
-    }])
-    const [addDoc, setAddDoc] = useState({
-        stateOfPurpose: "",
-        stateOfPurposeName: "",
-        stateOfPurposeSize: "",
-        portfolio: "",
-        portfolioName: "",
-        portfolioSize: "",
-        vdo: "",
-        applicantResume: "",
-        applicantResumeName: "",
-        applicantResumeSize: "",
-        additional: "",
-        additionalName: "",
-        additionalSize: "",
-    })
+    const [awardsData, setAwardsData] = useState<AwardResponse[]>([]);
+    const [talentsData, setTalentsData] = useState<TalentResponse[]>([]);
+    const [trainData, setTrainData] = useState<TrainingResponse[]>([]);
+    const [addDoc, setAddDoc] = useState<AdditionalDoc | null>(null);
+    const [regisData, setRegisData] = useState<ApplicantRegistrationsInfoResponse | null>(null);
 
     const PreEvaPathAllow = [
         "/admin/screening/tracking",
@@ -270,50 +136,36 @@ const viewApplicantInfo = () => {
     const [Qpath, setQpath] = useState('');
     const [name, setName] = useState('');
 
-    const fetchGeneralInfoData = async () => {
-        try {
-            const res = await fetch(`${process.env.API_BASE_URL}/applicant/general/${appId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
+    const fetchGeneralData = async () => {
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/general/${appId}/${admId}`, {
+            method: 'GET',
+        });
 
-            if (!res.ok) throw new Error("Failed to fetch data");
-
-            const result = await res.json();
-            const parsedData = {
-                ...result,
-                general_info: {
-                    ...result.general_info,
-                    birthDate: formatDate(result?.general_info?.birthDate),
-                    idCardExpDate: formatDate(result?.general_info?.idCardExpDate),
-                    passportExpDate: formatDate(result?.general_info?.passportExpDate),
-                },
-                admission_channel: {
-                  onlineChannel: JSON.parse(result?.admission_channel?.onlineChannel || "[]"),
-                  offlineChannel: JSON.parse(result?.admission_channel?.offlineChannel || "[]"),
-                },
-              };
-            
-            setGeneralData(parsedData);
-        } catch (error) {
-            console.error("Error fetching general information:", error);
-        }
+        if (!response.ok) throw new Error("Failed to fetch general data");
+        const result = await response.json();
+        const parsedData = {
+            ...result,
+            general_info: {
+                ...result.general_info,
+                birthDate: formatDate(result?.general_info?.birthDate),
+                idCardExpDate: formatDate(result?.general_info?.idCardExpDate),
+                passportExpDate: formatDate(result?.general_info?.passportExpDate),
+            },
+            admission_channel: {
+                onlineChannel: JSON.parse(result?.admission_channel?.onlineChannel || "[]"),
+                offlineChannel: JSON.parse(result?.admission_channel?.offlineChannel || "[]"),
+            },
+        };
+        setGeneralData(parsedData);
     }
 
     const fetchEducationData = async () => {
-        try {
-          const res = await fetch(`${process.env.API_BASE_URL}/applicant/education/${appId}`, {
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/education/${appId}/${admId}`, {
             method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          })
-          if (!res.ok) throw new Error("Failed to fetch education data");
-          
-          const result = await res.json();
-          const parsedData = {
+        });
+        if (!response.ok) throw new Error("Failed to fetch education data");
+        const result = await response.json();
+            const parsedData = {
             background: {
                 ...result.background,
                 graduateDate: formatDate(result?.background?.graduateDate),
@@ -326,100 +178,60 @@ const viewApplicantInfo = () => {
                 ...result.math_exam,
                 mathExamDate: formatDate(result?.math_exam?.mathExamDate),
             }
-          };
-          setEduData(parsedData)
-        } catch (error) {
-          console.error("Error fetching education information:", error);
-        }
+        };
+        setEduData(parsedData)
     }
 
     const fetchAward = async () => {
-        try {
-          const res = await fetch(`${process.env.API_BASE_URL}/applicant/reward/${appId}`, {
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/reward/${appId}/${admId}`, {
             method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          })
-          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    
-          const data = await res.json()
-          setAwardsData(data)
-    
-        } catch (error){
-          console.error('Failed to fetch rewards:', error);
-          throw error;
-        }
-      }
-    
-      const fetchTalent = async() => {
-        try {
-          const res = await fetch(`${process.env.API_BASE_URL}/applicant/talent/${appId}`, {
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const data = await response.json()
+        setAwardsData(data)
+    }
+
+    const fetchTalent = async() => {
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/talent/${appId}/${admId}`, {
             method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-    
-          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    
-          const data = await res.json()
-          setTalentsData(data)
-        } catch (error) {
-          console.error("Error Fetch :", error)
-        }
-      }
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const data = await response.json()
+        setTalentsData(data)
+    }
 
     const fetchTrining = async() => {
-        try {
-            const res = await fetch(`${process.env.API_BASE_URL}/applicant/training/${appId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-            })
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
-            const data = await res.json()
-            setTrainData(data)
-
-        } catch (error){
-            console.error('Failed to fetch rewards:', error);
-            throw error;
-        }
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/training/${appId}/${admId}`, {
+          method: 'GET',
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    
+        const data = await response.json()
+        setTrainData(data)
     }
 
     const fetchDocuments = async() => {
-        try {
-          const res = await fetch(`${process.env.API_BASE_URL}/applicant/document/${appId}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          })
-          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/document/${appId}/${admId}`, {
+          method: 'GET',
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     
-          const data = await res.json()
-          setAddDoc(data)
-    
-        } catch (error){
-          console.error('Failed to fetch rewards:', error);
-          throw error;
-        }
-      }
+        const data = await response.json()
+        setAddDoc(data)
+    }
 
     const fetchApplicantStatus = async() => {
         try {
-            const res = await fetch(`${process.env.API_BASE_URL}/education-department/applicant-edu/${appId}`, {
+            const res = await authFetch(`${process.env.API_BASE_URL}/education-department/applicant-edu/${appId}/${admId}`, {
                 method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json'
-                }
-              })
+              });
               if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         
               const data = await res.json()
-              console.log("applicant", data)
+              console.log("applicant status", data)
               setAppInfo(data)
         } catch (error) {
 
@@ -428,7 +240,7 @@ const viewApplicantInfo = () => {
 
     const fetchApplicantProblem = async () => {
         try {
-            const res = await fetch(`${process.env.API_BASE_URL}/education-department/get-applicant-problem/${appId}`);
+            const res = await fetch(`${process.env.API_BASE_URL}/education-department/get-applicant-problem/${appId}/${admId}`);
             if (!res.ok) return;
             const data = await res.json();
             console.log("problem", data);
@@ -475,12 +287,23 @@ const viewApplicantInfo = () => {
         }
     };
 
+    const fetchRegistrationData = async() => {
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/registrations/${appId}`, {
+          method: 'GET',
+        });
+        if (!response.ok) throw new Error("Failed to fetch registrations data");
+        const result = await response.json();
+        setRegisData(result)
+    }
+    
+
     const formatDate = (dateStr?: string) =>
         dateStr ? new Date(dateStr).toISOString().split("T")[0] : "";
 
     useEffect(() => {
         fetchApplicantStatus();
-        fetchGeneralInfoData();
+        fetchRegistrationData();
+        fetchGeneralData();
         fetchEducationData();
         fetchAward();
         fetchTalent();
@@ -528,7 +351,7 @@ const viewApplicantInfo = () => {
 
     const handleDocumentComplete = async () => {
         try {
-            const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-applicant-status/${appId}/${adminId}`, {
+            const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-applicant-status/${appId}/${adminId}/${admId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'text/plain',
@@ -556,7 +379,7 @@ const viewApplicantInfo = () => {
         try {
             const allEmpty = Object.values(report).every(value => value === "");
             const dataToSend = allEmpty ? "เอกสารครบถ้วน" : JSON.stringify(report);
-            const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-applicant-status/${appId}/${adminId}`, {
+            const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-applicant-status/${appId}/${adminId}/${admId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'text/plain',
@@ -627,132 +450,46 @@ const viewApplicantInfo = () => {
     }
 
     const updatedGeneralInfo = async() => {
-        try {
-          const response = await fetch(`${process.env.API_BASE_URL}/applicant/general/${appId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(editedGeneralData.generalInfo),
-          });
-    
-          const result = await response.json()
-          if (response.ok) {
-            console.log('ข้อมูลถูกอัปเดตเรียบร้อย:', result);
-          } else {
-            console.error('เกิดข้อผิดพลาด:', result.error);
-          }
-    
-        } catch (error){
-          console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
-        }
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/general/${appId}/${admId}`, {
+          method: 'PUT',
+          body: JSON.stringify(editedGeneralData.generalInfo),
+        });
       }
     
-      const updatedEducationInfo = async() => {
-        try {
-          const response = await fetch(`${process.env.API_BASE_URL}/applicant/education/${appId}`, {
+    const updatedEducationInfo = async() => {
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/education/${appId}/${admId}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
             body: JSON.stringify(editedEducationData.education),
-          });
+        });
+    }
     
-          const result = await response.json()
-          if (response.ok) {
-            console.log('ข้อมูลถูกอัปเดตเรียบร้อย:', result);
-          } else {
-            console.error('เกิดข้อผิดพลาด:', result.error);
-          }
-    
-        } catch (error){
-          console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
-        }
-      }
-    
-      const updatedAward = async() => {
-        try {
-          const response = await fetch(`${process.env.API_BASE_URL}/applicant/reward`, {
+    const updatedAward = async() => {
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/reward`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
             body: JSON.stringify(editedAwardData),
-          });
-    
-          const result = await response.json()
-          if (response.ok) {
-            console.log('ข้อมูลถูกอัปเดตเรียบร้อย:', result);
-          } else {
-            console.error('เกิดข้อผิดพลาด:', result.error);
-          }
-        } catch (error){
-          console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
-        }
-      }
-    
-      const upDatedTalent = async() => {
-        try {
-          const response = await fetch(`${process.env.API_BASE_URL}/applicant/talent`, {
+        });
+    }
+
+    const upDatedTalent = async() => {
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/talent`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
             body: JSON.stringify(editedTalentData),
-          });
-    
-          const result = await response.json()
-          if (response.ok) {
-            console.log('ข้อมูลถูกอัปเดตเรียบร้อย:', result);
-          } else {
-            console.error('เกิดข้อผิดพลาด:', result.error);
-          }
-        } catch (error){
-          console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
-        }
-      }
-    
-      const updatedTraining = async() => {
-        try {
-          const response = await fetch(`${process.env.API_BASE_URL}/applicant/training`, {
+        });
+    }
+
+    const updatedTraining = async() => {
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/training`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
             body: JSON.stringify(editedTrainData),
-          });
-    
-          const result = await response.json()
-          if (response.ok) {
-            console.log('ข้อมูลถูกอัปเดตเรียบร้อย:', result);
-          } else {
-            console.error('เกิดข้อผิดพลาด:', result.error);
-          }
-        } catch (error){
-          console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
-        }
-      }
-    
-      const updatedDocument = async() => {
-        try {
-          const response = await fetch(`${process.env.API_BASE_URL}/applicant/document/${appId}`, {
+        });
+    }
+
+    const updatedDocument = async() => {
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/document/${appId}/${admId}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
             body: JSON.stringify(editedDocData),
-          });
-    
-          const result = await response.json()
-          if (response.ok) {
-            console.log('ข้อมูลถูกอัปเดตเรียบร้อย:', result);
-          } else {
-            console.error('เกิดข้อผิดพลาด:', result.error);
-          }
-        } catch (error){
-          console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
-        }
-      }
+        });
+    }
 
     return (
         <div>
@@ -957,6 +694,7 @@ const viewApplicantInfo = () => {
                                     isVisible={isVisible} 
                                     setIsVisible={setIsVisible}
                                     setReport={setReport}
+                                    regisData={regisData}
                                 />
 
                                 <ContactSummary
@@ -964,6 +702,7 @@ const viewApplicantInfo = () => {
                                     isVisible={isVisible} 
                                     setIsVisible={setIsVisible}
                                     setReport={setReport}
+                                    email={regisData?.applicantEmail}
                                 />
 
                                 <EmergencyContactSummary

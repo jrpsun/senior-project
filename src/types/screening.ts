@@ -1,6 +1,8 @@
 export interface EduScreeningInterface {
     roundName?: string;
     applicantId?: string;
+    applicantNumber?: string;
+    admissionId?: string;
     firstnameEN?: string;
     lastnameEN?: string;
     program?: string;
@@ -9,11 +11,14 @@ export interface EduScreeningInterface {
     paymentStatus?: string;
     applicantEmail?: string;
     applicantPhone?: string;
+    moreDetail?: string;
+    reason?: string;
 }
 
 export interface CourseComScreeningInterface {
     roundName?: string;
     applicantId?: string;
+    applicantNumber?: string;
     firstnameEN?: string;
     lastnameEN?: string;
     fullnameEN?: string;
