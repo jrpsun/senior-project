@@ -1,12 +1,12 @@
 export interface GeneralInfoInterface {
-  nationality?: string;
-  idCardNumber?: string;
-  passportId?: string;
-  prefix?: string;
-  firstnameTH?: string;
-  lastnameTH?: string;
-  firstnameEN?: string;
-  lastnameEN?: string;
+  // nationality?: string;
+  // idCardNumber?: string;
+  // passportId?: string;
+  // prefix?: string;
+  // firstnameTH?: string;
+  // lastnameTH?: string;
+  // firstnameEN?: string;
+  // lastnameEN?: string;
   idCardExpDate?: string;
   passportExpDate?: string;
   gender?: string;
@@ -45,7 +45,7 @@ export interface GeneralInfoInterface {
   
 export interface ContactInfoInterface {
   applicantPhone?: string;
-  applicantEmail?: string;
+  // applicantEmail?: string;
   line?: string;
   facebook?: string;
   instagram?: string;
@@ -74,5 +74,18 @@ export interface ApplicantGeneralInformationResponse {
   contact_info: ContactInfoInterface;
   emergency_contact: EmergencyContactInterface;
   admission_channel: AdmissionChannelInterface;
+}
+
+
+export interface ApplicantRegistrationsInfoResponse {
+  idCardNumber?: string;
+  passportId?: string;
+  applicantEmail: string; 
+  prefix: string; 
+  firstnameTH?: string;
+  firstnameEN: string; 
+  lastnameTH?: string;
+  lastnameEN: string; 
+  nationality: string; 
 }
   
