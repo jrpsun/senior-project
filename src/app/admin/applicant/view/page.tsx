@@ -20,7 +20,6 @@ import PreliminaryEvaSummary from '@components/components/ApplicantInformation/s
 import AdminNavbar from '@components/components/adminNavbar';
 import { Inter } from 'next/font/google';
 import InterviewEvaSummary from '@components/components/ApplicantInformation/summary/Info/interviewEvaSummary';
-import { useSearchParams } from 'next/navigation';
 import { ApplicantEducationResponse, ApplicantProblem, EducantionApplicantView, EducationBackground, EducationEngExam, EducationMathExam } from '@components/types/educationInfoType';
 import EnglishTestScoreSummary from '@components/components/ApplicantInformation/summary/Info/educationInfo/EnglishTestScoreSummary';
 import MathTestScoreSummary from '@components/components/ApplicantInformation/summary/Info/educationInfo/MathTestScoreSummary';
@@ -40,12 +39,11 @@ import { AwardResponse } from '@components/types/AwardType';
 import { TalentResponse } from '@components/types/TalentTypes';
 import { TrainingResponse } from '@components/types/TrainType';
 import { AdditionalDoc } from '@components/types/additionalDoc';
+import { useSearchParams } from 'next/navigation';
+
 
 
 const viewApplicantInfo = () => {
-    // const { language } = useLanguage();
-    // const texts = generalInfoTexts[language] || generalInfoTexts["ENG"];
-    // const titletexts = summaryTexts[language] || summaryTexts["ENG"];
     const [isVisible, setIsVisible] = useState(false)
     const searchParams = useSearchParams();
 

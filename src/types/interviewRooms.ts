@@ -15,3 +15,10 @@ export interface InterviewRoomDetails {
     endTime?: string; 
     duration?: string; 
 }
+
+
+export interface InterviewSlot {
+  interviewRoundId?: string; 
+  interviewRoom?: string; 
+  interviewTime?: string[]; 
+}

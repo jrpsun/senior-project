@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Star } from "lucide-react";
-import { InterviewEvaList } from '@components/types/interviewEva';
+import { InterviewEvaEduInterface, InterviewEvaList } from '@components/types/interviewEva';
+import WaitForReuslt from '@components/components/WaitForReuslt';
 /**********************
 
 
@@ -23,10 +24,11 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
     console.log("interviewCom", props.interviewCom)
     const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
     const [applicants, setApplicants] = useState<InterviewEvaList[]>([]);
+    //const [intEduResult, setIntEduResult] = useState<InterviewEvaEduInterface[]>([]);
     const [applicant, setApplicant] = useState<InterviewEvaList[]>([]);
     const [loading, setLoading] = useState(true);
 
-    if (props.interviewCom === 'N') { // edu
+    if (props.interviewCom === 'N') { // as edu
         async function fetchData() {
             console.log("appIdId", props.app_id)
             try {
@@ -55,21 +57,21 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
     } else {
         async function fetchData() {
             try {
-                const [res_apps, res_app] = await Promise.all([
-                    fetch(`${API_BASE_URL}/education-department/get-applicant-interview-evas/${props.app_id}`),
+                const [res_app] = await Promise.all([
+                    //fetch(`${API_BASE_URL}/education-department/get-applicant-interview-evas/${props.app_id}`),
                     fetch(`${API_BASE_URL}/education-department/get-applicant-interview-eva/${props.app_id}/${props.interviewCom}`)
                 ])
 
 
-                if (!res_apps.ok || !res_app.ok) {
+                if (!res_app.ok) {
                     throw new Error("Failed to fetch one or more resources");
                 }
 
-                const data_apps = await res_apps.json();
                 const data_app = await res_app.json();
+                //const data_app = await res_app.json();
 
-                setApplicants(data_apps.applicants || []);
-                setApplicant(data_app.applicants || [])
+                setApplicant(data_app.applicants || []);
+                //setApplicant(data_app.applicants || [])
 
             } catch (err) {
                 console.error("Error fetching data:", err);
@@ -81,12 +83,50 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
             fetchData();
         }, []);
     }
+    console.log('one app ###', applicant)
 
+    const AppWithoutEdu = applicants.filter(app => app.educationId === null);
+    const AppWithEdu = applicants.filter(app => app.educationId !== null);
+    console.log('interview sum app', applicants)
+    console.log('app without edu', AppWithoutEdu)
+    console.log('app with edu', AppWithEdu)
 
-    const firstResult = applicants[0] || {};
-    const secondResult = applicants[1] || {};
-    console.log("firstResult", firstResult)
-    console.log("secondResult", secondResult)
+    // final interview result by edu
+    const now = new Date();
+    const evaDate = now.getFullYear() +
+        '-' + String(now.getMonth() + 1).padStart(2, '0') +
+        '-' + String(now.getDate()).padStart(2, '0') +
+        ' ' + String(now.getHours()).padStart(2, '0') +
+        ':' + String(now.getMinutes()).padStart(2, '0');
+
+    //console.log('edu id #####', props.edu_id)
+    const sendFinalIntEva = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/education-department/create-int-eva-final`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    applicantId: idValue,
+                    educationId: props.edu_id,
+                    interviewResult: interviewResult,
+                    comment: note,
+                    evaDate: evaDate
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update data in the database');
+            }
+
+            alert('Data successfully updated in the database');
+            window.location.reload();
+        } catch (error) {
+            console.error("Error sending data to backend:", error);
+            alert('An error occurred while updating data');
+        }
+    };
 
     /////
     const submitInterviewEvaluation = async (scorestest, totalRemark, interviewComment, selectedValue, rating) => {
@@ -137,9 +177,9 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
 
             if (!response.ok) throw new Error("Failed to submit evaluation");
 
-            
+
             window.location.reload();
-        
+
         } catch (error) {
             console.error("Error submitting interview evaluation:", error);
             alert("การบันทึกข้อมูลล้มเหลว กรุณาลองใหม่");
@@ -153,64 +193,45 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
         {
             id: 1,
             category: "ความสามารถด้านภาษาอังกฤษ (English)",
-            maxScore: 10,
-            com1: firstResult.englishScore,
-            com2: secondResult.englishScore,
-            avg: (firstResult.englishScore + secondResult.englishScore) / 2,
-            remark: `${firstResult.englishRemark}, ${secondResult.englishRemark}`
+            maxScore: 10
         },
         {
             id: 2,
             category: "บุคลิกภาพ (Personality)",
-            maxScore: 10,
-            com1: firstResult.personalityScore,
-            com2: secondResult.personalityScore,
-            avg: (firstResult.personalityScore + secondResult.personalityScore) / 2,
-            remark: `${firstResult.personalityRemark}, ${secondResult.personalityRemark}`
+            maxScore: 10
         },
         {
             id: 3,
             category: "ความตั้งใจเรียน (Intention)",
-            maxScore: 10,
-            com1: firstResult.intensionScore,
-            com2: secondResult.intensionScore,
-            avg: (firstResult.intensionScore + secondResult.intensionScore) / 2,
-            remark: `${firstResult.intensionRemark}, ${secondResult.intensionRemark}`
+            maxScore: 10
         },
         {
             id: 4,
             category: "ทักษะ IT/คอมพิวเตอร์ (IT/Computer Skill)",
-            maxScore: 4,
-            com1: firstResult.computerScore,
-            com2: secondResult.computerScore,
-            avg: (firstResult.computerScore + secondResult.computerScore) / 2,
-            remark: `${firstResult.computerRemark}, ${secondResult.computerRemark}`
+            maxScore: 4
         }
     ];
 
 
-
+    // for education department 
     const [showPopup, setShowPopup] = useState(false)
-    const [idValue, setIdValue] = useState(props.app_id); // send to backend
-
+    const [idValue, setIdValue] = useState(""); // send to backend
     const [interviewResult, setInterviewResult] = useState(""); // send to backend
     const [note, setNote] = useState(""); // send to backend
-
-    const name = `${firstResult.firstnameEN} ${firstResult.lastnameEN}`;
-    const room = firstResult.interviewRoom;
+    const name = `${AppWithoutEdu[0]?.firstnameEN} ${AppWithoutEdu[0]?.lastnameEN}`;
+    const room = AppWithoutEdu[0]?.interviewRoom;
     const [nameValue, setNameValue] = useState(name);
     const [roomValue, setRoomValue] = useState(room);
     useEffect(() => {
         setNameValue(name);
         setRoomValue(room);
-    }, [name, room]);
+        setIdValue(AppWithoutEdu[0]?.applicantId);
+    }, [name, room, idValue]);
     console.log("interviewResult", interviewResult)
     console.log("note", note)
     console.log("nameValue", nameValue)
     console.log("roomValue", roomValue)
-
-    const sumcom1 = firstResult.englishScore + firstResult.personalityScore + firstResult.intensionScore + firstResult.computerScore
-    const sumcom2 = secondResult.englishScore + secondResult.personalityScore + secondResult.intensionScore + secondResult.computerScore
+    console.log("edu result", interviewResult)
 
     const [isEdit, setIsEdit] = useState(false)
 
@@ -222,6 +243,15 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
     const [rating, setRating] = useState(0);
     const [interviewComment, setInterviewComment] = useState("");
     const [totalRemark, setTotalRemark] = useState("")
+    useEffect(() => {
+        if (applicant.length > 0) {
+            setInterviewComment(applicant[0]?.comment || "");
+            setTotalRemark(applicant[0]?.totalRemark || "");
+            setRating(Number(applicant[0]?.outstandingLevel));
+        }
+    }, [applicant])
+
+
 
     const handleClick = (star: number) => {
         setRating((prev) => (prev === star ? 0 : star)); // Toggle rating off when clicking the same star
@@ -248,14 +278,14 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
         setSelectedValue(applicant[0]?.interviewResult || "")
     }, [applicant]);
 
-    console.log("send to backend 1", scorestest)
-    console.log("send to backend 2", interviewComment)
-    console.log("send to backend 3", rating)
-    console.log("send to backend 4", selectedValue)
+    // console.log("send to backend 1", scorestest)
+    // console.log("send to backend 2", interviewComment)
+    // console.log("send to backend 3", rating)
+    // console.log("send to backend 4", selectedValue)
 
-    console.log("props.path", props.path)
-    console.log("applicant[0]?.interviewResult", applicant[0]?.interviewResult === null)
-    console.log("isEdit", isEdit)
+    // console.log("props.path", props.path)
+    // console.log("applicant[0]?.interviewResult", applicant[0]?.interviewResult === null)
+    // console.log("isEdit", isEdit)
 
     const handleScoreChange = (index, value) => {
         const updatedScores = [...scorestest];
@@ -271,12 +301,16 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
 
     const totalScore = scorestest.reduce((sum, item) => sum + (parseFloat(item.score) || 0), 0);
 
+    console.log('path #####', props.path)
+    console.log('checker111', applicant[0]?.interviewResult !== null)
+    console.log('checker222', applicant[0]?.totalScore != null)
+
     return (
         <div className='flex justify-center py-5 bg-[white]'>
             <div className='flex flex-col w-[1280px]'>
 
                 {((props.path === "/admin/interview/candidates") && (applicant[0]?.interviewResult === null)) || (isEdit) ? (
-                    <div className='bg-white shadow-lg rounded-lg w-full max-w-xl pl-[200px] lg:max-w-screen-xl p-3' key={'first and just save'}>
+                    <div className='bg-white shadow-lg rounded-lg w-full max-w-xl pl-[200px] lg:max-w-screen-xl p-3' key={1}>
 
                         {/* กรอกผล ---ครั้งแรก--- */}
                         {applicant.map((item) => (
@@ -389,7 +423,7 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                                         <td className="border border-gray-300 px-4 py-2 text-center">{item.id}</td>
                                                         <td className="border border-gray-200 px-4 py-[17px] flex items-center">
                                                             {item.category} {item.id === 4 &&
-                                                                <div>
+                                                                <div className="relative inline-block">
                                                                     <button
                                                                         onMouseEnter={() => setShowTooltip(true)}
                                                                         onMouseLeave={() => setShowTooltip(false)}
@@ -398,27 +432,30 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                                                             <path d="M10.0804 0.0176134C4.55191 0.003686 0.044976 4.46514 0.0137688 9.98192C-0.0174547 15.5105 4.42992 20.0035 9.94663 20.0175C15.4752 20.0314 19.9821 15.5699 20.0133 10.0531C20.0563 4.52454 15.5971 0.0315615 10.0804 0.0176134ZM9.93497 2.71126C10.4193 2.71041 10.8207 2.8869 11.151 3.2289C11.4931 3.55907 11.658 3.97224 11.6573 4.45658C11.6566 4.94092 11.4907 5.34285 11.1476 5.68604C10.8164 6.01738 10.4027 6.18349 9.9302 6.18432C9.43405 6.18519 9.03263 6.02051 8.6905 5.69035C8.36019 5.36016 8.18356 4.94701 8.18422 4.46267C8.1849 3.96652 8.36265 3.56456 8.70569 3.23319C9.03693 2.89003 9.45063 2.71211 9.93497 2.71126ZM7.10548 7.19339L11.7008 7.18533L11.689 15.7499L13.0712 15.7474L13.0696 16.8461L7.0922 16.8565L7.09371 15.7579L8.46403 15.7555L8.47429 8.28961L7.10397 8.29202L7.10548 7.19339Z" fill="#008A91" />
                                                                         </svg>
                                                                     </button>
+
                                                                     {showTooltip && (
-                                                                        <div className={`${isCollapsed ? "absolute bottom-[150px] left-[940px] -translate-x-1/2 text-sm px-2 py-1 rounded-md shadow-lg bg-white text-black" : "absolute bottom-[150px] left-[1090px] -translate-x-1/2 text-sm px-2 py-1 rounded-md shadow-lg bg-white text-black"}`}>
-                                                                            <div className="flex flex-row">
+                                                                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-max text-sm px-2 py-1 rounded-md shadow-lg bg-white text-black z-50">
+                                                                            <div className="flex flex-row items-start">
                                                                                 <div>
                                                                                     <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                                         <path d="M10.0804 0.0176134C4.55191 0.003686 0.044976 4.46514 0.0137688 9.98192C-0.0174547 15.5105 4.42992 20.0035 9.94663 20.0175C15.4752 20.0314 19.9821 15.5699 20.0133 10.0531C20.0563 4.52454 15.5971 0.0315615 10.0804 0.0176134ZM9.93497 2.71126C10.4193 2.71041 10.8207 2.8869 11.151 3.2289C11.4931 3.55907 11.658 3.97224 11.6573 4.45658C11.6566 4.94092 11.4907 5.34285 11.1476 5.68604C10.8164 6.01738 10.4027 6.18349 9.9302 6.18432C9.43405 6.18519 9.03263 6.02051 8.6905 5.69035C8.36019 5.36016 8.18356 4.94701 8.18422 4.46267C8.1849 3.96652 8.36265 3.56456 8.70569 3.23319C9.03693 2.89003 9.45063 2.71211 9.93497 2.71126ZM7.10548 7.19339L11.7008 7.18533L11.689 15.7499L13.0712 15.7474L13.0696 16.8461L7.0922 16.8565L7.09371 15.7579L8.46403 15.7555L8.47429 8.28961L7.10397 8.29202L7.10548 7.19339Z" fill="#008A91" />
                                                                                     </svg>
                                                                                 </div>
-                                                                                <div className="ml-[2px]"><strong>เกณฑ์การให้คะแนน IT/Computer Skill</strong></div>
+                                                                                <div className="ml-2">
+                                                                                    <strong>เกณฑ์การให้คะแนน IT/Computer Skill</strong>
+                                                                                </div>
                                                                             </div>
-                                                                            <div className="ml-5">
+                                                                            <div className="ml-5 mt-1">
                                                                                 0 - ไม่มีทักษะเกี่ยวกับ IT/คอมพิวเตอร์<br />
                                                                                 1 - เคยเข้าร่วมกิจกรรมที่เกี่ยวข้องกับ IT (เช่น Workshop)<br />
                                                                                 2 - มีทักษะเบื้องต้น เช่น ใช้ซอฟต์แวร์เฉพาะทางได้<br />
                                                                                 3 - เรียนรู้การเขียนโปรแกรม มีเกียรติบัตร (Certificate)<br />
                                                                                 4 - มีโครงงานด้านการเขียนโปรแกรม
                                                                             </div>
-
                                                                         </div>
                                                                     )}
                                                                 </div>
+
                                                             }
                                                         </td>
                                                         <td className="border border-gray-300 px-4 py-2 text-center">{item.maxScore}</td>
@@ -496,7 +533,7 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                     <div className='mb-[50px] '>
                                         <div className="text-[#008A90] text-2xl font-semibold mb-[25px]">ความคิดเห็นเพิ่มเติม</div>
                                         <div className='flex justify-center text-gray-400 my-[100px]'>ไม่สามารถกรอกความคิดเห็นเพิ่มเติมได้</div>
-                                        
+
                                     </div>
                                 )}
 
@@ -510,9 +547,7 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                     <div className='bg-white shadow-lg rounded-lg w-full max-w-xl lg:max-w-screen-xl p-3'>
                         {/* หลังจากกดบันทึกและส่งผลสัมภาษณ์ */}
 
-
-                        {/* แก้ตรงนี้ */}
-                        <div className='flex justify-end mr-[150px]'>
+                        <div className='flex ml-[1000px] mt-4 w-[200px] flex-col'>
                             <button
                                 onClick={() => setIsEdit(true)}
                                 className='flex flex-row bg-[#008A90] text-white px-2 py-1 space-x-2 rounded-lg'
@@ -561,17 +596,42 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                 </div>
                             ) : (
                                 <div>
-                                    <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mt-[75px]">ผลการสัมภาษณ์</h2>
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-1">
-                                        <div className={`ml-[55px]
+                                    <div className='flex justify-start'>
+                                        <div>
+                                            <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mt-[75px]">ผลการสัมภาษณ์</h2>
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-1">
+                                                <div className={`ml-[55px] w-[125px]
                                             ${applicant[0]?.interviewResult === "ผ่านการสัมภาษณ์" ? "text-[#166534]" : ""}
                                             ${applicant[0]?.interviewResult === "ไม่ผ่านการสัมภาษณ์" ? "text-[#D92D20]" : ""}
                                             ${applicant[0]?.interviewResult === "รอพิจารณาเพิ่มเติม" ? "text-[#DAA520]" : ""}
                                             `}>
 
-                                            {applicant[0]?.interviewResult}
+                                                    {applicant[0]?.interviewResult}
+                                                </div>
+                                            </div>
                                         </div>
+
+                                        {applicant[0]?.interviewResult === "ผ่านการสัมภาษณ์" && (
+                                            <div>
+                                                <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mt-[75px]">จุดเด่นของผู้สมัคร</h2>
+                                                <div className='flex justify-end mr-[230px]'>
+                                                    {applicant.map((app, index) => (
+                                                        <div key={index} className='flex flex-row'>
+                                                            {[1, 2, 3].map((star) => (
+                                                                <Star
+                                                                    key={star}
+                                                                    className={`h-8 w-8 transition-colors duration-300 ${Number(app.outstandingLevel) >= star ? "text-yellow-400 fill-yellow-400" : "text-gray-400"
+                                                                        }`}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
                                     </div>
+
 
                                     <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mt-[75px]">ผลคะแนนการสัมถาษณ์</h2>
                                     <div className="overflow-x-auto w-full">
@@ -654,6 +714,7 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                                     type="text"
                                                     value={idValue}
                                                     onChange={(e) => setIdValue(e.target.value)}
+                                                    disabled={idValue !== null}
                                                     className='w-[250px] rounded-md'
                                                 />
                                             </div>
@@ -663,6 +724,7 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                                     type="text"
                                                     value={nameValue}
                                                     onChange={(e) => setNameValue(e.target.value)}
+                                                    disabled={nameValue !== null}
                                                     className='w-[250px] rounded-md'
                                                 />
                                             </div>
@@ -673,6 +735,7 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                                 type="text"
                                                 value={roomValue}
                                                 onChange={(e) => setRoomValue(e.target.value)}
+                                                disabled={roomValue !== null}
                                                 className='w-[250px] rounded-md'
                                             />
                                         </div>
@@ -723,6 +786,7 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                                 ยกเลิก
                                             </button>
                                             <button
+                                                onClick={() => sendFinalIntEva()}
                                                 className='flex flex-row space-x-1 ml-[25px] border bg-[#008A90] rounded-md px-8 py-2 text-white'
                                             >
                                                 <div>
@@ -738,25 +802,34 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                 </div>
                             )}
                         </div>
+                        {AppWithEdu.length > 0 && (
+                            <div className='flex justify-end text-[#166534] mr-[150px] mt-8'>
+                                แก้ไขผลสัมภาษณ์ล่าสุด: <div className='font-bold mx-1'>{AppWithEdu[0]?.educationName}</div> {AppWithEdu[0]?.evaDate}
+                            </div>
+                        )}
+
                         <div className='p-6 bg-white rounded-lg w-full max-w-5xl mx-auto'>
                             <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mb-[50px]">ข้อมูลกรรมการสัมภาษณ์</h2>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-1">
                                 <div>
                                     <p className="text-[#565656] font-bold mb-[25px]">กรรมการสัมภาษณ์</p>
-                                    <p className="text-[#565656] text-left pl-3">อ. {firstResult.firstName}, อ. {secondResult.firstName}</p>
+                                    {AppWithoutEdu.map((app, index) => (
+                                        <p key={index} className="text-[#565656] text-left pl-3">อ. {app.firstName}</p>
+                                    ))}
+
                                 </div>
 
                                 <div className='ml-[100px]'>
                                     <p className="text-[#565656] font-bold mb-[25px]">วันที่สัมภาษณ์</p>
-                                    <p className="text-[#565656] text-left pl-3">{firstResult.interviewDate}</p>
+                                    <p className="text-[#565656] text-left pl-3">{AppWithoutEdu[0]?.interviewDate}</p>
                                 </div>
 
                                 <div className='ml-[125px]'>
                                     <p className="text-[#565656] font-bold mb-[25px]">เวลา</p>
-                                    <p className="text-[#565656] text-left pl-3">{firstResult.interviewTime}</p>
+                                    <p className="text-[#565656] text-left pl-3">{AppWithoutEdu[0]?.interviewTime}</p>
                                 </div>
                             </div>
-                            {firstResult.interviewResult === "ไม่มาสัมภาษณ์" ? (
+                            {AppWithoutEdu[0]?.interviewResult === "ไม่มาสัมภาษณ์" ? (
                                 <div className='flex justify-center items-center text-gray-400 my-[200px] text-[20px]'>
                                     ไม่มีคะแนนสัมภาษณ์ของผู้สมัคร
                                 </div>
@@ -766,91 +839,74 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-1">
                                         <div>
                                             <p className="text-[#565656] font-bold mb-[25px]">กรรมการสัมภาษณ์</p>
-                                            <p className="text-[#565656] text-left mb-[20px]">อ. {firstResult.firstName}</p>
-                                            <p className="text-[#565656] text-left">อ. {secondResult.firstName}</p>
+                                            {AppWithoutEdu.map((app, index) => (
+                                                <p key={index} className="text-[#565656] text-left mb-[20px]">อ. {app.firstName}</p>
+                                            ))}
                                         </div>
 
                                         <div className='ml-[100px]'>
                                             <p className="text-[#565656] font-bold mb-[25px]">ผลการสัมภาษณ์</p>
-                                            {firstResult.interviewResult === "รอพิจารณาเพิ่มเติม" ? (
-                                                <div className={`flex flex-row text-[#DAA520] text-left mb-[20px] space-x-2 w-[200px]`}>
-                                                    <div className='mt-1'>
-                                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                            <g clip-path="url(#clip0_2477_973)">
-                                                                <path d="M8 0C10.1217 0 12.1566 0.842855 13.6569 2.34315C15.1571 3.84344 16 5.87827 16 8C16 10.1217 15.1571 12.1566 13.6569 13.6569C12.1566 15.1571 10.1217 16 8 16C5.87827 16 3.84344 15.1571 2.34315 13.6569C0.842855 12.1566 0 10.1217 0 8C0 5.87827 0.842855 3.84344 2.34315 2.34315C3.84344 0.842855 5.87827 0 8 0ZM7.25 3.75V8C7.25 8.25 7.375 8.48438 7.58437 8.625L10.5844 10.625C10.9281 10.8562 11.3938 10.7625 11.625 10.4156C11.8562 10.0687 11.7625 9.60625 11.4156 9.375L8.75 7.6V3.75C8.75 3.33437 8.41562 3 8 3C7.58437 3 7.25 3.33437 7.25 3.75Z" fill="#DAA520" />
-                                                            </g>
-                                                            <defs>
-                                                                <clipPath id="clip0_2477_973">
-                                                                    <path d="M0 0H16V16H0V0Z" fill="white" />
-                                                                </clipPath>
-                                                            </defs>
-                                                        </svg>
-                                                    </div>
-                                                    <div>{firstResult.interviewResult}</div>
+                                            {AppWithoutEdu.map((app, index) => (
+                                                <div key={index}>
+                                                    {app.interviewResult === "รอพิจารณาเพิ่มเติม" ? (
+                                                        <div className={`flex flex-row text-[#DAA520] text-left mb-[20px] space-x-2 w-[200px]`}>
+                                                            <div className='mt-1'>
+                                                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <g clip-path="url(#clip0_2477_973)">
+                                                                        <path d="M8 0C10.1217 0 12.1566 0.842855 13.6569 2.34315C15.1571 3.84344 16 5.87827 16 8C16 10.1217 15.1571 12.1566 13.6569 13.6569C12.1566 15.1571 10.1217 16 8 16C5.87827 16 3.84344 15.1571 2.34315 13.6569C0.842855 12.1566 0 10.1217 0 8C0 5.87827 0.842855 3.84344 2.34315 2.34315C3.84344 0.842855 5.87827 0 8 0ZM7.25 3.75V8C7.25 8.25 7.375 8.48438 7.58437 8.625L10.5844 10.625C10.9281 10.8562 11.3938 10.7625 11.625 10.4156C11.8562 10.0687 11.7625 9.60625 11.4156 9.375L8.75 7.6V3.75C8.75 3.33437 8.41562 3 8 3C7.58437 3 7.25 3.33437 7.25 3.75Z" fill="#DAA520" />
+                                                                    </g>
+                                                                    <defs>
+                                                                        <clipPath id="clip0_2477_973">
+                                                                            <path d="M0 0H16V16H0V0Z" fill="white" />
+                                                                        </clipPath>
+                                                                    </defs>
+                                                                </svg>
+                                                            </div>
+                                                            <div>{app.interviewResult}</div>
 
-                                                </div>
-                                            ) : firstResult.interviewResult === "รอผลการประเมินเพิ่มเติม" ? (
-                                                <div className={`flex flex-row text-[#0D47A1] text-left mb-[20px] space-x-2 w-[200px]`}>
-                                                    <div>
-                                                        <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                            <path d="M15.58 2.54946C15.8207 2.49652 16 2.29483 16 2.05354V0.509944C16 0.22837 15.7559 0 15.4549 0H0.545102C0.244115 0 0 0.22837 0 0.509944V2.05363C0 2.29492 0.179338 2.4966 0.420001 2.54955C0.584621 5.29594 2.10927 7.81285 4.57022 9.35526L5.59901 10L4.57022 10.6447C2.10918 12.1871 0.584531 14.7041 0.420001 17.4505C0.179338 17.5034 0 17.7051 0 17.9464V19.4901C0 19.7716 0.244115 20 0.545102 20H15.4549C15.7559 20 16 19.7716 16 19.4901V17.9464C16 17.7051 15.8207 17.5034 15.58 17.4505C15.4154 14.7041 13.8907 12.1872 11.4297 10.6447L10.4009 10L11.4297 9.35526C13.8907 7.81285 15.4154 5.29585 15.58 2.54946ZM1.0902 1.01989H14.9098V1.54369H1.0902V1.01989ZM14.9098 18.98H1.0902V18.4562H14.9098V18.98ZM9.11819 9.57632C8.9671 9.671 8.87643 9.82985 8.87643 10C8.87643 10.1702 8.9671 10.329 9.11819 10.4237L10.823 11.4921C12.977 12.842 14.3198 15.0366 14.4873 17.4364H1.51275C1.68018 15.0367 3.02295 12.8421 5.17701 11.4921L6.88181 10.4237C7.0329 10.329 7.12357 10.1702 7.12357 10C7.12357 9.82985 7.0329 9.671 6.88181 9.57632L5.17701 8.5079C3.02295 7.15791 1.68018 4.96328 1.51275 2.56357H14.4873C14.3198 4.96337 12.977 7.15791 10.823 8.5079L9.11819 9.57632Z" fill="#0D47A1" />
-                                                            <path d="M9.42151 7.02539H6.57835C6.35241 7.02539 6.14981 7.15585 6.06914 7.35328C5.98846 7.5508 6.04643 7.77441 6.21486 7.91533L7.6364 9.1052C7.73987 9.1918 7.86988 9.23506 7.9998 9.23506C8.12971 9.23506 8.25981 9.1918 8.3632 9.1052L9.78473 7.91533C9.95317 7.77433 10.0111 7.55072 9.93046 7.35328C9.85005 7.15585 9.64746 7.02539 9.42151 7.02539Z" fill="#0D47A1" />
-                                                            <path d="M7.97759 11.9473L6.59503 12.7781C5.38617 13.5357 4.66064 14.8073 4.66064 16.1685H11.6117C11.6117 14.8073 10.8862 13.5357 9.6773 12.7781L8.29474 11.9473C8.19717 11.8926 8.07525 11.8926 7.97759 11.9473Z" fill="#0D47A1" />
-                                                        </svg>
+                                                        </div>
+                                                    ) : app.interviewResult === null ? (
+                                                        <div className={`flex flex-row text-[#0D47A1] text-left mb-[20px] space-x-2 w-[200px]`}>
+                                                            <div>
+                                                                <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M15.58 2.54946C15.8207 2.49652 16 2.29483 16 2.05354V0.509944C16 0.22837 15.7559 0 15.4549 0H0.545102C0.244115 0 0 0.22837 0 0.509944V2.05363C0 2.29492 0.179338 2.4966 0.420001 2.54955C0.584621 5.29594 2.10927 7.81285 4.57022 9.35526L5.59901 10L4.57022 10.6447C2.10918 12.1871 0.584531 14.7041 0.420001 17.4505C0.179338 17.5034 0 17.7051 0 17.9464V19.4901C0 19.7716 0.244115 20 0.545102 20H15.4549C15.7559 20 16 19.7716 16 19.4901V17.9464C16 17.7051 15.8207 17.5034 15.58 17.4505C15.4154 14.7041 13.8907 12.1872 11.4297 10.6447L10.4009 10L11.4297 9.35526C13.8907 7.81285 15.4154 5.29585 15.58 2.54946ZM1.0902 1.01989H14.9098V1.54369H1.0902V1.01989ZM14.9098 18.98H1.0902V18.4562H14.9098V18.98ZM9.11819 9.57632C8.9671 9.671 8.87643 9.82985 8.87643 10C8.87643 10.1702 8.9671 10.329 9.11819 10.4237L10.823 11.4921C12.977 12.842 14.3198 15.0366 14.4873 17.4364H1.51275C1.68018 15.0367 3.02295 12.8421 5.17701 11.4921L6.88181 10.4237C7.0329 10.329 7.12357 10.1702 7.12357 10C7.12357 9.82985 7.0329 9.671 6.88181 9.57632L5.17701 8.5079C3.02295 7.15791 1.68018 4.96328 1.51275 2.56357H14.4873C14.3198 4.96337 12.977 7.15791 10.823 8.5079L9.11819 9.57632Z" fill="#0D47A1" />
+                                                                    <path d="M9.42151 7.02539H6.57835C6.35241 7.02539 6.14981 7.15585 6.06914 7.35328C5.98846 7.5508 6.04643 7.77441 6.21486 7.91533L7.6364 9.1052C7.73987 9.1918 7.86988 9.23506 7.9998 9.23506C8.12971 9.23506 8.25981 9.1918 8.3632 9.1052L9.78473 7.91533C9.95317 7.77433 10.0111 7.55072 9.93046 7.35328C9.85005 7.15585 9.64746 7.02539 9.42151 7.02539Z" fill="#0D47A1" />
+                                                                    <path d="M7.97759 11.9473L6.59503 12.7781C5.38617 13.5357 4.66064 14.8073 4.66064 16.1685H11.6117C11.6117 14.8073 10.8862 13.5357 9.6773 12.7781L8.29474 11.9473C8.19717 11.8926 8.07525 11.8926 7.97759 11.9473Z" fill="#0D47A1" />
+                                                                </svg>
 
-                                                    </div>
-                                                    <div>{firstResult.interviewResult}</div>
-                                                </div>
-                                            ) : (
-                                                <p className={`text-[#565656] text-left mb-[20px]
-                                    ${firstResult.interviewResult === "ผ่านการสัมภาษณ์" ? "text-green-700" : ""}
-                                    ${firstResult.interviewResult === "ไม่ผ่านการสัมภาษณ์" ? "text-[#D92D20]" : ""}
+                                                            </div>
+                                                            <div>รอผลการประเมิน</div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className={`text-[#565656] text-left mb-[20px] flex flex-row w-[325px] space-x-[50px]
+                                    ${app.interviewResult === "ผ่านการสัมภาษณ์" ? "text-green-700" : ""}
+                                    ${app.interviewResult === "ไม่ผ่านการสัมภาษณ์" ? "text-[#D92D20]" : ""}
                                 `}>
-                                                    {firstResult.interviewResult}
-                                                </p>
-                                            )}
+                                                            <div>
+                                                                {app.interviewResult}
+                                                            </div>
 
-                                            {secondResult.interviewResult === "รอพิจารณาเพิ่มเติม" ? (
-                                                <div className={`flex flex-row text-[#DAA520] text-left mb-[20px] space-x-2 w-[200px]`}>
-                                                    <div className='mt-1'>
-                                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                            <g clipPath="url(#clip0_2477_973)">
-                                                                <path d="M8 0C10.1217 0 12.1566 0.842855 13.6569 2.34315C15.1571 3.84344 16 5.87827 16 8C16 10.1217 15.1571 12.1566 13.6569 13.6569C12.1566 15.1571 10.1217 16 8 16C5.87827 16 3.84344 15.1571 2.34315 13.6569C0.842855 12.1566 0 10.1217 0 8C0 5.87827 0.842855 3.84344 2.34315 2.34315C3.84344 0.842855 5.87827 0 8 0ZM7.25 3.75V8C7.25 8.25 7.375 8.48438 7.58437 8.625L10.5844 10.625C10.9281 10.8562 11.3938 10.7625 11.625 10.4156C11.8562 10.0687 11.7625 9.60625 11.4156 9.375L8.75 7.6V3.75C8.75 3.33437 8.41562 3 8 3C7.58437 3 7.25 3.33437 7.25 3.75Z" fill="#DAA520" />
-                                                            </g>
-                                                            <defs>
-                                                                <clipPath id="clip0_2477_973">
-                                                                    <path d="M0 0H16V16H0V0Z" fill="white" />
-                                                                </clipPath>
-                                                            </defs>
-                                                        </svg>
-                                                    </div>
-                                                    <div>{firstResult.interviewResult}</div>
-                                                </div>
-                                            ) : secondResult.interviewResult === "รอผลการประเมินเพิ่มเติม" ? (
-                                                <div className={`flex flex-row text-[#0D47A1] text-left mb-[20px] space-x-2 w-[200px]`}>
-                                                    <div>
-                                                        <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                            <path d="M15.58 2.54946C15.8207 2.49652 16 2.29483 16 2.05354V0.509944C16 0.22837 15.7559 0 15.4549 0H0.545102C0.244115 0 0 0.22837 0 0.509944V2.05363C0 2.29492 0.179338 2.4966 0.420001 2.54955C0.584621 5.29594 2.10927 7.81285 4.57022 9.35526L5.59901 10L4.57022 10.6447C2.10918 12.1871 0.584531 14.7041 0.420001 17.4505C0.179338 17.5034 0 17.7051 0 17.9464V19.4901C0 19.7716 0.244115 20 0.545102 20H15.4549C15.7559 20 16 19.7716 16 19.4901V17.9464C16 17.7051 15.8207 17.5034 15.58 17.4505C15.4154 14.7041 13.8907 12.1872 11.4297 10.6447L10.4009 10L11.4297 9.35526C13.8907 7.81285 15.4154 5.29585 15.58 2.54946ZM1.0902 1.01989H14.9098V1.54369H1.0902V1.01989ZM14.9098 18.98H1.0902V18.4562H14.9098V18.98ZM9.11819 9.57632C8.9671 9.671 8.87643 9.82985 8.87643 10C8.87643 10.1702 8.9671 10.329 9.11819 10.4237L10.823 11.4921C12.977 12.842 14.3198 15.0366 14.4873 17.4364H1.51275C1.68018 15.0367 3.02295 12.8421 5.17701 11.4921L6.88181 10.4237C7.0329 10.329 7.12357 10.1702 7.12357 10C7.12357 9.82985 7.0329 9.671 6.88181 9.57632L5.17701 8.5079C3.02295 7.15791 1.68018 4.96328 1.51275 2.56357H14.4873C14.3198 4.96337 12.977 7.15791 10.823 8.5079L9.11819 9.57632Z" fill="#0D47A1" />
-                                                            <path d="M9.42151 7.02539H6.57835C6.35241 7.02539 6.14981 7.15585 6.06914 7.35328C5.98846 7.5508 6.04643 7.77441 6.21486 7.91533L7.6364 9.1052C7.73987 9.1918 7.86988 9.23506 7.9998 9.23506C8.12971 9.23506 8.25981 9.1918 8.3632 9.1052L9.78473 7.91533C9.95317 7.77433 10.0111 7.55072 9.93046 7.35328C9.85005 7.15585 9.64746 7.02539 9.42151 7.02539Z" fill="#0D47A1" />
-                                                            <path d="M7.97759 11.9473L6.59503 12.7781C5.38617 13.5357 4.66064 14.8073 4.66064 16.1685H11.6117C11.6117 14.8073 10.8862 13.5357 9.6773 12.7781L8.29474 11.9473C8.19717 11.8926 8.07525 11.8926 7.97759 11.9473Z" fill="#0D47A1" />
-                                                        </svg>
+                                                            {app.interviewResult === "ผ่านการสัมภาษณ์" && (
+                                                                <div className='flex flex-row mt-[-5px]'>
+                                                                    {[1, 2, 3].map((star) => (
+                                                                        <Star
+                                                                            key={star}
+                                                                            className={`h-8 w-8 transition-colors duration-300 ${Number(app.outstandingLevel) >= star ? "text-yellow-400 fill-yellow-400" : "text-gray-400"
+                                                                                }`}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            )}
 
-                                                    </div>
-                                                    <div>{firstResult.interviewResult}</div>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            ) : (
-                                                <p className={`text-[#565656] text-left mb-[20px]
-                                        ${secondResult.interviewResult === "ผ่านการสัมภาษณ์" ? "text-green-700" : ""}
-                                        ${secondResult.interviewResult === "ไม่ผ่านการสัมภาษณ์" ? "text-[#D92D20]" : ""}
-                                    `}>
-                                                    {secondResult.interviewResult}
-                                                </p>
-                                            )}
+                                            ))}
                                         </div>
                                     </div>
 
                                     <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mt-[75px]">ผลคะแนนการสัมถาษณ์</h2>
-                                    <div className="overflow-x-auto w-full">
+                                    <div className="overflow-x-auto w-[1100px] w-max-none">
 
                                         <table className='table-auto border-collapse border border-gray-500 rounded-lg'>
                                             <thead>
@@ -858,10 +914,13 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                                     <th className="border border-gray-300 text-center">ลำดับ</th>
                                                     <th className="border border-gray-300 w-[150px] text-center">หมวดหมู่</th>
                                                     <th className="border border-gray-300 w-[150px] text-center">คะแนนเต็ม</th>
-                                                    <th className="border border-gray-300 w-[150px] text-center">{firstResult.firstName}</th>
-                                                    <th className="border border-gray-300 w-[150px] text-center">{secondResult.firstName}</th>
+                                                    {AppWithoutEdu.map((item, index) => (
+                                                        <th key={index} className="border border-gray-300 w-[150px] text-center">อ. {item.firstName}</th>
+                                                    ))}
                                                     <th className="border border-gray-300 w-[150px] text-center">คะแนนเฉลี่ย</th>
-                                                    <th className="border border-gray-300 w-[150px] text-center">หมายเหตุ</th>
+                                                    {AppWithoutEdu.map((item, index) => (
+                                                        <th key={index} className="border border-gray-300 w-[100px] text-center">หมายเหตุ อ. {item.firstName}</th>
+                                                    ))}
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -869,56 +928,54 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                                     <tr className="text-[#565656] text-left pl-6" key={index}>
                                                         <td className="border border-gray-300 py-2 text-center">{item.id}</td>
                                                         <td className="border border-gray-300 pl-2 w-[500px] py-2 text-left">{item.category}</td>
-                                                        <td className="border border-gray-300 py-2 text-center">{item.maxScore}</td>
-                                                        {item.com1 || item.com1 === 0 ? (
-                                                            <td className="border border-gray-300 px-4 py-2 text-center">{item.com1}</td>
-                                                        ) : (
-                                                            <td className="flex flex-row border border-gray-100 px-4 py-2 text-center space-x-2">
-                                                                <div className='mt-1'>
-                                                                    <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                        <g clipPath="url(#clip0_2477_757)">
-                                                                            <path d="M8.5 0C10.6217 0 12.6566 0.842855 14.1569 2.34315C15.6571 3.84344 16.5 5.87827 16.5 8C16.5 10.1217 15.6571 12.1566 14.1569 13.6569C12.6566 15.1571 10.6217 16 8.5 16C6.37827 16 4.34344 15.1571 2.84315 13.6569C1.34285 12.1566 0.5 10.1217 0.5 8C0.5 5.87827 1.34285 3.84344 2.84315 2.34315C4.34344 0.842855 6.37827 0 8.5 0ZM7.75 3.75V8C7.75 8.25 7.875 8.48438 8.08437 8.625L11.0844 10.625C11.4281 10.8562 11.8938 10.7625 12.125 10.4156C12.3562 10.0687 12.2625 9.60625 11.9156 9.375L9.25 7.6V3.75C9.25 3.33437 8.91562 3 8.5 3C8.08437 3 7.75 3.33437 7.75 3.75Z" fill="#DAA520" />
-                                                                        </g>
-                                                                        <defs>
-                                                                            <clipPath id="clip0_2477_757">
-                                                                                <path d="M0.5 0H16.5V16H0.5V0Z" fill="white" />
-                                                                            </clipPath>
-                                                                        </defs>
-                                                                    </svg>
-                                                                </div>
-                                                                <div className='text-[#DAA520]'>รอผล</div>
+                                                        <td className="border border-gray-300 w-[150px] text-center">{item.maxScore}</td>
+                                                        {AppWithoutEdu.map((applicant, ind) => (
+                                                            <td key={ind} className="border border-gray-300 py-2 text-center">
+                                                                {index === 0 && (applicant.englishScore !== null ? applicant.englishScore : <WaitForReuslt />)}
+                                                                {index === 1 && (applicant.personalityScore !== null ? applicant.personalityScore : <WaitForReuslt />)}
+                                                                {index === 2 && (applicant.intensionScore !== null ? applicant.intensionScore : <WaitForReuslt />)}
+                                                                {index === 3 && (applicant.computerScore !== null ? applicant.computerScore : <WaitForReuslt />)}
                                                             </td>
-                                                        )}
-                                                        {item.com2 || item.com2 === 0 ? (
-                                                            <td className="border border-gray-300 px-4 py-2 text-center">{item.com2}</td>
-                                                        ) : (
-                                                            <td className="flex flex-row border border-gray-100 px-4 py-2 text-center space-x-2">
-                                                                <div className='mt-1'>
-                                                                    <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                        <g clipPath="url(#clip0_2477_757)">
-                                                                            <path d="M8.5 0C10.6217 0 12.6566 0.842855 14.1569 2.34315C15.6571 3.84344 16.5 5.87827 16.5 8C16.5 10.1217 15.6571 12.1566 14.1569 13.6569C12.6566 15.1571 10.6217 16 8.5 16C6.37827 16 4.34344 15.1571 2.84315 13.6569C1.34285 12.1566 0.5 10.1217 0.5 8C0.5 5.87827 1.34285 3.84344 2.84315 2.34315C4.34344 0.842855 6.37827 0 8.5 0ZM7.75 3.75V8C7.75 8.25 7.875 8.48438 8.08437 8.625L11.0844 10.625C11.4281 10.8562 11.8938 10.7625 12.125 10.4156C12.3562 10.0687 12.2625 9.60625 11.9156 9.375L9.25 7.6V3.75C9.25 3.33437 8.91562 3 8.5 3C8.08437 3 7.75 3.33437 7.75 3.75Z" fill="#DAA520" />
-                                                                        </g>
-                                                                        <defs>
-                                                                            <clipPath id="clip0_2477_757">
-                                                                                <path d="M0.5 0H16.5V16H0.5V0Z" fill="white" />
-                                                                            </clipPath>
-                                                                        </defs>
-                                                                    </svg>
-                                                                </div>
-                                                                <div className='text-[#DAA520]'>รอผล</div>
+                                                        ))}
+                                                        <td className={`border border-gray-300 py-2 text-center ${AppWithoutEdu.length === 1 ? 'bg-gray-200' : ''}`}>
+                                                            {AppWithoutEdu.length > 1
+                                                                ? (
+                                                                    AppWithoutEdu.reduce((sum, applicant) => {
+                                                                        if (index === 0) return sum + (applicant.englishScore || 0);
+                                                                        if (index === 1) return sum + (applicant.personalityScore || 0);
+                                                                        if (index === 2) return sum + (applicant.intensionScore || 0);
+                                                                        if (index === 3) return sum + (applicant.computerScore || 0);
+                                                                        return sum;
+                                                                    }, 0) / AppWithoutEdu.length
+                                                                ).toFixed(2)
+                                                                : '-'}
+                                                        </td>
+                                                        {AppWithoutEdu.map((applicant, ind) => (
+                                                            <td key={ind} className="border border-gray-300 pl-2 w-[500px] py-2 text-left">
+                                                                {index === 0 && (applicant.englishRemark !== null ? applicant.englishRemark : "-")}
+                                                                {index === 1 && (applicant.personalityRemark !== null ? applicant.personalityRemark : "-")}
+                                                                {index === 2 && (applicant.intensionRemark !== null ? applicant.intensionRemark : "-")}
+                                                                {index === 3 && (applicant.computerRemark !== null ? applicant.computerRemark : "-")}
                                                             </td>
-                                                        )}
-                                                        <td className="border border-gray-300 py-2 text-center">{item.avg}</td>
-                                                        <td className="border border-gray-300 pl-2 w-[500px] py-2 text-left">{item.remark || "-"}</td>
+                                                        ))}
                                                     </tr>
                                                 ))}
                                                 <tr className="text-[#565656] text-left pl-6">
                                                     <td className="border border-gray-300 px-4 py-2 text-center font-bold" colSpan={2}>คะแนนรวม</td>
                                                     <td className="border border-gray-300 py-2 text-center">34</td>
-                                                    <td className="border border-gray-300 px-4 py-2 text-center">{sumcom1}</td>
-                                                    <td className="border border-gray-300 px-4 py-2 text-center">{sumcom2}</td>
-                                                    <td className="border border-gray-300 py-2 text-center">{(sumcom1 + sumcom2) / 2}</td>
-                                                    <td className="border border-gray-300 pl-2 w-[500px] py-2 text-left">{firstResult.totalRemark}, {secondResult.totalRemark}</td>
+                                                    {AppWithoutEdu.map((app, index) => (
+                                                        <td key={index} className="border border-gray-300 py-2 text-center">{app.totalScore || <WaitForReuslt />}</td>
+                                                    ))}
+                                                    <td className={`border border-gray-300 py-2 text-center ${AppWithoutEdu.length === 1 ? 'bg-gray-200' : ''}`}>
+                                                        {AppWithoutEdu.length > 1
+                                                            ? (AppWithoutEdu.reduce((sum, app) => sum + (app.totalScore || 0), 0) / AppWithoutEdu.length).toFixed(2)
+                                                            : '-'}
+                                                    </td>
+                                                    {AppWithoutEdu.map((applicant, ind) => (
+                                                        <td key={ind} className="border border-gray-300 pl-2 w-[500px] py-2 text-left">
+                                                            {applicant.totalRemark || "-"}
+                                                        </td>
+                                                    ))}
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -926,24 +983,29 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                     </div>
 
                                     <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mt-[75px]">ความคิดเห็นเพิ่มเติม</h2>
-                                    <div className="flex flex-row space-x-4 text-[#565656] text-left">
-                                        <div>
-                                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M16.5 11.5C16.5 11.942 16.3244 12.366 16.0118 12.6785C15.6993 12.9911 15.2754 13.1667 14.8333 13.1667H4.83333L1.5 16.5V3.16667C1.5 2.72464 1.67559 2.30072 1.98816 1.98816C2.30072 1.67559 2.72464 1.5 3.16667 1.5H14.8333C15.2754 1.5 15.6993 1.67559 16.0118 1.98816C16.3244 2.30072 16.5 2.72464 16.5 3.16667V11.5Z" stroke="#565656" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                            </svg>
+                                    {AppWithoutEdu.map((app, index) => (
+                                        <div key={index} className="flex flex-row space-x-4 text-[#565656] text-left">
+                                            <div>
+                                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M16.5 11.5C16.5 11.942 16.3244 12.366 16.0118 12.6785C15.6993 12.9911 15.2754 13.1667 14.8333 13.1667H4.83333L1.5 16.5V3.16667C1.5 2.72464 1.67559 2.30072 1.98816 1.98816C2.30072 1.67559 2.72464 1.5 3.16667 1.5H14.8333C15.2754 1.5 15.6993 1.67559 16.0118 1.98816C16.3244 2.30072 16.5 2.72464 16.5 3.16667V11.5Z" stroke="#565656" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            </div>
+                                            <div className='font-bold'>อ. {app.firstName}:</div>
+                                            <div>"{app.comment || "-"}"</div>
                                         </div>
-                                        <div className='font-bold'>อ. {firstResult.firstName}:</div>
-                                        <div>"{firstResult.comment}"</div>
-                                    </div>
-                                    <div className="flex flex-row space-x-4 text-[#565656] text-left">
-                                        <div>
-                                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M16.5 11.5C16.5 11.942 16.3244 12.366 16.0118 12.6785C15.6993 12.9911 15.2754 13.1667 14.8333 13.1667H4.83333L1.5 16.5V3.16667C1.5 2.72464 1.67559 2.30072 1.98816 1.98816C2.30072 1.67559 2.72464 1.5 3.16667 1.5H14.8333C15.2754 1.5 15.6993 1.67559 16.0118 1.98816C16.3244 2.30072 16.5 2.72464 16.5 3.16667V11.5Z" stroke="#565656" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                            </svg>
+                                    ))}
+                                    {AppWithEdu.length > 0 && (
+                                        <div className="flex flex-row space-x-4 text-[#565656] text-left mt-4">
+                                            <div>
+                                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M16.5 11.5C16.5 11.942 16.3244 12.366 16.0118 12.6785C15.6993 12.9911 15.2754 13.1667 14.8333 13.1667H4.83333L1.5 16.5V3.16667C1.5 2.72464 1.67559 2.30072 1.98816 1.98816C2.30072 1.67559 2.72464 1.5 3.16667 1.5H14.8333C15.2754 1.5 15.6993 1.67559 16.0118 1.98816C16.3244 2.30072 16.5 2.72464 16.5 3.16667V11.5Z" stroke="#565656" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            </div>
+                                            <div className='font-bold'>{AppWithEdu[0]?.educationName}:</div>
+                                            <div>"{AppWithEdu[0]?.comment}"</div>
                                         </div>
-                                        <div className='font-bold'>อ. {secondResult.firstName}:</div>
-                                        <div>"{secondResult.comment}"</div>
-                                    </div>
+                                    )}
+
                                 </div>
                             )}
 

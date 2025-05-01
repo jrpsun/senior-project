@@ -55,11 +55,11 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
 
     function getThaiDate(): string {
         const date = new Date();
-      
+
         const day = date.getDate().toString().padStart(2, "0");
         const month = (date.getMonth() + 1).toString().padStart(2, "0");
         const year = (date.getFullYear() + 543).toString();
-      
+
         return `${day}/${month}/${year}`;
     }
     //
@@ -76,7 +76,7 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
                     com_id: props.courseComId,
                     preEvaResult: result,
                     comment: note,
-                    preEvaDate: today
+                    preEvaDate: new Date().toISOString().split('T')[0],
                 }),
             });
 
@@ -102,9 +102,16 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
     console.log('props2', props.courseComId)
     const [result, setResult] = useState("");
     const [note, setNote] = useState("");
+
     console.log('Result', result)
     console.log('note', note)
     const [isEdit, setIsEdit] = useState(false)
+    const handleEdit = () => {
+        setIsEdit(true)
+        setResult(preEva.preliminaryEva)
+        setNote(preEva.preliminaryComment)
+    }
+
     console.log('isEdit', isEdit)
     const checkForEdit = preEva.preliminaryEva//applicants.find(applicant => applicant.applicantId === props.applicantId)?.preliminaryEva
     console.log('checkForEdit', checkForEdit)

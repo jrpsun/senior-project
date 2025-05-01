@@ -100,5 +100,50 @@ export interface InterviewScreeningForEduInterface {
 
     InterviewCommittee?: CommitteeResult[];
 }
+
+
+export interface PreEvaSummaryApplicantsResponse {
+    applicantId?: string;
+    firstnameEN?: string;
+    lastnameEN?: string;
+    preliminaryEva?: string;
+    preliminaryComment?: string;
+    programRegistered?: string;
+    program?: string;
+    roundName?: string;
+}
+
+
+export interface PreEvaSummaryResponse {
+    courseComId?: string;
+    prefix?: string;
+    firstName?: string;
+    lastName?: string;
+    applicants?: PreEvaSummaryApplicantsResponse[]
+    passed?: number;
+    failed?: number;
+    pending?: number;
+  }
   
-  
+
+export interface IntEvaSummaryApplicantsResponse {
+    applicantId?: string;
+    firstnameEN?: string; 
+    lastnameEN?: string; 
+    interviewRoom?: string;
+    englishScore?: number;
+    personalityScore?: number;
+    intentionScore?: number;
+    computerScore?: number;
+    totalScore?: number; 
+    interviewResult?: string;
+    interviewStatus?: string;
+}
+
+export interface IntEvaSummaryResponse {
+    committee?: string;
+    interviewRoom?: string;
+    admissionProgram?: string;
+    admissionRoundName?: string;
+    applicants?: IntEvaSummaryApplicantsResponse[]
+}

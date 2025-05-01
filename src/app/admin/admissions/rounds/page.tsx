@@ -22,13 +22,13 @@ const AdmissionRoundsPage = () => {
   const [id, setId] = useState('');
 
   useEffect(() => {
-      const decoded = getDecodedToken();
-      if (!decoded) {
-          setShowModal(true);
-          return;
-      }
-      setRoles(decoded.roles);
-      setId(decoded.id);
+    const decoded = getDecodedToken();
+    if (!decoded) {
+      setShowModal(true);
+      return;
+    }
+    setRoles(decoded.roles);
+    setId(decoded.id);
   }, []);
 
 
@@ -334,23 +334,46 @@ const AdmissionRoundsPage = () => {
     }
   }, [selectedRound, selectedYear, selectedStatus, roundOptions, statusOptions, yearOptions]);
 
-  const handleSearch = () => {
-    const filteredRounds = admissionRound.filter((round) => {
-      const roundMatch = selectedRound ? round.round.includes(selectedRound.value) : true;
-      const yearMatch = selectedYear ? round.year === selectedYear.value || selectedYear.value === "ทั้งหมด" : true;
-      //const statusMatch = selectedStatus ? round.status === selectedStatus.value || selectedStatus.value === "ทั้งหมด" : true;
+  // const handleSearch = () => {
+  //   const filteredRounds = admissionRound.filter((round) => {
+  //     const roundMatch = selectedRound ? round.round.includes(selectedRound.value) : true;
+  //     const yearMatch = selectedYear ? round.year === selectedYear.value || selectedYear.value === "ทั้งหมด" : true;
+  //     //const statusMatch = selectedStatus ? round.status === selectedStatus.value || selectedStatus.value === "ทั้งหมด" : true;
 
-      return roundMatch && yearMatch //&& statusMatch;
-    });
+  //     return roundMatch && yearMatch //&& statusMatch;
+  //   });
 
-    setFilteredAdmissionRounds(filteredRounds);
-  };
+  //   setFilteredAdmissionRounds(filteredRounds);
+  // };
 
   const currentDate = new Date().toISOString().split('T')[0]; // ปี เดือน วัน ปัจจุบัน
   console.log("current date", currentDate)
+
+  ///handle search
+
+  const handleSearch = () => {
+    setFilters(filterValues);
+  };
+
+  interface FilterState {
+    round?: string,
+    year?: string,
+    available?: string
+  }
+
+  const [filters, setFilters] = useState<FilterState>();
+
+  const [filterValues, setFilterValues] = useState<FilterState>();
+
+  const filteredApplicants = admissionRound.filter(ad =>
+    (!filters?.round || ad.roundName?.includes(filters.round)) &&
+    (!filters?.year || ad.academicYear === filters.year)
+    //(!filters?.available || ad.available?.includes(filters.available)) 
+  );
+
   return (
     <div className="flex flex-col h-screen bg-white">
-      {showModal && <Modal role="admin"/>}
+      {showModal && <Modal role="admin" />}
       {alertMessage && <AlertAdmin message={alertMessage} onClose={() => setAlertMessage(null)} />}
       <AdminNavbar isCollapsed={isCollapsed} />
       <div className="flex flex-row flex-1">
@@ -369,17 +392,15 @@ const AdmissionRoundsPage = () => {
               <div className="flex-1 min-w-[300px] max-w-[750px] relative z-10">
                 <SearchField
                   label=""
-                  value={selectedRound?.value || null}
-                  onChange={(selectedOption) => {
-                    if (selectedOption && typeof selectedOption !== "string") {
-                      setSelectedRound(selectedOption);
+                  value={filterValues?.round || ""}
+                  onChange={(value) => {
+                    if (typeof value === "object" && value !== null && "value" in value) {
+                      setFilterValues({ ...filterValues, round: value.value });
                     } else {
-                      setSelectedRound(null);
+                      setFilterValues({ ...filterValues, round: value ?? undefined });
                     }
                   }}
                   placeholder="ค้นหารอบรับสมัครหรือปี"
-                  type="dropdown"
-                  options={roundOptions}
                   customWidth="100%"
                 />
               </div>
@@ -387,17 +408,17 @@ const AdmissionRoundsPage = () => {
               <div className="w-full max-w-[200px] relative z-10">
                 <SearchField
                   label=""
-                  value={selectedYear?.value || null}
-                  onChange={(selectedOption) => {
-                    if (selectedOption && typeof selectedOption !== "string") {
-                      setSelectedYear(selectedOption);
+                  type="dropdown"
+                  value={filterValues?.year || ""}
+                  onChange={(option) => {
+                    if (typeof option === "object" && option !== null && "value" in option) {
+                      setFilterValues({ ...filterValues, year: option.value });
                     } else {
-                      setSelectedYear(null);
+                      setFilterValues({ ...filterValues, year: "" });
                     }
                   }}
-                  placeholder="แสดงทุกปี"
-                  type="dropdown"
                   options={yearOptions}
+                  placeholder="เลือกปีการศึกษา"
                 />
               </div>
 
@@ -432,7 +453,7 @@ const AdmissionRoundsPage = () => {
           {/* ตารางแสดงรอบรับสมัคร */}
           <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 px-6">
             <h2 className="text-lg font-bold text-[#565656] whitespace-nowrap">
-              รอบรับสมัคร <span className="text-[#6B7280] font-bold">{filteredAdmissionRounds.length}</span>
+              รอบรับสมัคร <span className="text-[#6B7280] font-bold">{filteredApplicants.length}</span>
             </h2>
 
             {/* ปุ่มรอบรับสมัคร */}
@@ -459,13 +480,13 @@ const AdmissionRoundsPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredAdmissionRounds.map((round, index) => (
+                {filteredApplicants.map((round, index) => (
                   <tr key={index} className="border-b hover:bg-gray-50">
                     <td className="px-6 py-3 text-[#565656]">{index + 1}</td>
                     <td className="px-6 py-3 text-[#565656]">{round.program}</td>
                     <td className="px-6 py-3 text-[#565656]">
                       {/*round.round.includes("ปีการศึกษา") ? round.round : `${round.round} ปีการศึกษา ${round.year || "ไม่ระบุ"}`*/}
-                      {round.academicYear}
+                      {round.roundName}
                     </td>
                     <td className="px-6 py-3 text-[#565656]">{round.startDate} {round.endDate}</td>
                     <td className="px-6 py-3 text-[#565656] text-center w-[240px]">

@@ -31,7 +31,10 @@ const applicant = [
     { round: 'ICT01', applicantId: '0000025', name: 'ธเนศ วงศ์มณฑลพัฒนา', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.20 น.' },
 ]
 
-const courseOptions = ["ITDS/B", "ITCS/B"];
+const courseOptions = [
+    { label: "ITDS/B", value: "หลักสูตร DST (ไทย)" },
+    { label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)" }
+];
 const roundOptions = [
     { label: "1/68 - MU – Portfolio (TCAS 1)", value: "DST01" },
     { label: "1/68 - ICT Portfolio", value: "ICT01" },
@@ -194,7 +197,7 @@ const Page = () => {
                                                 setFilterValues({ ...filterValues, course: "" });
                                             }
                                         }}
-                                        options={courseOptions.map(value => ({ label: value, value }))}
+                                        options={courseOptions}
                                         placeholder="เลือกหลักสูตร"
                                     />
                                 </div>

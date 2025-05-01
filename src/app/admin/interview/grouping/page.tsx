@@ -18,7 +18,7 @@ import { useFilterApplicants } from "@components/hooks/admin/groupingInterview/u
 import { useEditInterviewGrouping } from "@components/hooks/admin/groupingInterview/useEditInterviewGrouping";
 import AlertAdmin from "@components/components/common/admin/alertAdmin";
 import { InterviewScreeningForEduInterface } from "@components/types/screening";
-import { InterviewRoomDetails } from "@components/types/interviewRooms";
+import { InterviewRoomDetails, InterviewSlot } from "@components/types/interviewRooms";
 import { getDecodedToken } from "@components/lib/auth";
 import Modal from "@components/components/common/popup-login";
 //import InterviewTable from "@components/components/admin/interviewSchedule/InterviewTable";
@@ -47,6 +47,7 @@ const Page = () => {
     const [showModal, setShowModal] = useState(false);
     const [roles, setRoles] = useState<string[]>([]);
     const [id, setId] = useState('');
+    const [interviewSlot, setInterviewSlot] = useState<InterviewSlot[]>([]);
 
     useEffect(() => {
         const decoded = getDecodedToken();
@@ -60,20 +61,23 @@ const Page = () => {
 
     async function fetchData() {
         try {
-            const [res_app, res_room] = await Promise.all([
+            const [res_app, res_room, res_slot] = await Promise.all([
                 fetch(`${API_BASE_URL}/education-department/get-summary-applicants-interview`),
-                fetch(`${API_BASE_URL}/education-department/get-all-interview-rooms`)
+                fetch(`${API_BASE_URL}/education-department/get-all-interview-rooms`),
+                fetch(`${API_BASE_URL}/education-department/get-all-int-slot`)
             ])
 
-            if (!res_app.ok || !res_room.ok) {
+            if (!res_app.ok || !res_room.ok || !res_slot.ok) {
                 throw new Error("Failed to fetch one or more resources");
             }
 
-            const data_app = await res_app.json();
+            const data_app = await res_app.json()
             const data_room = await res_room.json()
+            const data_slot = await res_slot.json()
 
             setApplicants(data_app.applicants || []);
             setRooms(data_room.room || []);
+            setInterviewSlot(data_slot || []);
 
         } catch (err) {
             console.error("Error fetching data:", err);
@@ -85,7 +89,8 @@ const Page = () => {
     useEffect(() => {
         fetchData();
     }, []);
-    //console.log("applicants", applicants)
+    console.log("slot ###", interviewSlot)
+
     useEffect(() => {
         const statusMap = new Map<string, boolean>();
 
@@ -190,12 +195,28 @@ const Page = () => {
         }))
     );
 
+
+
     const [groupedApplicants, setGroupedApplicants] = useState([]);
     const handleEnterGroupingMode = () => {
-
         const assignments = [];
         const applicantsQueue = [...selectedApplicants];
 
+        // 🔹 Create lookup of used time slots
+        const usedSlotsMap = new Map();
+        interviewSlot.forEach(({ interviewRoundId, interviewRoom, interviewTime }) => {
+            const key = `${interviewRoundId}_${interviewRoom}`;
+            usedSlotsMap.set(key, new Set(interviewTime));
+        });
+
+        // 🔹 Helper to format time
+        const formatTime = (date: Date) => {
+            const h = String(date.getHours()).padStart(2, "0");
+            const m = String(date.getMinutes()).padStart(2, "0");
+            return `${h}:${m}`;
+        };
+
+        // 🔁 Process each selected room
         for (const room of selectedRooms) {
             const {
                 startTime,
@@ -208,27 +229,32 @@ const Page = () => {
                 interviewRoundId
             } = room;
 
-            const [startHour, startMinute] = startTime.split(":").map(Number);
-            const [endHour, endMinute] = endTime.split(":").map(Number);
             const interviewDuration = parseInt(duration, 10);
-
             const start = new Date(`1970-01-01T${startTime}:00`);
             const end = new Date(`1970-01-01T${endTime}:00`);
             const totalMinutes = (end.getTime() - start.getTime()) / 60000;
-            const maxApplicants = Math.floor(totalMinutes / interviewDuration);
+            const maxSlots = Math.floor(totalMinutes / interviewDuration);
 
-            for (let i = 0; i < maxApplicants && applicantsQueue.length > 0; i++) {
-                const appId = applicantsQueue.shift();
+            const usedTimes = usedSlotsMap.get(`${interviewRoundId}_${interviewRoom}`) || new Set();
+
+            // 🔹 Generate valid (unused) slot ranges
+            const availableSlots = [];
+            for (let i = 0; i < maxSlots; i++) {
                 const slotStart = new Date(start.getTime() + i * interviewDuration * 60000);
                 const slotEnd = new Date(slotStart.getTime() + interviewDuration * 60000);
+                const timeRangeStr = `${formatTime(slotStart)}–${formatTime(slotEnd)}`;
 
-                const formatTime = (date: Date) => {
-                    const h = String(date.getHours()).padStart(2, "0");
-                    const m = String(date.getMinutes()).padStart(2, "0");
-                    return `${h}:${m}`;
-                };
+                if (!usedTimes.has(timeRangeStr)) {
+                    availableSlots.push({ slotStart, slotEnd, timeRangeStr });
+                }
+            }
 
-                const dateTime = `${interviewDate} - ${formatTime(slotStart)}–${formatTime(slotEnd)}`;
+            // 🔹 Assign applicants to available slots
+            for (const { slotStart, slotEnd, timeRangeStr } of availableSlots) {
+                if (applicantsQueue.length === 0) break;
+
+                const appId = applicantsQueue.shift();
+                const dateTime = `${interviewDate} - ${timeRangeStr}`;
 
                 assignments.push({
                     appId,
@@ -241,19 +267,28 @@ const Page = () => {
             }
         }
 
-        // Add unassigned applicants (if any)
-        while (applicantsQueue.length > 0) {
-            assignments.push({
-                appId: applicantsQueue.shift(),
-                unassigned: true,
+        // ⏳ Handle unassigned applicants
+        const unassigned = applicantsQueue;
+        if (unassigned.length > 0) {
+            unassigned.forEach(appId => {
+                assignments.push({
+                    appId,
+                    unassigned: true,
+                });
             });
+
+            alert(`ไม่สามารถจัดกลุ่มผู้สมัคร ${unassigned.length} คนได้ เนื่องจากห้องสัมภาษณ์ทั้งหมดเต็มแล้ว`);
+        }
+        else {
+            // ✅ Set result
+            setGroupedApplicants(assignments);
+            setIsGrouped(true);
         }
 
-        setGroupedApplicants(assignments);
-        setIsGrouped(true);
-        //setApplicantData(updatedData);
 
-    }
+    };
+
+
 
 
     const canSaveGrouping = isGrouped;
@@ -424,7 +459,7 @@ const Page = () => {
     console.log('date time is --->', startTime, endTime)
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            {showModal && <Modal role="admin"/>}
+            {showModal && <Modal role="admin" />}
             <div>
                 <AdminNavbar
                     isCollapsed={isCollapsed}
@@ -551,7 +586,7 @@ const Page = () => {
                                                                 checked={isSelected}
                                                                 onChange={handleCheckboxChange}
                                                                 disabled={app.interviewStatus !== null}
-                                                                className={`w-5 h-5 accent-[#008A90] text-white rounded-md border-2 ${app.grouping === "grouped" ? "border-gray-300 cursor-not-allowed" : "border-[#008A90]"
+                                                                className={`w-5 h-5 accent-[#008A90] text-white rounded-md border-2 ${app.interviewStatus !== null ? "border-gray-300 cursor-not-allowed" : "border-[#008A90]"
                                                                     }`}
                                                             />
                                                         </td>

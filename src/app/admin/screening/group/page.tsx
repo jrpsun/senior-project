@@ -10,7 +10,10 @@ import { CourseComScreeningInterface, EduScreeningGroupingAllCourseComInterface 
 import { getDecodedToken } from "@components/lib/auth";
 import Modal from "@components/components/common/popup-login";
 
-const courseOptions = ["ITDS/B", "ITCS/B"];
+const courseOptions = [
+    { label: "ITDS/B", value: "หลักสูตร DST (ไทย)" },
+    { label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)" }
+];
 const roundOptions = [
     { label: "1/68 - MU – Portfolio (TCAS 1)", value: "DST01" },
     { label: "1/68 - ICT Portfolio", value: "ICT01" },
@@ -22,6 +25,7 @@ const admitStatusOptions = [
 
 ];
 const paymentStatusOptions = ["03 - ชำระเงินเรียบร้อย"];
+const docStatus = ["03 - เอกสารครบถ้วน"]
 
 const Page = () => {
     const [committees, setCommittees] = useState<EduScreeningGroupingAllCourseComInterface[]>([]);
@@ -66,6 +70,7 @@ const Page = () => {
     useEffect(() => {
         fetchData();
     }, []);
+    console.log("all apps",applicants)
 
     const [selectedApplicantIds, setSelectedApplicantIds] = useState<string[]>([]);
     const [selectedCommittees, setSelectedCommittees] = useState<string[]>([]);
@@ -123,8 +128,12 @@ const Page = () => {
         committee?: string;
         grouping?: string;
     }
+    
 
-    const [filters, setFilters] = useState<FilterState>({})
+    const [filters, setFilters] = useState<FilterState>({
+        docStatus: "03 - เอกสารครบถ้วน",
+        paymentStatus: "03 - ชำระเงินเรียบร้อย"
+    })
     const [filterValues, setFilterValues] = useState<FilterState>({
         docStatus: "03 - เอกสารครบถ้วน",
         paymentStatus: "03 - ชำระเงินเรียบร้อย"
@@ -155,10 +164,11 @@ const Page = () => {
         (!filters.round || app.roundName === filters.round) &&
         (!filters.admitStatus || app.admissionStatus === filters.admitStatus) &&
         (!filters.docStatus || app.docStatus === filters.docStatus) &&
+        (!filters.paymentStatus || app.paymentStatus === filters.paymentStatus) &&
         (!filters.applicantId || app.applicantId?.includes(filters.applicantId)) &&
         (!filters.fullname || app.fullnameEN?.includes(filters.fullname)) &&
         (!filters.committee || app.courseComId?.includes(filters.committee)) &&
-        (!filters.grouping || (filters.grouping === "grouped" && app.courseComId) || (filters.grouping === "ungrouped" && !app.courseComId))
+        (!filters.grouping || (filters.grouping === "grouped" && app.courseComId !== null) || (filters.grouping === "ungrouped" && app.courseComId === null))
     );
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -263,7 +273,7 @@ const Page = () => {
                                             setFilterValues({ ...filterValues, course: "" });
                                         }
                                     }}
-                                    options={courseOptions.map(value => ({ label: value, value }))}
+                                    options={courseOptions}
                                     placeholder="เลือกหลักสูตร"
                                 />
                             </div>
@@ -314,9 +324,7 @@ const Page = () => {
                                             setFilterValues({ ...filterValues, docStatus: "" });
                                         }
                                     }}
-                                    options={[
-                                        { label: "03 - เอกสารครบถ้วน", value: "03 - เอกสารครบถ้วน" },
-                                    ]}
+                                    options={docStatus.map(value => ({ label: value, value: value }))}
                                     placeholder="เลือกสถานะเอกสาร"
                                 />
                             </div>
@@ -333,7 +341,7 @@ const Page = () => {
                                             setFilterValues({ ...filterValues, paymentStatus: "" });
                                         }
                                     }}
-                                    options={paymentStatusOptions.map(value => ({ label: value, value }))}
+                                    options={paymentStatusOptions.map(value => ({ label: value, value: value }))}
                                     placeholder="เลือกสถานะการชำระเงิน"
                                 />
                             </div>
@@ -571,6 +579,7 @@ const Page = () => {
                                             <input
                                                 type="checkbox"
                                                 checked={isAllSelected}
+                                                className="w-5 h-5 accent-[#008A90] text-white rounded-md border-2"
                                                 onChange={(e) => {
                                                     const allIds = paginatedApplicants.map(app => app.applicantId);
                                                     setSelectedApplicantIds(e.target.checked ? allIds : []);
@@ -603,6 +612,8 @@ const Page = () => {
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedApplicantIds.includes(app.applicantId)}
+                                                    disabled={app.courseComId !== null}
+                                                    className={`w-5 h-5 accent-[#008A90] text-white rounded-md border-2 ${app.courseComId !== null ? "border-gray-300 cursor-not-allowed" : ""}`}
                                                     onChange={(e) => {
                                                         setSelectedApplicantIds(prev =>
                                                             e.target.checked
@@ -620,8 +631,9 @@ const Page = () => {
                                             <td className="text-center whitespace-nowrap">{app.program}</td>
                                             <td>
                                                 <div className={`mr-4 whitespace-nowrap
-                                                    ${app.admissionStatus === "02 - ยื่นใบสมัครแล้ว" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : ""}
                                                     ${app.admissionStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
+                                                    ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : ""}
+                                                    ${app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-[#991B1B]" : ""}
                                                 `}>
                                                     {app.admissionStatus}
                                                 </div>
@@ -635,8 +647,8 @@ const Page = () => {
                                                     <div className={`mr-4 whitespace-nowrap
                                                         ${app.docStatus === "02 - รอตรวจสอบเอกสาร" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
                                                         ${app.docStatus === "03 - เอกสารครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#13522B]" : ""}
-                                                        ${app.docStatus === "04-เอกสารไม่ครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-red-200 text-red-600" : ""}
-                                                        `}>
+                                                        ${app.docStatus === "04 - เอกสารไม่ครบถ้วน" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-[#991B1B]" : ""}
+                                                    `}>
                                                         {app.docStatus}
                                                     </div>
                                                 )}

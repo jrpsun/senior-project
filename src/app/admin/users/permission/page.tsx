@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import SideBar from "../../../../components/SideBar";
 import AdminNavbar from "../../../../components/adminNavbar";
 import Image from "next/image";
@@ -8,6 +8,8 @@ import { PopupAdmin, PopupMenu } from "../../../../components/common/admin/popup
 import AlertAdmin from "../../../../components/common/admin/alertAdmin";
 import { AdminPermission } from "@components/types/adminPermission";
 import { generateAdmissionBody } from "@components/utils/apiBody";
+import { getDecodedToken } from "@components/lib/auth";
+import Modal from "@components/components/common/popup-login";
 
 
 const PermissionPage = () => {
@@ -15,6 +17,17 @@ const PermissionPage = () => {
   const [admins, setAdmins] = useState<AdminPermission[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [showModal, setShowModal] = useState(false);
+  const [roles, setRoles] = useState<string[]>([]);
+
+  useEffect(() => {
+    const decoded = getDecodedToken();
+    if (!decoded) {
+      setShowModal(true);
+      return;
+    }
+    setRoles(decoded.roles);
+  }, []);
 
   async function fetchData() {
     try {
@@ -40,6 +53,8 @@ const PermissionPage = () => {
   useEffect(() => {
     fetchData();
   }, []);
+  console.log("all adds", admins)
+
 
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -103,48 +118,46 @@ const PermissionPage = () => {
     { id: 9, title: "นาย", username: "เกษมศักดิ์", lastName: "วิริยะกิจ", email: "kasemsak.wiriya@university.ac.th", phone: "084-567-8901", role: ["ฝ่ายการศึกษา"], lastUsed: "18 ม.ค. 2568 17.25 น." },
     { id: 10, title: "นางสาว", username: "นรินทร์พร", lastName: "สุขประเสริฐ", email: "narin.porn@university.ac.th", phone: "083-456-7890", role: ["ฝ่ายการศึกษา"], lastUsed: "14 ม.ค. 2568 17.25 น." },
   ]);
-  const [sortOrder, setSortOrder] = useState("recent");
-
-  const handleSearch = useCallback(() => {
-    const filteredData = permissions.filter(user => {
-      const nameMatch = searchData.username
-        ? user.username?.toLowerCase().includes(searchData.username.toLowerCase())
-        : true;
-
-      const lastNameMatch = searchData.lastName
-        ? user.lastName?.toLowerCase().includes(searchData.lastName.toLowerCase())
-        : true;
-
-      const emailMatch = searchData.email
-        ? user.email?.toLowerCase().includes(searchData.email.toLowerCase())
-        : true;
-
-      const roleMatch = searchData.role
-        ? user.role.some(role => role.includes(searchData.role))
-        : true;
-
-      return nameMatch && lastNameMatch && emailMatch && roleMatch;
-    });
-
-    const updatedPermissions = filteredData.map(user => ({
-      ...user,
-      lastUsedDate: parseThaiDate(user.lastUsed)
-    }));
-
-    updatedPermissions.sort((a, b) =>
-      sortOrder === "recent"
-        ? (b.lastUsedDate?.getTime() || 0) - (a.lastUsedDate?.getTime() || 0)
-        : (a.lastUsedDate?.getTime() || 0) - (b.lastUsedDate?.getTime() || 0)
-    );
-
-    setSortedPermissions(updatedPermissions);
-  }, [permissions, searchData, sortOrder, parseThaiDate]);
 
 
+  // const handleSearch = useCallback(() => {
+  //   const filteredData = permissions.filter(user => {
+  //     const nameMatch = searchData.username
+  //       ? user.username?.toLowerCase().includes(searchData.username.toLowerCase())
+  //       : true;
 
-  const toggleSortOrder = () => {
-    setSortOrder(prev => prev === "recent" ? "oldest" : "recent");
-  };
+  //     const lastNameMatch = searchData.lastName
+  //       ? user.lastName?.toLowerCase().includes(searchData.lastName.toLowerCase())
+  //       : true;
+
+  //     const emailMatch = searchData.email
+  //       ? user.email?.toLowerCase().includes(searchData.email.toLowerCase())
+  //       : true;
+
+  //     const roleMatch = searchData.role
+  //       ? user.role.some(role => role.includes(searchData.role))
+  //       : true;
+
+  //     return nameMatch && lastNameMatch && emailMatch && roleMatch;
+  //   });
+
+  //   const updatedPermissions = filteredData.map(user => ({
+  //     ...user,
+  //     lastUsedDate: parseThaiDate(user.lastUsed)
+  //   }));
+
+  //   updatedPermissions.sort((a, b) =>
+  //     sortOrder === "recent"
+  //       ? (b.lastUsedDate?.getTime() || 0) - (a.lastUsedDate?.getTime() || 0)
+  //       : (a.lastUsedDate?.getTime() || 0) - (b.lastUsedDate?.getTime() || 0)
+  //   );
+
+  //   setSortedPermissions(updatedPermissions);
+  // }, [permissions, searchData, sortOrder, parseThaiDate]);
+
+
+
+
   // เปิด PopupMenu ตรงตำแหน่งของปุ่ม
   const handleOpenMenu = (event: React.MouseEvent, user: typeof permissions[number]) => {
 
@@ -198,10 +211,15 @@ const PermissionPage = () => {
     username: string;
     password: string;
   }) => {
-    console.log('new user', newUser)
+    console.log("new user", newUser);
+
     try {
-      for (const role of newUser.roles) {
+      let sharedId: string | undefined;
+
+      for (let i = 0; i < newUser.roles.length; i++) {
+        const role = newUser.roles[i];
         let userType = "";
+        console.log('share id', sharedId)
 
         if (role === "กรรมการหลักสูตร") {
           userType = "course-committee";
@@ -213,16 +231,31 @@ const PermissionPage = () => {
           userType = "public-relations";
         }
 
+        // Generate ID only on the first run
+        const method = i === 0 ? "create" : "role";
+
+        const bodyData = generateAdmissionBody(newUser, role, method, sharedId);
+
         const response = await fetch(`${API_BASE_URL}/${userType}/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(generateAdmissionBody(newUser, role, "create")),
+          body: JSON.stringify(bodyData),
         });
+        console.log("Sending to:", `${API_BASE_URL}/${userType}/`);
+        console.log("Body:", JSON.stringify(bodyData));
 
-        if (!response.ok) {
-          throw new Error("Failed to add new user round.");
+        // Capture ID from first POST response
+        if (i === 0) {
+          const data = await response.json();
+
+          // Extract correct ID from the response object
+          sharedId =
+            data.courseComId ||
+            data.interviewComId ||
+            data.educationId ||
+            data.PRid;
         }
       }
 
@@ -233,6 +266,7 @@ const PermissionPage = () => {
       alert("สร้างข้อมูลล้มเหลว กรุณาลองใหม่");
     }
   };
+
 
 
 
@@ -258,23 +292,28 @@ const PermissionPage = () => {
     try {
       for (const role of updatedUser.roles) {
         let userType = "";
+        let updateURL = '';
 
-        if (role === "Course Committee") {
+        if (role === "กรรมการหลักสูตร") {
           userType = "course-committee";
-        } else if (role === "Interview Committee") {
+          updateURL = "update-courseC";
+        } else if (role === "กรรมการสัมภาษณ์") {
           userType = "interview-committee";
-        } else if (role === "Education Department") {
+          updateURL = "update-interview-com";
+        } else if (role === "เจ้าหน้าที่งานการศึกษา") {
           userType = "education-department";
+          updateURL = "update-edu";
         } else {
           userType = "public-relations";
+          updateURL = "update-pr";
         }
 
-        const response = await fetch(`${API_BASE_URL}/${userType}/${updatedUser.adminId}`, {
+        const response = await fetch(`${API_BASE_URL}/${userType}/${updateURL}/${updatedUser.adminId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(generateAdmissionBody(updatedUser, role, "edit")),
+          body: JSON.stringify(generateAdmissionBody(updatedUser, role, "edit", "")),
         });
 
         if (!response.ok) {
@@ -301,24 +340,6 @@ const PermissionPage = () => {
 
 
   // ฟังก์ชันบันทึกข้อมูลเมื่อแก้ไขบทบาท
-  const mapRoleToUserType = (role: string) => {
-    switch (role) {
-      case "กรรมการหลักสูตร":
-      case "Course Committee":
-        return "course-committee";
-      case "กรรมการสัมภาษณ์":
-      case "Interview Committee":
-        return "interview-committee";
-      case "เจ้าหน้าที่งานการศึกษา":
-      case "Education Department":
-        return "education-department";
-      case "ประชาสัมพันธ์":
-      case "Public Relations":
-      default:
-        return "public-relations";
-    }
-  };
-
   const handleSaveRole = async (roleEditUser: {
     adminId: string;
     prefix: string;
@@ -331,34 +352,81 @@ const PermissionPage = () => {
     username: string;
     password: string;
   }) => {
-    console.log('this is role edited user', roleEditUser)
+    console.log('this is role before edited user', selectedUser)
+    console.log('this is role after edited user', roleEditUser)
     try {
+
       for (const role of selectedUser.roles) {
-        const userType = mapRoleToUserType(role);
-        const response = await fetch(`${API_BASE_URL}/${userType}/${selectedUser?.adminId}`, {
+        let userType = "";
+        let deleteURL = "";
+
+        if (role === "กรรมการหลักสูตร") {
+          userType = "course-committee";
+          deleteURL = "delete-courseC";
+        } else if (role === "กรรมการสัมภาษณ์") {
+          userType = "interview-committee";
+          deleteURL = "delete-interview-com";
+        } else if (role === "เจ้าหน้าที่งานการศึกษา") {
+          userType = "education-department";
+          deleteURL = "delete-edu";
+        } else {
+          userType = "public-relations";
+          deleteURL = "delete-pr";
+        }
+
+        const response = await fetch(`${API_BASE_URL}/${userType}/${deleteURL}/${selectedUser.adminId}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-          },
+          }
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to delete user from ${userType}`);
+          throw new Error("Failed to delete user round.");
         }
       }
 
-      for (const role of roleEditUser.roles) {
-        const userType = mapRoleToUserType(role);
+      let sharedId: string | undefined;
+      for (let i = 0; i < roleEditUser.roles.length; i++) {
+        const role = roleEditUser.roles[i];
+        let userType = "";
+        console.log('share id', sharedId)
+
+        if (role === "กรรมการหลักสูตร") {
+          userType = "course-committee";
+        } else if (role === "กรรมการสัมภาษณ์") {
+          userType = "interview-committee";
+        } else if (role === "เจ้าหน้าที่งานการศึกษา") {
+          userType = "education-department";
+        } else {
+          userType = "public-relations";
+        }
+
+        // Generate ID only on the first run
+        const method = i === 0 ? "create" : "role";
+
+        const bodyData = generateAdmissionBody(roleEditUser, role, method, sharedId);
+
         const response = await fetch(`${API_BASE_URL}/${userType}/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(generateAdmissionBody(roleEditUser, role, "role")),
+          body: JSON.stringify(bodyData),
         });
+        console.log("Sending to:", `${API_BASE_URL}/${userType}/`);
+        console.log("Body:", JSON.stringify(bodyData));
 
-        if (!response.ok) {
-          throw new Error(`Failed to create user in ${userType}`);
+        // Capture ID from first POST response
+        if (i === 0) {
+          const data = await response.json();
+
+          // Extract correct ID from the response object
+          sharedId =
+            data.courseComId ||
+            data.interviewComId ||
+            data.educationId ||
+            data.PRid;
         }
       }
 
@@ -384,18 +452,23 @@ const PermissionPage = () => {
     try {
       for (const role of selectedUser.roles) {
         let userType = "";
+        let deleteURL = "";
 
-        if (role === "Course Committee") {
+        if (role === "กรรมการหลักสูตร") {
           userType = "course-committee";
-        } else if (role === "Interview Committee") {
+          deleteURL = "delete-courseC";
+        } else if (role === "กรรมการสัมภาษณ์") {
           userType = "interview-committee";
-        } else if (role === "Education Department") {
+          deleteURL = "delete-interview-com";
+        } else if (role === "เจ้าหน้าที่งานการศึกษา") {
           userType = "education-department";
+          deleteURL = "delete-edu";
         } else {
           userType = "public-relations";
+          deleteURL = "delete-pr";
         }
 
-        const response = await fetch(`${API_BASE_URL}/${userType}/${selectedUser.adminId}`, {
+        const response = await fetch(`${API_BASE_URL}/${userType}/${deleteURL}/${selectedUser.adminId}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -446,8 +519,66 @@ const PermissionPage = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMenuOpen]);
 
+
+  ///handle search
+  const handleSearch = () => {
+    setFilters(filterValues);
+  };
+
+  interface FilterState {
+    firstName?: string,
+    lastName?: string,
+    email?: string,
+    role?: string,
+  }
+
+  const [filters, setFilters] = useState<FilterState>();
+
+  const [filterValues, setFilterValues] = useState<FilterState>();
+
+  const filteredUsers = admins.filter(ad =>
+    (!filters?.firstName || ad.firstName?.includes(filters.firstName)) &&
+    (!filters?.lastName || ad.lastName?.includes(filters.lastName)) &&
+    (!filters?.email || ad.email?.includes(filters.email)) &&
+    (!filters?.role || ad.roles?.includes(filters.role))
+
+  );
+
+  
+  // handle lastSeen sort
+  const [sortOrder, setSortOrder] = useState("recent");
+
+  const parseLastSeen = (dateStr: string) => {
+    const [datePart, timePart] = dateStr.split(" ");
+    const [day, month, year] = datePart.split("-").map(Number);
+    const [hour, minute] = timePart.split(".").map(Number);
+    return new Date(year, month - 1, day, hour, minute);
+  };
+
+  const toggleSortOrder = () => {
+    setSortOrder(prev => prev === "recent" ? "oldest" : "recent");
+  };
+
+  const sortedUsers = useMemo(() => {
+    return [...filteredUsers].sort((a, b) => {
+      const dateA = parseLastSeen(a.lastSeen ?? "");
+      const dateB = parseLastSeen(b.lastSeen ?? "");
+
+      if (sortOrder === "recent") {
+        return dateB.getTime() - dateA.getTime();
+      } else {
+        return dateA.getTime() - dateB.getTime();
+      }
+    });
+  }, [filteredUsers, sortOrder]);
+
+  // handle hide password column
+  const [revealedPasswordUserId, setRevealedPasswordUserId] = useState(null);
+
+
   return (
     <div className="flex flex-col h-screen bg-white">
+      {showModal && <Modal role="admin" />}
       {showAlert && <AlertAdmin message={alertMessage} onClose={handleCloseAlert} />}
       {/* Navbar */}
       <AdminNavbar isCollapsed={isCollapsed} />
@@ -455,7 +586,7 @@ const PermissionPage = () => {
       <div className="flex flex-row flex-1 relative">
         {/* Sidebar */}
         <div className="relative z-50">
-          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRole="admin" />
+          <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} userRoles={roles} />
         </div>
 
         {/* Main Content */}
@@ -477,43 +608,59 @@ const PermissionPage = () => {
               {/* ฟิลด์ SearchField ที่มีปัญหา */}
               <SearchField
                 label="ชื่อผู้ใช้งาน"
-                value={searchData.username}
-                onChange={(value) => setSearchData({ ...searchData, username: value ? String(value) : "" })}
+                value={filterValues?.firstName || ""}
+                onChange={(value) => {
+                  if (typeof value === "object" && value !== null && "value" in value) {
+                    setFilterValues({ ...filterValues, firstName: value.value });
+                  } else {
+                    setFilterValues({ ...filterValues, firstName: value ?? undefined });
+                  }
+                }}
                 placeholder="กรุณากรอกข้อมูล"
               />
 
               <SearchField
                 label="นามสกุลผู้ใช้งาน"
-                value={searchData.lastName}
-                onChange={(value) => setSearchData({ ...searchData, lastName: value ? String(value) : "" })}
+                value={filterValues?.lastName || ""}
+                onChange={(value) => {
+                  if (typeof value === "object" && value !== null && "value" in value) {
+                    setFilterValues({ ...filterValues, lastName: value.value });
+                  } else {
+                    setFilterValues({ ...filterValues, lastName: value ?? undefined });
+                  }
+                }}
                 placeholder="กรุณากรอกข้อมูล"
               />
 
               <SearchField
                 label="อีเมล"
-                value={searchData.email}
-                onChange={(value) => setSearchData({ ...searchData, email: value ? String(value) : "" })}
+                value={filterValues?.email || ""}
+                onChange={(value) => {
+                  if (typeof value === "object" && value !== null && "value" in value) {
+                    setFilterValues({ ...filterValues, email: value.value });
+                  } else {
+                    setFilterValues({ ...filterValues, email: value ?? undefined });
+                  }
+                }}
                 placeholder="กรุณากรอกข้อมูล"
               />
+
               <SearchField
                 label="บทบาท"
                 type="dropdown"
-                value={searchData.role}
-                onChange={(selectedOption) =>
-                  setSearchData({
-                    ...searchData,
-                    role:
-                      typeof selectedOption === "object" && selectedOption !== null
-                        ? selectedOption.value
-                        : ""
-                  })
-                }
-
+                value={filterValues?.role || ""}
+                onChange={(option) => {
+                  if (typeof option === "object" && option !== null && "value" in option) {
+                    setFilterValues({ ...filterValues, role: option.value });
+                  } else {
+                    setFilterValues({ ...filterValues, role: "" });
+                  }
+                }}
                 options={[
                   { value: "กรรมการหลักสูตร", label: "กรรมการหลักสูตร" },
                   { value: "ประชาสัมพันธ์ (PR)", label: "ประชาสัมพันธ์ (PR)" },
                   { value: "กรรมการสัมภาษณ์", label: "กรรมการสัมภาษณ์" },
-                  { value: "ฝ่ายการศึกษา", label: "ฝ่ายการศึกษา" },
+                  { value: "เจ้าหน้าที่งานการศึกษา", label: "เจ้าหน้าที่งานการศึกษา" },
                 ]}
                 placeholder="เลือกบทบาท"
               />
@@ -533,7 +680,7 @@ const PermissionPage = () => {
           <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 px-6">
             {/* แสดงจำนวนผู้ใช้ทั้งหมด */}
             <h2 className="text-lg font-bold text-[#565656] whitespace-nowrap">
-              ผู้ใช้งานทั้งหมด <span className="text-[#6B7280] font-bold">{sortedPermissions.length}</span>
+              ผู้ใช้งานทั้งหมด <span className="text-[#6B7280] font-bold">{filteredUsers.length}</span>
             </h2>
 
             {/* ปุ่มเพิ่มผู้ใช้งาน */}
@@ -563,7 +710,7 @@ const PermissionPage = () => {
               isEditRole={false}
               onSave={(formData) => {
                 if (isEditMode) {
-                  handleSaveEditUser({ ...formData, id: selectedUser?.adminId || 0 }); // เซฟข้อมูลที่แก้ไข
+                  handleSaveEditUser({ ...formData, id: selectedUser?.adminId || "" }); // เซฟข้อมูลที่แก้ไข
                 } else {
                   handleSaveAddUser(formData); // เซฟผู้ใช้ใหม่
                 }
@@ -619,11 +766,12 @@ const PermissionPage = () => {
                       height={14}
                     />
                   </th>
+                  <th className="px-6 py-3 border-b whitespace-nowrap">แสดงรหัสผ่าน</th>
                   <th className="px-6 py-3 border-b whitespace-nowrap"></th>
                 </tr>
               </thead>
               <tbody>
-                {sortedPermissions.map((user, index) => (
+                {sortedUsers.map((user, index) => (
                   <tr key={index} className="border-b hover:bg-gray-50">
                     <td className="px-6 py-3 text-[#565656] whitespace-nowrap">{index + 1}</td>
                     <td className="px-6 py-3 text-[#565656] whitespace-nowrap">
@@ -636,16 +784,28 @@ const PermissionPage = () => {
                         <span
                           key={`${user.adminId}-${idx}`}
                           className={`mr-2 
-              ${role === "Course Committee" ? "text-[#008A90]" : ""}
-              ${role === "Interview Committee" ? "text-[#4F46E5]" : ""}
-              ${role === "Public Relations" ? "text-[#DAA520]" : ""}
-              ${role === "Education Department" ? "text-[#166534]" : ""}`}
+              ${role === "กรรมการหลักสูตร" ? "text-[#008A90]" : ""}
+              ${role === "กรรมการสัมภาษณ์" ? "text-[#4F46E5]" : ""}
+              ${role === "ประชาสัมพันธ์ (PR)" ? "text-[#DAA520]" : ""}
+              ${role === "เจ้าหน้าที่งานการศึกษา" ? "text-[#166534]" : ""}`}
                         >
                           {role}
                         </span>
                       ))}
                     </td>
                     <td className="px-6 py-3 text-[#565656] whitespace-nowrap">{user.lastSeen}</td>
+                    <td className="px-6 py-3 text-[#565656] whitespace-nowrap flex items-center gap-2">
+                      {revealedPasswordUserId === user.adminId ? user.password : '********'}
+                      <button
+                        onClick={() =>
+                          setRevealedPasswordUserId(revealedPasswordUserId === user.adminId ? null : user.adminId)
+                        }
+                        className="mt-[-9px] text-sm text-blue-500 hover:underline"
+                      >
+                        {revealedPasswordUserId === user.adminId ? 'ซ่อน' : 'แสดง'}
+                      </button>
+                    </td>
+
                     <td className="px-6 py-3 text-center relative whitespace-nowrap">
                       <button
                         className="text-[#565656] hover:text-gray-900 flex items-center justify-center"
