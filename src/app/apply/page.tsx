@@ -127,7 +127,7 @@ export default function Home() {
         const response = await authFetch(`${process.env.API_BASE_URL}/applicant/updated-admission-id/${appId}/${admisionId}`, {
             method: 'POST',
         })
-        router.push(`/CourseList?program=${program}`);
+        router.push(`/CourseList?program=${program}&id=${admisionId}`);
     }
   };
 

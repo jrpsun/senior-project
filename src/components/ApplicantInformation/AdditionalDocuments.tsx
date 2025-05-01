@@ -8,7 +8,7 @@ import { additionalDocumentsTexts } from "../../translation/AdditionalDocsInfo";
 import Image from "next/image";
 import { authFetch } from '@components/lib/auth';
 
-const AdditionalDocuments = ({ setDoc, appId }: any) => {
+const AdditionalDocuments = ({ setDoc, appId, admId }: any) => {
   const { language } = useLanguage();
   const currentTexts = additionalDocumentsTexts[language] || additionalDocumentsTexts["ENG"];
   const [formData, setFormData] = useState({
@@ -27,25 +27,37 @@ const AdditionalDocuments = ({ setDoc, appId }: any) => {
     additionalSize: "",
   })
 
-  useEffect(() => {
-    console.log("Doc FormData", formData)
-  },[formData])
 
   useEffect(() => {
-    if (appId) {
+    if (appId && admId) {
       fetchDocuments();
     }
-  },[appId])
+  },[appId, admId])
 
   const fetchDocuments = async() => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/document/${appId}`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/document/${appId}/${admId}`, {
       method: 'GET',
     });
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const data = await response.json()
-    setFormData(data)
+    setFormData({
+      stateOfPurpose: data?.stateOfPurpose || "",
+      stateOfPurposeName: data?.stateOfPurposeName || "",
+      stateOfPurposeSize: data?.stateOfPurposeSize || "",
+      portfolio: data?.portfolio || "",
+      portfolioName: data?.portfolioName || "",
+      portfolioSize: data?.portfolioSize || "",
+      vdo: data?.vdo || "",
+      applicantResume: data?.applicantResume || "",
+      applicantResumeName: data?.applicantResumeName || "",
+      applicantResumeSize: data?.applicantResumeSize || "",
+      additional: data?.additional || "",
+      additionalName: data?.additionalName || "",
+      additionalSize: data?.additionalSize || "",
+    })
+    console.log("aaddiisd", data)
   }
 
   const handleUploadFile = (file : File, field: string) => {

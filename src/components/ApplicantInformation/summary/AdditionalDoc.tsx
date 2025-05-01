@@ -6,7 +6,7 @@ import AdditionalDocumentsSummary from "./Info/additionalSummary";
 import { authFetch } from "@components/lib/auth";
 
 
-const AdditionalDocumentsPage = ({appId}: any) => {
+const AdditionalDocumentsPage = ({appId, admId}: any) => {
   const { language } = useLanguage();
   const texts = summaryTexts[language] || summaryTexts["ENG"];
   const [isVisible, setIsVisible] = useState(false)
@@ -27,13 +27,13 @@ const AdditionalDocumentsPage = ({appId}: any) => {
   })
 
   useEffect(() => {
-    if (appId) {
+    if (appId && admId) {
       fetchDocuments();
     }
-  },[appId])
+  },[appId, admId])
 
   const fetchDocuments = async() => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/document/${appId}`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/document/${appId}/${admId}`, {
       method: 'GET',
     });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -52,6 +52,7 @@ const AdditionalDocumentsPage = ({appId}: any) => {
         documents={formData}
         isVisible={isVisible}
         setIsVisible={setIsVisible}
+        setReport={null}
       />
     </div>
   );

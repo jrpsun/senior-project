@@ -7,7 +7,7 @@ import { ApplicantEducationResponse, EducationBackground, EducationEngExam, Educ
 import { authFetch } from "@components/lib/auth";
 
 
-const EducationInformation = ({ onUpdate, appId }: { onUpdate: any, appId: string }) => {
+const EducationInformation = ({ onUpdate, appId, admId }: { onUpdate: any, appId: string, admId: string }) => {
   const [data, setData] = useState<ApplicantEducationResponse | null>(null);
 
   const [allChanges, setAllChanges] = useState({
@@ -41,7 +41,7 @@ const EducationInformation = ({ onUpdate, appId }: { onUpdate: any, appId: strin
   };
 
   const fetchEducationData = async () => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/education/${appId}`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/education/${appId}/${admId}`, {
       method: 'GET',
     });
 
@@ -52,10 +52,10 @@ const EducationInformation = ({ onUpdate, appId }: { onUpdate: any, appId: strin
   
 
   useEffect(() => {
-    if (appId) {
+    if (appId && admId) {
       fetchEducationData();
     }
-  }, [appId]);
+  }, [appId, admId]);
 
   return (
   <div className="flex flex-col gap-4 pb-10">

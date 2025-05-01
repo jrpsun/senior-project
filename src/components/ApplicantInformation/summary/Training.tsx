@@ -35,13 +35,14 @@ import { authFetch } from "@components/lib/auth";
 //   },
 // ];
 
-const TrainingPage = ({appId}: any) => {
+const TrainingPage = ({appId, admId}: any) => {
   const { language } = useLanguage();
   const texts = summaryTexts[language] || summaryTexts["ENG"];
   const [isVisible, setIsVisible] = useState(false)
   const [formData, setFormData] = useState([{
       trainingId: "",
       applicantId: "",
+      programRegistered: "",
       nameOfCourse: "",
       institution: "",
       trainingYear: "",
@@ -54,7 +55,7 @@ const TrainingPage = ({appId}: any) => {
 
 
   const fetchTrining = async() => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/training/${appId}`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/training/${appId}/${admId}`, {
       method: 'GET',
     });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -64,10 +65,10 @@ const TrainingPage = ({appId}: any) => {
   }
 
   useEffect(() => {
-      if (appId) {
+      if (appId && admId) {
         fetchTrining();
       }
-  }, [appId])
+  }, [appId, admId])
 
   return (
     <div className="space-y-6">
@@ -79,6 +80,7 @@ const TrainingPage = ({appId}: any) => {
         trainings={formData}
         isVisible={isVisible}
         setIsVisible={setIsVisible}
+        setReport={null}
       />
     </div>
   );

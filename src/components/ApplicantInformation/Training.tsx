@@ -15,7 +15,7 @@ import Popup from '../../components/common/popup'; // เพิ่ม import pop
 import { authFetch } from '@components/lib/auth';
 import { OCRLoadingModal } from '../OCRLoading';
 
-const Training = ({ setTrain, appId }: any) => {
+const Training = ({ setTrain, appId, admId }: any) => {
   const { language } = useLanguage();
   const currentTexts = trainingTexts[language] || trainingTexts["ENG"];
   const [isPopupOpen, setPopupOpen] = useState(false);
@@ -24,6 +24,7 @@ const Training = ({ setTrain, appId }: any) => {
   const [formData, setFormData] = useState([{
     trainingId: "",
     applicantId: "",
+    programRegistered: "",
     nameOfCourse: "",
     institution: "",
     trainingYear: "",
@@ -35,14 +36,11 @@ const Training = ({ setTrain, appId }: any) => {
   }])
 
   useEffect(() => {
-    if (appId) {
+    if (appId && admId) {
       fetchTrining();
     }
-  }, [appId])
+  }, [appId, admId])
 
-  useEffect(() => {
-      console.log("Updated Training formData:", formData);
-    }, [formData]); 
 
   const generateLongId = () => {
     const part1 = Date.now().toString(36); // เวลาปัจจุบันในฐาน 36
@@ -53,7 +51,7 @@ const Training = ({ setTrain, appId }: any) => {
   }
 
   const fetchTrining = async() => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/training/${appId}`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/training/${appId}/${admId}`, {
       method: 'GET',
     });
 
@@ -64,6 +62,7 @@ const Training = ({ setTrain, appId }: any) => {
       setFormData([{
         trainingId: generateLongId(),
         applicantId: appId,
+        programRegistered: admId,
         nameOfCourse: "",
         institution: "",
         trainingYear: "",
@@ -84,6 +83,7 @@ const Training = ({ setTrain, appId }: any) => {
     setFormData([...formData, {
       trainingId: id,
       applicantId: appId,
+      programRegistered: admId,
       nameOfCourse: "",
       institution: "",
       trainingYear: "",

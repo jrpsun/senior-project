@@ -35,6 +35,7 @@ export default function CourseList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const program = searchParams.get("program") || "DST"; // ค่าเริ่มต้นเป็น DST
+  const id = searchParams.get("id")
 
   const { language } = useLanguage() as { language: "TH" | "ENG" };
 
@@ -162,7 +163,7 @@ export default function CourseList() {
 
           {/* ปุ่ม NextButton */}
           <div className="flex justify-center mt-5 mb-5">
-            <NextButton onClick={() => router.push(`/apply/ApplicationInfo?program=${program}`)}>
+            <NextButton onClick={() => router.push(`/apply/ApplicationInfo?program=${program}&id=${id}`)}>
               {texts.nextButton}
             </NextButton>
           </div>

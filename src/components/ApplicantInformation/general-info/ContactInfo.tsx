@@ -9,10 +9,11 @@ import { ContactInfoInterface } from "@components/types/generalInfoType";
 
 interface ContractInfoProps {
   data: ContactInfoInterface;
+  email: string;
   onChange: (data: any) => void;
 }
 
-const ContactInfo: React.FC<ContractInfoProps> = ({ data, onChange }) => {
+const ContactInfo: React.FC<ContractInfoProps> = ({ data, email, onChange }) => {
   const { language } = useLanguage();
   const currentLanguage = language || "ENG";
   const currentTexts = generalInfoTexts[currentLanguage] || generalInfoTexts["ENG"];
@@ -35,17 +36,17 @@ const ContactInfo: React.FC<ContractInfoProps> = ({ data, onChange }) => {
   };
 
   useEffect(() => {
-    if (data) {
+    if (data && email) {
       setFormData({
         applicantPhone: data.applicantPhone || "",
-        applicantEmail: data.applicantEmail || "",
+        applicantEmail: email || "",
         line: data.line || "",
         facebook: data.facebook || "",
         instagram: data.instagram || "",
       });
       setChangedData({});
     }
-  }, [data]);
+  }, [data, email]);
 
   return (
     <div className="flex justify-center py-5 bg-[white]">

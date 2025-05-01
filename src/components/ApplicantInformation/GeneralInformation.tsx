@@ -10,13 +10,16 @@ import {
   GeneralInfoInterface,
   ContactInfoInterface,
   EmergencyContactInterface,
-  AdmissionChannelInterface
+  AdmissionChannelInterface,
+  ApplicantRegistrationsInfoResponse
 } from "@components/types/generalInfoType";
 import { authFetch } from "@components/lib/auth";
 
 
-const GeneralInformation = ({ onUpdate, appId }: { onUpdate: any, appId: string }) => {
+const GeneralInformation = ({ onUpdate, appId, admId }: { onUpdate: any, appId: string, admId: string }) => {
   const [data, setData] = useState<ApplicantGeneralInformationResponse | null>(null);
+  const [regisData, setRegisData] = useState<ApplicantRegistrationsInfoResponse | null>(null);
+  
   
   const [allChanges, setAllChanges] = useState({
     personalInfo: {},
@@ -50,24 +53,36 @@ const GeneralInformation = ({ onUpdate, appId }: { onUpdate: any, appId: string 
   };
 
   const fetchGeneralInfoData = async () => {
-    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/general/${appId}`, {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/general/${appId}/${admId}`, {
       method: 'GET',
     });
     if (!response.ok) throw new Error("Failed to fetch general data");
     const result = await response.json();
     setData(result)
+    console.log("success fetchGeneralInfoData")
+  }
+
+  const fetchRegistrationData = async() => {
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/registrations/${appId}`, {
+      method: 'GET',
+    });
+    if (!response.ok) throw new Error("Failed to fetch registrations data");
+    const result = await response.json();
+    setRegisData(result)
+    console.log("success fetchRegistrationData")
   }
 
   useEffect(() => {
     if (appId) {
-      fetchGeneralInfoData()
+      fetchGeneralInfoData();
+      fetchRegistrationData();
     }
   }, [appId]);
 
   return (
     <div className="flex flex-col gap-4 pb-10">
-      <PersonalInfo data={data?.general_info as GeneralInfoInterface} onChange={(data) => handleChildUpdate('personalInfo', data)}/>
-      <ContactInfo data={data?.contact_info as ContactInfoInterface} onChange={(data) => handleChildUpdate('contactInfo', data)}/>
+      <PersonalInfo data={data?.general_info as GeneralInfoInterface} regisData={regisData as ApplicantRegistrationsInfoResponse} onChange={(data) => handleChildUpdate('personalInfo', data)}/>
+      <ContactInfo data={data?.contact_info as ContactInfoInterface} email={regisData?.applicantEmail as string} onChange={(data) => handleChildUpdate('contactInfo', data)}/>
       <EmergencyContact data={data?.emergency_contact as EmergencyContactInterface} onChange={(data) => handleChildUpdate('emergencyContact', data)}/>
       <NewsSubscription data={data?.admission_channel as AdmissionChannelInterface} onChange={(data) => handleChildUpdate('newsSubscription', data)}/>
     </div>

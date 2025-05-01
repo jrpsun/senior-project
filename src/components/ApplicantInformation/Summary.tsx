@@ -12,7 +12,7 @@ import AdditionalDoc from "./summary/AdditionalDoc";
 import { BackButton, ConfirmApplicationButton, PrintDocumentButton, CancelApplicationButton } from "../common/button";
 import Popup from "../common/popup";
 
-const Summary = ({onOpenPopup, appId}: any) => {
+const Summary = ({onOpenPopup, appId, admId}: any) => {
     const router = useRouter();
     const { language } = useLanguage() as { language: "TH" | "EN" };
     const [isConfirmOpen, setConfirmOpen] = useState(false);
@@ -60,11 +60,11 @@ const Summary = ({onOpenPopup, appId}: any) => {
                             </span>
                             <span className="block md:inline"> {summaryTexts[language].subtitle}</span>
                         </h2>
-                        <GeneralInfo appId={appId}/>
-                        <EducationInfo appId={appId}/>
-                        <Awards appId={appId}/>
-                        <Training appId={appId}/>
-                        <AdditionalDoc appId={appId}/>
+                        <GeneralInfo appId={appId} admId={admId}/>
+                        <EducationInfo appId={appId} admId={admId}/>
+                        <Awards appId={appId} admId={admId}/>
+                        <Training appId={appId} admId={admId}/>
+                        <AdditionalDoc appId={appId} admId={admId}/>
                     </>
                 ) : (
                     // แสดงข้อมูลใหม่เมื่อกดยืนยันสมัครแล้ว
@@ -91,11 +91,11 @@ const Summary = ({onOpenPopup, appId}: any) => {
                         <p className="text-[20px] text-[#565656] mt-2">
                             {summaryTexts[language].applicationNumber}
                         </p>
-                        <GeneralInfo appId={appId}/>
-                        <EducationInfo appId={appId}/>
-                        <Awards appId={appId}/>
-                        <Training appId={appId}/>
-                        <AdditionalDoc appId={appId}/>
+                        <GeneralInfo appId={appId} admId={admId}/>
+                        <EducationInfo appId={appId} admId={admId}/>
+                        <Awards appId={appId} admId={admId}/>
+                        <Training appId={appId} admId={admId}/>
+                        <AdditionalDoc appId={appId} admId={admId}/>
                     </div>
                 )}
             </div>

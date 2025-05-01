@@ -8,7 +8,7 @@ import MathTestScoreSummary from "./Info/educationInfo/MathTestScoreSummary";
 import { ApplicantEducationResponse, EducationBackground, EducationEngExam, EducationMathExam } from "@components/types/educationInfoType";
 import { authFetch } from "@components/lib/auth";
 
-const EducationInfo = ({appId}: any) => {
+const EducationInfo = ({appId, admId}: any) => {
     const { language } = useLanguage();
     const texts = summaryTexts[language] || summaryTexts["ENG"];
     const [eduData, setEduData] = useState<ApplicantEducationResponse | null>(null);
@@ -18,7 +18,7 @@ const EducationInfo = ({appId}: any) => {
         dateStr ? new Date(dateStr).toISOString().split("T")[0] : "";
 
     const fetchEducationData = async () => {
-        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/education/${appId}`, {
+        const response = await authFetch(`${process.env.API_BASE_URL}/applicant/education/${appId}/${admId}`, {
             method: 'GET',
         });
         if (!response.ok) throw new Error("Failed to fetch education data");
@@ -41,10 +41,10 @@ const EducationInfo = ({appId}: any) => {
     }
 
     useEffect(() => {
-        if (appId) {
+        if (appId && admId) {
             fetchEducationData();
         }
-    },[appId])
+    },[appId, admId])
 
     
     return (
@@ -57,6 +57,7 @@ const EducationInfo = ({appId}: any) => {
                 props={eduData?.background as EducationBackground}
                 isVisible={isVisible}
                 setIsVisible={setIsVisible}
+                setReport={null}
             />
 
             {/* แสดงผลคะแนนสอบภาษาอังกฤษ  */}
