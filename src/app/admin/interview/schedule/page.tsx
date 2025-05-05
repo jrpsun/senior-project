@@ -90,6 +90,14 @@ const InterviewSchedulePage = () => {
   }));
   console.log('available com', availableCommittees)
 
+
+  const allCommittees = committees.map((com) => ({
+    interviewComId: com.interviewComId || "",
+    prefix: com.prefix || "",
+    firstName: com.firstName || "",
+    lastName: com.lastName || ""
+  }))
+
   const [interviewRounds, setInterviewRounds] = useState<InterviewRound[]>([]);
   const [isEdit, setIsEdit] = useState(false);
   const [editIndex, setEditIndex] = useState<number | null>(null);
@@ -555,6 +563,21 @@ const InterviewSchedulePage = () => {
   );
 
 
+  // handle change eng date to thai date
+  function toThaiDate(dateStr: string): string {
+    const monthsThaiShort = [
+      "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+      "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+    ]
+  
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const thaiYear = year + 543;
+    const thaiMonth = monthsThaiShort[month - 1];
+  
+    return `${day} ${thaiMonth} ${thaiYear}`;
+  }
+
+  
   return (
     <div className="flex flex-col h-screen bg-white">
       {showModal && <Modal role="admin" />}
@@ -699,7 +722,7 @@ const InterviewSchedulePage = () => {
                         <td className="p-2 w-[60px] text-center whitespace-nowrap">{index + 1}</td>
                         <td className="p-2 w-[80px] whitespace-nowrap">{item.admissionProgram}</td>
                         <td className="p-2 w-[250px] whitespace-nowrap">{item.admissionRoundName}</td>
-                        <td className="p-2 w-[130px] whitespace-nowrap">{item.interviewDate}</td>
+                        <td className="p-2 w-[130px] whitespace-nowrap">{toThaiDate(item.interviewDate)}</td>
                         <td className="p-2 w-[100px] whitespace-nowrap">{item.startTime}</td>
                         <td className="p-2 w-[100px] whitespace-nowrap">{item.endTime}</td>
                         <td className="p-2 w-[200px] whitespace-nowrap  ">{item.duration} นาที</td>
@@ -762,7 +785,7 @@ const InterviewSchedulePage = () => {
                       <tr key={index} className="border-b hover:bg-gray-50">
                         <td className="p-2 text-center whitespace-nowrap">{index + 1}</td>
                         <td className="p-2 whitespace-nowrap">{formatThaiDate(item.interviewDate)}</td>
-                        <td className="p-2 whitespace-nowrap">{item.interviewTime}</td>
+                        <td className="p-2 whitespace-nowrap">{item.interviewStartTime} - {item.interviewEndTime}</td>
                         <td className="p-2 whitespace-nowrap">{item.admissionProgram}</td>
                         <td className="p-2 whitespace-nowrap">{item.admissionRoundName}</td>
                         <td className="p-2 whitespace-nowrap">
@@ -829,7 +852,7 @@ const InterviewSchedulePage = () => {
       )}
       {showRoomPopup && (
         <PopupAddRoom
-          allInterviewers={availableCommittees}
+          allInterviewers={allCommittees}
           onCancel={() => setShowRoomPopup(false)}
           onSaveRoom={handleSaveRoomDetail}
           interviewDetail={
@@ -851,7 +874,7 @@ const InterviewSchedulePage = () => {
       )}
       {showEditRoomPopup && editingRoom && (
         <PopupEditInterviewRoom
-          allInterviewers={availableCommittees}
+          allInterviewers={allCommittees}
           roomData={editingRoom}
           onSave={(updatedRoom) => handleEditRoomDetails(updatedRoom)}
           onCancel={() => setShowEditRoomPopup(false)}

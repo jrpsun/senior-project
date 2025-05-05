@@ -118,7 +118,7 @@ const PopupEditInterviewRoom = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block font-medium text-[#565656] mb-1">ห้องสัมภาษณ์</label>
+                        <label className="block font-medium text-[#565656] mb-1">ห้องสัมภาษณ์ / ลิงก์ออนไลน์</label>
                         <input
                             type="text"
                             className="w-full border border-gray-300 rounded-lg px-3 py-2"

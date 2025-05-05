@@ -703,6 +703,9 @@ const SummaryResultPage = () => {
                                 <div key={index} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
                                     {/* หัวตาราง */}
                                     <div className="bg-[#C4C4C4] px-6 py-3 text-[#333] font-semibold flex flex-wrap gap-x-8">
+                                        <div>หลักสูตร: {group.admissionProgram}</div>
+                                        <div>ปีการศึกษา: </div>
+                                        <div>รอบรับสมัคร: {group.admissionRoundName}</div>
                                         <div>ห้องสัมภาษณ์: <span className="font-bold">{group.interviewRoom}</span></div>
                                         <div>กรรมการสัมภาษณ์: {group.committee}</div>
                                     </div>

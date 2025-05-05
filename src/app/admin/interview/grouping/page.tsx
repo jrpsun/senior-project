@@ -67,17 +67,24 @@ const Page = () => {
                 fetch(`${API_BASE_URL}/education-department/get-all-int-slot`)
             ])
 
-            if (!res_app.ok || !res_room.ok || !res_slot.ok) {
+            if (!res_app.ok || !res_room.ok) {
                 throw new Error("Failed to fetch one or more resources");
             }
+
 
             const data_app = await res_app.json()
             const data_room = await res_room.json()
             const data_slot = await res_slot.json()
 
-            setApplicants(data_app.applicants || []);
+            setApplicants(data_app.applicants.filter((app) => app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "06 - รอสัมภาษณ์") || []);
             setRooms(data_room.room || []);
-            setInterviewSlot(data_slot || []);
+            if (!res_slot.ok) {
+                setInterviewSlot([]);
+            }
+            else {
+                setInterviewSlot(data_slot || []);
+            }
+
 
         } catch (err) {
             console.error("Error fetching data:", err);
@@ -90,6 +97,8 @@ const Page = () => {
         fetchData();
     }, []);
     console.log("slot ###", interviewSlot)
+    console.log("all apps", applicants)
+
 
     useEffect(() => {
         const statusMap = new Map<string, boolean>();
@@ -253,11 +262,13 @@ const Page = () => {
             for (const { slotStart, slotEnd, timeRangeStr } of availableSlots) {
                 if (applicantsQueue.length === 0) break;
 
-                const appId = applicantsQueue.shift();
+                const appIdWithAdmId = applicantsQueue.shift(); // '0000001 dqhrsjpeu'
+                const [appId, admId] = appIdWithAdmId.split(" "); // Split into appId and admId
                 const dateTime = `${interviewDate} - ${timeRangeStr}`;
 
                 assignments.push({
                     appId,
+                    admId, // New admId field
                     roundId: interviewRoundId,
                     interviewRoom,
                     interviewRoomId,
@@ -270,9 +281,11 @@ const Page = () => {
         // ⏳ Handle unassigned applicants
         const unassigned = applicantsQueue;
         if (unassigned.length > 0) {
-            unassigned.forEach(appId => {
+            unassigned.forEach(appIdWithAdmId => {
+                const [appId, admId] = appIdWithAdmId.split(" ");
                 assignments.push({
                     appId,
+                    admId, // New admId field
                     unassigned: true,
                 });
             });
@@ -284,9 +297,8 @@ const Page = () => {
             setGroupedApplicants(assignments);
             setIsGrouped(true);
         }
-
-
     };
+
 
 
 
@@ -298,6 +310,7 @@ const Page = () => {
             const [intDate, intTime] = item.dateTime.split(' - ');
             return {
                 applicantId: item.appId,
+                programRegistered: item.admId,
                 room: item.interviewRoom,
                 intDate: intDate,
                 intTime: intTime,
@@ -309,6 +322,7 @@ const Page = () => {
 
     const handleSaveGrouping = async () => {
         const transformedData = transformInterviewData(groupedApplicants);
+        console.log("to send to backend ?????", transformedData)
 
         try {
             const response = await fetch(`${API_BASE_URL}/interview-committee/create-interview-eva`, {
@@ -425,6 +439,7 @@ const Page = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     applicantId: currentApplicant,
+                    programRegistered: currentADMID,
                     interviewRoom: room,
                     interviewRoundId: roundId,
                     interviewTime: `${start}-${end}`
@@ -444,19 +459,43 @@ const Page = () => {
     const [startTime, setStartTime] = useState("");
     const [endTime, setEndTime] = useState("");
     const [currentApplicant, setCurrentApplicant] = useState("");
+    const [currentADMID, setCurrentADMID] = useState("");
     const handleEditMode = (app: InterviewScreeningForEduInterface) => {
         setEditingInterview(app);
         setShowEditInterviewPopup(true);
-        setStartTime(app.interviewTime.split('-')[0])
-        setEndTime(app.interviewTime.split('-')[1])
+        setStartTime(app.interviewTime.split(/[-–—]/)[0])
+        setEndTime(app.interviewTime.split(/[-–—]/)[1])
         setCurrentApplicant(app.applicantId)
+        setCurrentADMID(app.programRegistered)
     }
 
+    // handle change eng date to thai date
+    // function toThaiDateTime(dateTimeStr: string): string {
+    //     const monthsThaiShort = [
+    //         "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+    //         "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+    //     ];
+
+
+    //     const [datePart, timePart] = dateTimeStr.split(" - ");
+    //     const [year, month, day] = datePart.split("-").map(Number);
+    //     const thaiYear = year + 543;
+    //     const thaiMonth = monthsThaiShort[month - 1];
+
+    //     return `${day} ${thaiMonth} ${thaiYear} ${timePart} น.`;
+    // }
+
+
+    // debugging
     console.log('selected app', selectedApplicants)
     console.log('selected room(s)', selectedRooms)
     console.log('grouped applicant', groupedApplicants)
-    console.log('is all app are grouped?????', isAllGrouped)
-    console.log('date time is --->', startTime, endTime)
+    //console.log('is all app are grouped?????', isAllGrouped)
+    console.log('str --->', startTime, endTime)
+    console.log('end --->', endTime)
+    console.log('now edit', editingInterview)
+    console.log('current adm id', currentADMID)
+
     return (
         <div className="flex flex-col min-h-screen bg-white">
             {showModal && <Modal role="admin" />}
@@ -560,9 +599,9 @@ const Page = () => {
                                     <tbody>
                                         {paginatedApplicants.map((app, index) => {
 
-                                            const uniqueKey = `${app.applicantId}`;
+                                            const uniqueKey = `${app.applicantId} ${app.programRegistered}`;
                                             const isSelected = selectedApplicants.includes(uniqueKey);
-                                            const groupedApp = groupedApplicants.find(item => item.appId === app.applicantId)
+                                            const groupedApp = groupedApplicants.find(item => item.appId === app.applicantId && item.admId === app.programRegistered)
                                             const handleCheckboxChange = () => {
                                                 if (isSelected) {
                                                     setSelectedApplicants(selectedApplicants.filter((id) => id !== uniqueKey));
@@ -573,7 +612,7 @@ const Page = () => {
 
                                             return (
                                                 <tr
-                                                    key={app.applicantId}
+                                                    key={uniqueKey}
                                                     className={`text-[#565656] h-[50px] items-center 
                                                     ${app.admissionStatus !== "09 - ยกเลิกการสมัคร" ? "hover:bg-gray-50" : ""}
                                                     ${app.admissionStatus === "09 - ยกเลิกการสมัคร" ? "bg-[#FFE8E8]" : ""}
@@ -613,12 +652,12 @@ const Page = () => {
                                                     </td>
 
                                                     <td className="text-center whitespace-nowrap text-[#565656]">
-                                                        {app.interviewRoom ? (
-                                                            app.interviewRoom
-                                                        ) : isGrouped ? (
+                                                        {isGrouped ? (
                                                             <div>
                                                                 <span>{groupedApp?.interviewRoom}</span>
                                                             </div>
+                                                        ) : app.interviewRoom ? (
+                                                            app.interviewRoom
                                                         ) : (
                                                             <div className="flex items-center justify-center gap-1 text-[#B9B9B9]">
                                                                 <Image

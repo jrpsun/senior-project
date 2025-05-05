@@ -371,6 +371,21 @@ const AdmissionRoundsPage = () => {
     //(!filters?.available || ad.available?.includes(filters.available)) 
   );
 
+  // handle change eng date to thai date
+  function toThaiDate(dateStr: string): string {
+    const monthsThaiShort = [
+      "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+      "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+    ]
+  
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const thaiYear = year + 543;
+    const thaiMonth = monthsThaiShort[month - 1];
+  
+    return `${day} ${thaiMonth} ${thaiYear}`;
+  }
+
+  
   return (
     <div className="flex flex-col h-screen bg-white">
       {showModal && <Modal role="admin" />}
@@ -488,7 +503,7 @@ const AdmissionRoundsPage = () => {
                       {/*round.round.includes("ปีการศึกษา") ? round.round : `${round.round} ปีการศึกษา ${round.year || "ไม่ระบุ"}`*/}
                       {round.roundName}
                     </td>
-                    <td className="px-6 py-3 text-[#565656]">{round.startDate} {round.endDate}</td>
+                    <td className="px-6 py-3 text-[#565656]">{toThaiDate(round.startDate)} - {toThaiDate(round.endDate)}</td>
                     <td className="px-6 py-3 text-[#565656] text-center w-[240px]">
                       {(currentDate >= round.startDate) && (currentDate <= round.endDate) ? (
                         <span className="px-6 py-0.5 rounded-[10px] text-[#13522B] bg-[#E2F5E2]">

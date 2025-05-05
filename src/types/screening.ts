@@ -34,10 +34,12 @@ export interface CourseComScreeningInterface {
     preEvaDate?: string;
     preliminaryEva?: string;
     preliminaryComment?: string;
+    programRegistered?: string;
     
 }
 
 export interface InterviewComScreeningInterface {
+    admissionId?: string;
     roundName?: string;
     applicantId?: string;
     firstnameEN?: string;
@@ -147,4 +149,5 @@ export interface IntEvaSummaryResponse {
     admissionProgram?: string;
     admissionRoundName?: string;
     applicants?: IntEvaSummaryApplicantsResponse[]
+    academicYear?: string;
 }

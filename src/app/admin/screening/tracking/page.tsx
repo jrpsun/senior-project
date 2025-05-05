@@ -12,54 +12,53 @@ import { getDecodedToken } from "@components/lib/auth";
 import Modal from "@components/components/common/popup-login";
 import { useRouter } from "next/navigation";
 
-const applicant = [
-    { round: 'DST01', applicantId: '0000001', name: 'อาทิตย์ แสงจันทร์', course: 'ITDS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 09.04 น.' },
-    { round: 'ICT01', applicantId: '0000001', name: 'กนกวรรณ ทองสุข', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 09.10 น.' },
-    { round: 'DST01', applicantId: '0000002', name: 'พิชญะ วิสุทธิ์', course: 'ITDS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '31 มี.ค. 2568 09.15 น.' },
-    { round: 'ICT01', applicantId: '0000002', name: 'วราภรณ์ เจริญสุข', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '31 มี.ค. 2568 09.23 น.' },
-    { round: 'ICT01', applicantId: '0000003', name: 'อนันต์ โชติกุล', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 09.45 น.' },
-    { round: 'ICT01', applicantId: '0000004', name: 'ปรียาภรณ์ สุทธิวัฒน์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 11.02 น.' },
-    { round: 'ICT01', applicantId: '0000005', name: 'ธนากร ศรีสวัสดิ์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 11.03 น.' },
-    { round: 'ICT01', applicantId: '0000006', name: 'ณัฐมน มณีวงศ์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 11.07 น.' },
-    { round: 'DST01', applicantId: '0000003', name: 'วิศรุต พิทักษ์ธรรม', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '' },
-    { round: 'ICT01', applicantId: '0000007', name: 'อภิรักษ์ ธีรพัฒนเกียรติ', course: 'ITCS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: ' ' },
-    { round: 'DST01', applicantId: '0000008', name: 'กนกวรรณ วัฒนปัญญากุล', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: ' ' },
-    { round: 'ICT01', applicantId: '0000009', name: 'พิชญา นาคสุข', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 13.10 น.' },
-    { round: 'ICT01', applicantId: '0000010', name: 'ชลธิชา นันทวโรภาส', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 13.12 น.' },
-    { round: 'ICT01', applicantId: '0000012', name: 'พัชรีย์ เกษมสุขเจริญ', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 13.23 น.' },
-    { round: 'ICT01', applicantId: '0000013', name: 'จารุวรรณ รัตนศิลป์', course: 'ITCS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 13.56 น.' },
-    { round: 'DST01', applicantId: '0000005', name: 'วารินทร์ รัตนประเสริฐกุล', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
-    { round: 'ICT01', applicantId: '0000014', name: 'ศุภชัย จิตตเมธากานต์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 15.34 น.' },
-    { round: 'DST01', applicantId: '0000006', name: 'มนัสนันท์ อัครพงศ์วณิช', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
-    { round: 'ICT01', applicantId: '0000015', name: 'ปรเมศวร์ อินทร์สถิตธรรม', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 15.40 น.' },
-    { round: 'ICT01', applicantId: '0000016', name: 'ธัญญ์วาริน บุญฤทธิ์วรา', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 15.43 น.' },
-    { round: 'ICT01', applicantId: '0000017', name: 'วรเมธ รัตนากรไพบูลย์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 15.47 น.' },
-    { round: 'ICT01', applicantId: '0000018', name: 'ณัฐณิชา พิพัฒน์เวชกิจ', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 15.53 น.' },
-    { round: 'ICT01', applicantId: '0000019', name: 'วีรยุทธ พิพัฒน์ผล', course: 'ITCS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.02 น.' },
-    { round: 'DST01', applicantId: '0000007', name: 'อนวัช ธนเศรษฐกุลภักดี', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
-    { round: 'ICT01', applicantId: '0000020', name: 'ชยุตม์ ภูมิวรางกูร', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.02 น.' },
-    { round: 'DST01', applicantId: '0000008', name: 'ขวัญฤดี บุญเรือง', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
-    { round: 'ICT01', applicantId: '0000021', name: 'ภูริชญ์ วัฒนศิริธรรมรัตน์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.08 น.' },
-    { round: 'ICT01', applicantId: '0000022', name: 'ศักดิ์สิทธิ์ จันทร์เพ็ญ', course: 'ITCS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.10 น.' },
-    { round: 'ICT01', applicantId: '0000023', name: 'ปรเมศวร์ ชัยมงคล', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.15 น.' },
-    { round: 'ICT01', applicantId: '0000024', name: 'นลินี โชติวัฒน์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.18 น.' },
-    { round: 'ICT01', applicantId: '0000025', name: 'ธเนศ วงศ์มณฑลพัฒนา', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.20 น.' },
-    { round: 'ICT01', applicantId: '0000025', name: 'ธนบดี มิ่งมงคลทรัพย์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.24 น.' }
-]
+// const applicant = [
+//     { round: 'DST01', applicantId: '0000001', name: 'อาทิตย์ แสงจันทร์', course: 'ITDS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 09.04 น.' },
+//     { round: 'ICT01', applicantId: '0000001', name: 'กนกวรรณ ทองสุข', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 09.10 น.' },
+//     { round: 'DST01', applicantId: '0000002', name: 'พิชญะ วิสุทธิ์', course: 'ITDS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '31 มี.ค. 2568 09.15 น.' },
+//     { round: 'ICT01', applicantId: '0000002', name: 'วราภรณ์ เจริญสุข', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '31 มี.ค. 2568 09.23 น.' },
+//     { round: 'ICT01', applicantId: '0000003', name: 'อนันต์ โชติกุล', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 09.45 น.' },
+//     { round: 'ICT01', applicantId: '0000004', name: 'ปรียาภรณ์ สุทธิวัฒน์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 11.02 น.' },
+//     { round: 'ICT01', applicantId: '0000005', name: 'ธนากร ศรีสวัสดิ์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 11.03 น.' },
+//     { round: 'ICT01', applicantId: '0000006', name: 'ณัฐมน มณีวงศ์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 11.07 น.' },
+//     { round: 'DST01', applicantId: '0000003', name: 'วิศรุต พิทักษ์ธรรม', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '' },
+//     { round: 'ICT01', applicantId: '0000007', name: 'อภิรักษ์ ธีรพัฒนเกียรติ', course: 'ITCS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: ' ' },
+//     { round: 'DST01', applicantId: '0000008', name: 'กนกวรรณ วัฒนปัญญากุล', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: ' ' },
+//     { round: 'ICT01', applicantId: '0000009', name: 'พิชญา นาคสุข', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 13.10 น.' },
+//     { round: 'ICT01', applicantId: '0000010', name: 'ชลธิชา นันทวโรภาส', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 13.12 น.' },
+//     { round: 'ICT01', applicantId: '0000012', name: 'พัชรีย์ เกษมสุขเจริญ', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 13.23 น.' },
+//     { round: 'ICT01', applicantId: '0000013', name: 'จารุวรรณ รัตนศิลป์', course: 'ITCS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 13.56 น.' },
+//     { round: 'DST01', applicantId: '0000005', name: 'วารินทร์ รัตนประเสริฐกุล', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
+//     { round: 'ICT01', applicantId: '0000014', name: 'ศุภชัย จิตตเมธากานต์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 15.34 น.' },
+//     { round: 'DST01', applicantId: '0000006', name: 'มนัสนันท์ อัครพงศ์วณิช', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
+//     { round: 'ICT01', applicantId: '0000015', name: 'ปรเมศวร์ อินทร์สถิตธรรม', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 15.40 น.' },
+//     { round: 'ICT01', applicantId: '0000016', name: 'ธัญญ์วาริน บุญฤทธิ์วรา', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 15.43 น.' },
+//     { round: 'ICT01', applicantId: '0000017', name: 'วรเมธ รัตนากรไพบูลย์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 15.47 น.' },
+//     { round: 'ICT01', applicantId: '0000018', name: 'ณัฐณิชา พิพัฒน์เวชกิจ', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 15.53 น.' },
+//     { round: 'ICT01', applicantId: '0000019', name: 'วีรยุทธ พิพัฒน์ผล', course: 'ITCS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.02 น.' },
+//     { round: 'DST01', applicantId: '0000007', name: 'อนวัช ธนเศรษฐกุลภักดี', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
+//     { round: 'ICT01', applicantId: '0000020', name: 'ชยุตม์ ภูมิวรางกูร', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.02 น.' },
+//     { round: 'DST01', applicantId: '0000008', name: 'ขวัญฤดี บุญเรือง', course: 'ITDS/B', admitStatus: '03 - รอพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '' },
+//     { round: 'ICT01', applicantId: '0000021', name: 'ภูริชญ์ วัฒนศิริธรรมรัตน์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.08 น.' },
+//     { round: 'ICT01', applicantId: '0000022', name: 'ศักดิ์สิทธิ์ จันทร์เพ็ญ', course: 'ITCS/B', admitStatus: '05 - ไม่ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.10 น.' },
+//     { round: 'ICT01', applicantId: '0000023', name: 'ปรเมศวร์ ชัยมงคล', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.15 น.' },
+//     { round: 'ICT01', applicantId: '0000024', name: 'นลินี โชติวัฒน์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.18 น.' },
+//     { round: 'ICT01', applicantId: '0000025', name: 'ธเนศ วงศ์มณฑลพัฒนา', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.20 น.' },
+//     { round: 'ICT01', applicantId: '0000025', name: 'ธนบดี มิ่งมงคลทรัพย์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.24 น.' }
+// ]
 
 const courseOptions = [
     { label: "ITDS/B", value: "หลักสูตร DST (ไทย)" },
     { label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)" }
 ];
 const roundOptions = [
-    { label: "1/68 - MU – Portfolio (TCAS 1)", value: "DST01" },
-    { label: "1/68 - ICT Portfolio", value: "ICT01" },
+    { label: "1/68 - MU - Portfolio", value: "1/68 - MU - Portfolio" },
+    { label: "1/68 - ICT Portfolio", value: "1/68 - ICT Portfolio" },
 ];
 
 const ScreeningStatusOptions = [
     { label: "แสดงทั้งหมด", value: '' },
     { label: "ผ่านการพิจารณา", value: "04 - ผ่านการพิจารณา" },
-    //{ label: "ผ่านการพิจารณา", value: "04 - ผ่านการพิจารณา" },
     { label: "ไม่ผ่านการพิจารณา", value: "05 - ไม่ผ่านการพิจารณา" },
     { label: "รอพิจารณา", value: "03 - รอพิจารณา" }
 ];
@@ -68,7 +67,7 @@ const Page = () => {
     const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
     const [committees, setCommittees] = useState<EduScreeningGroupingAllCourseComInterface[]>([]);
     const [applicants, setApplicants] = useState<CourseComScreeningInterface[]>([]);
-    const [appTest, setAppTest] = useState<InterviewScreeningForEduInterface[]>([]);
+    //const [appTest, setAppTest] = useState<InterviewScreeningForEduInterface[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [roles, setRoles] = useState<string[]>([]);
@@ -87,23 +86,23 @@ const Page = () => {
 
     async function fetchData() {
         try {
-            const [res_com, res_app, res_test] = await Promise.all([
+            const [res_com, res_app] = await Promise.all([
                 fetch(`${API_BASE_URL}/course-committee/get-all-courseC`),
-                fetch(`${API_BASE_URL}/course-committee/all-applicant-courseC`),
-                fetch(`${API_BASE_URL}/education-department/get-summary-applicants-interview`)
+                fetch(`${API_BASE_URL}/course-committee/all-applicant-courseC`)
+                //fetch(`${API_BASE_URL}/education-department/get-summary-applicants-interview`)
             ]);
 
-            if (!res_com.ok || !res_app.ok || !res_test.ok) {
+            if (!res_com.ok || !res_app.ok) {
                 throw new Error("Failed to fetch one or more resources");
             }
 
             const data_com = await res_com.json();
             const data_app = await res_app.json();
-            const data_test = await res_test.json();
+            //const data_test = await res_test.json();
 
             setCommittees(data_com || []);
-            setApplicants(data_app.applicants || []);
-            setAppTest(data_test.applicants || []);
+            setApplicants(data_app.applicants.filter((app) => app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "03 - รอพิจารณา" || app.admissionStatus === "05 - ไม่ผ่านการพิจารณา") || []);
+            //setAppTest(data_test.applicants || []);
 
         } catch (err) {
             console.error("Error fetching data:", err);
@@ -115,7 +114,7 @@ const Page = () => {
     useEffect(() => {
         fetchData();
     }, []);
-    console.log("appTest", appTest);
+    //console.log("appTest", appTest);
 
     const committeeOptions = committees.map((com) => ({
         label: `อ. ${com.firstName}`,
@@ -123,14 +122,14 @@ const Page = () => {
         full: `${com.prefix} ${com.firstName} ${com.lastName}`
     }));
 
-    const committeeOptions1 = appTest.map((com) => (
-        com.InterviewCommittee?.map((com) => ({
-            label: `${com.name}`,
-            value: `${com.id}`,
-            result: `${com.InterviewResult}`
-        }))
-    ));
-    console.log("committeeOptions1", committeeOptions1);
+    // const committeeOptions1 = appTest.map((com) => (
+    //     com.InterviewCommittee?.map((com) => ({
+    //         label: `${com.name}`,
+    //         value: `${com.id}`,
+    //         result: `${com.InterviewResult}`
+    //     }))
+    // ));
+    // console.log("committeeOptions1", committeeOptions1);
 
     const [isCollapsed, setIsCollapsed] = useState(false);
     interface FilterState {
@@ -199,8 +198,22 @@ const Page = () => {
 
     const router = useRouter();
 
-    const handleClickView = (appId: string) => {
-        router.push(`/admin/applicant/view?id=${appId}`);
+    const handleClickView = (appId: string, admId: string) => {
+        router.push(`/admin/applicant/view?id=${appId}&admId=${admId}`);
+    }
+
+    // handle change eng date to thai date
+    function toThaiDate(dateStr: string): string {
+        const monthsThaiShort = [
+            "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+            "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+        ]
+
+        const [year, month, day] = dateStr.split("-").map(Number);
+        const thaiYear = year + 543;
+        const thaiMonth = monthsThaiShort[month - 1];
+
+        return `${day} ${thaiMonth} ${thaiYear}`;
     }
 
     return (
@@ -434,7 +447,7 @@ const Page = () => {
                                                     <td className="py-2 whitespace-nowrap"><span>{app.prefix} {app.firstName} {app.lastName}</span></td>
                                                     <td className="py-2 whitespace-nowrap text-center">
                                                         {app.preEvaDate ? (
-                                                            app.preEvaDate
+                                                            toThaiDate(app.preEvaDate || "")
                                                         ) : (
                                                             <div className="flex justify-center items-center text-[#DAA520] gap-1">
                                                                 <svg
@@ -493,7 +506,7 @@ const Page = () => {
 
                                                         {(app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" || app.admissionStatus === "03 - รอพิจารณา") && (
                                                             <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] "
-                                                                onClick={() => handleClickView(app.applicantId || "")}>
+                                                                onClick={() => handleClickView(app.applicantId || "", app.programRegistered || "")}>
                                                                 <div className="flex flex-row gap-1">
                                                                     <div className="pt-1">
                                                                         <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">

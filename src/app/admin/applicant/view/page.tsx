@@ -64,11 +64,13 @@ const viewApplicantInfo = () => {
 
 
     const { language } = useLanguage();
-    const texts = generalInfoTexts[language] || generalInfoTexts["ENG"];
-    const titletexts = summaryTexts[language] || summaryTexts["ENG"];
+    // const texts = generalInfoTexts[language] || generalInfoTexts["ENG"];
+    // const titletexts = summaryTexts[language] || summaryTexts["ENG"];
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const appId = searchParams.get('id')
     const admId = searchParams.get('admId')
+    // debugging
+    console.log("adm id",admId)
 
 
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -489,6 +491,9 @@ const viewApplicantInfo = () => {
         });
     }
 
+    //debugging
+    console.log("appinfo",appInfo)
+
     return (
         <div>
             {showModal && <Modal role="admin"/>}
@@ -502,13 +507,13 @@ const viewApplicantInfo = () => {
                 </div>
                 <ViewInfoAdmin
                     course={appInfo?.program || ""}
-                    round={appInfo?.roundName|| ""}
-                    year={appInfo?.academicYear|| ""}
-                    applicantNumber={appInfo?.applicantId|| ""}
-                    fullName={appInfo?.firstnameEN + " " + appInfo?.lastnameEN|| ""}
-                    admissionStatus={appInfo?.admissionStatus|| ""}
-                    docStatus={appInfo?.docStatus|| ""}
-                    paymentStatus={appInfo?.paymentStatus|| ""}
+                    round={appInfo?.roundName || ""}
+                    year={appInfo?.academicYear || ""}
+                    applicantNumber={appInfo?.applicantId || ""}
+                    fullName={appInfo?.firstnameEN + " " + appInfo?.lastnameEN || ""}
+                    admissionStatus={appInfo?.admissionStatus || ""}
+                    docStatus={appInfo?.docStatus || ""}
+                    paymentStatus={appInfo?.paymentStatus || ""}
                 />
                 {problem && ["01 - ยังไม่ยื่นใบสมัคร", "02 - ยื่นใบสมัครแล้ว", "03 - รอพิจารณา"].includes(appInfo?.admissionStatus || "") ? (
                     problem.details?.trim() === "เอกสารครบถ้วน" && Object.values(report).every(value => value === "") ? (
@@ -841,6 +846,7 @@ const viewApplicantInfo = () => {
                                     applicantId: appId || "",
                                     courseComId: ccId || "Y",
                                     committeeName: name || "",
+                                    programRegisteredId: admId || "",
                                     // preEvaDate: QpreEvaDate,
                                     // preEvaResult: QpreEva,
                                     // comment: Qcomment,
@@ -856,6 +862,7 @@ const viewApplicantInfo = () => {
                             <InterviewEvaSummary
                                 props={{
                                     app_id: appId || "",
+                                    adm_id: admId || "",
                                     edu_id: eduId || "",
                                     path: Qpath,
                                     interviewCom: QinterviewComId
