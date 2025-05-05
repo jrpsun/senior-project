@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 
 import { PreEvaDataInterface, PreEvainterface } from '@components/types/preEva';
-import { CourseComScreeningInterface } from '@components/types/screening';
 /**********************
 
 
@@ -20,12 +19,12 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
     //const [applicants, setApplicants] = useState<CourseComScreeningInterface[]>([]);
     const [preEva, setPreEva] = useState<PreEvaDataInterface[]>([]);
     const [loading, setLoading] = useState(true);
-    console.log("xxxxxxxxxx", props.path)
+    //console.log("xxxxxxxxxx", props.path)
 
     async function fetchData() {
         try {
             const [res_preEva] = await Promise.all([
-                fetch(`${API_BASE_URL}/course-committee/get-preEva/${props.applicantId}`)
+                fetch(`${API_BASE_URL}/course-committee/get-preEva/${props.applicantId}/${props.programRegisteredId}`)
                 //fetch(`${API_BASE_URL}/course-committee/all-applicant-courseC/${props.courseComId}`)
             ]);
 
@@ -33,7 +32,7 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
                 throw new Error("Failed to fetch one or more resources");
             }
             const preEvaData = await res_preEva.json();
-            console.log('preEvaData', preEvaData)
+            //console.log('preEvaData', preEvaData)
             //const appData = await res_app.json();
 
             setPreEva(preEvaData || []);
@@ -73,6 +72,7 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
                 },
                 body: JSON.stringify({
                     app_id: props.applicantId,
+                    programRegistered: props.programRegisteredId,
                     com_id: props.courseComId,
                     preEvaResult: result,
                     comment: note,
@@ -98,8 +98,8 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
         { value: 'ไม่ผ่านการคัดกรอง', label: 'ไม่ผ่านการคัดกรอง' },
         { value: 'ผ่านการคัดกรอง', label: 'ผ่านการคัดกรอง' },
     ]
-    console.log('props1', props.applicantId)
-    console.log('props2', props.courseComId)
+    //og('props1', props.applicantId)
+    //console.log('props2', props.courseComId)
     const [result, setResult] = useState("");
     const [note, setNote] = useState("");
 
@@ -111,10 +111,25 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
         setResult(preEva.preliminaryEva)
         setNote(preEva.preliminaryComment)
     }
-
-    console.log('isEdit', isEdit)
+    // debugging
+    //console.log('isEdit', isEdit)
     const checkForEdit = preEva.preliminaryEva//applicants.find(applicant => applicant.applicantId === props.applicantId)?.preliminaryEva
-    console.log('checkForEdit', checkForEdit)
+    //console.log('checkForEdit', checkForEdit)
+    //console.log("path", props.path)
+
+    // handle change eng date to thai date
+    function toThaiDate(dateStr: string): string {
+        const monthsThaiShort = [
+            "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+            "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+        ]
+
+        const [year, month, day] = dateStr.split("-").map(Number);
+        const thaiYear = year + 543;
+        const thaiMonth = monthsThaiShort[month - 1];
+
+        return `${day} ${thaiMonth} ${thaiYear}`;
+    }
 
     return (
         <div className='flex justify-center py-5 bg-[white]'>
@@ -123,7 +138,7 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
                     {["/admin/screening/tracking", "/admin/interview/candidates", "/admin/interview/tracking"].includes(props.path || "") && checkForEdit !== "null" ? (
                         <div className='p-6 bg-white rounded-lg w-full max-w-5xl mx-auto'>
 
-                            <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mb-[50px]">ข้อมูลกรรมการหลักสูตร</h2>
+                            <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mb-[50px]">ข้อมูลกรรมการหลักสูตร 1</h2>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-1">
                                 <div>
                                     <p className="text-[#565656] font-bold mb-[25px]">กรรมการหลักสูตร</p>
@@ -132,7 +147,7 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
 
                                 <div className='ml-[125px]'>
                                     <p className="text-[#565656] font-bold mb-[25px]">วันที่ประเมิน</p>
-                                    <p className="text-[#565656] text-left pl-6">{preEva?.preEvaDate}</p>
+                                    <p className="text-[#565656] text-left pl-6">{toThaiDate(preEva?.preEvaDate || "")}</p>
                                 </div>
                             </div>
 
@@ -161,7 +176,7 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
                                         className={`flex flex-row bg-[#008A90] text-white border rounded-lg px-4 py-2 flex items-center
                                             ${isEdit ? 'opacity-50 cursor-not-allowed' : ''}
                                             `}
-                                        onClick={() => setIsEdit(true)}
+                                        onClick={() => handleEdit()}
                                     >
                                         <div>
                                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -184,16 +199,16 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
                                     </button>
                                 </div>
 
-                                <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mb-[50px]">ข้อมูลกรรมการหลักสูตร</h2>
+                                <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mb-[50px]">ข้อมูลกรรมการหลักสูตร 2</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-1">
                                     <div>
                                         <p className="text-[#565656] font-bold mb-[25px]">กรรมการหลักสูตร</p>
-                                        <p className="text-[#565656] text-left pl-6">{props?.committeeName}</p>
+                                        <p className="text-[#565656] text-left pl-6">{preEva?.comPrefix} {preEva?.firstName} {preEva?.lastName}</p>
                                     </div>
 
                                     <div className='ml-[125px]'>
                                         <p className="text-[#565656] font-bold mb-[25px]">วันที่ประเมิน</p>
-                                        <p className="text-[#565656] text-left pl-6">{preEva?.preEvaDate}</p>
+                                        <p className="text-[#565656] text-left pl-6">{toThaiDate(preEva?.preEvaDate || "")}</p>
                                     </div>
                                 </div>
                                 {isEdit === false ? (
@@ -258,12 +273,12 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
                         </div>
                     ) : (
                         <div className='p-6 bg-white rounded-lg w-full max-w-5xl mx-auto'>
-
-                            <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mb-[50px]">ข้อมูลกรรมการหลักสูตร</h2>
+                            {/* ครั้งแรกที่ course com เข้ามา */}
+                            <h2 className="text-2xl text-[#008A90] font-semibold mb-6 mb-[50px]">ข้อมูลกรรมการหลักสูตร 3</h2>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-1">
                                 <div>
                                     <p className="text-[#565656] font-bold mb-[25px]">กรรมการหลักสูตร</p>
-                                    <p className="text-[#565656] text-left pl-6">{props?.committeeName}</p>
+                                    <p className="text-[#565656] text-left pl-6">{preEva?.comPrefix} {preEva?.firstName} {preEva?.lastName}</p>
                                 </div>
                             </div>
 
@@ -306,7 +321,7 @@ const PreliminaryEvaSummary: React.FC<PreEvaProps> = ({ props }) => {
 
 
                 </div>
-                {(props.path !== '/admin/screening/tracking') && (props.path !== '/admin/interview/candidates') && result &&(
+                {(props.path !== '/admin/screening/tracking') && (props.path !== '/admin/interview/candidates') && result && (
                     <div className='flex mt-4 justify-center'>
                         <button
                             className={`flex flex-row space-x-1 ml-[25px] border bg-[#008A90] rounded-md px-8 py-2 text-white 

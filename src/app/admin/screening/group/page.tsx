@@ -15,8 +15,8 @@ const courseOptions = [
     { label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)" }
 ];
 const roundOptions = [
-    { label: "1/68 - MU – Portfolio (TCAS 1)", value: "DST01" },
-    { label: "1/68 - ICT Portfolio", value: "ICT01" },
+    { label: "1/68 - MU - Portfolio", value: "1/68 - MU - Portfolio" },
+    { label: "1/68 - ICT Portfolio", value: "1/68 - ICT Portfolio" },
 ];
 const admitStatusOptions = [
     { label: "03 - รอพิจารณา", value: "03 - รอพิจารณา" },
@@ -37,11 +37,11 @@ const Page = () => {
     useEffect(() => {
         const decoded = getDecodedToken();
         if (!decoded) {
-          setShowModal(true);
-          return;
+            setShowModal(true);
+            return;
         }
         setRoles(decoded.roles);
-      }, []);
+    }, []);
 
     async function fetchData() {
         try {
@@ -58,7 +58,7 @@ const Page = () => {
             const data_app = await res_app.json();
 
             setCommittees(data_com || []);
-            setApplicants(data_app.applicants || []);
+            setApplicants(data_app.applicants.filter((app) => app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "03 - รอพิจารณา" || app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" || app.admissionStatus === "02 - ยื่นใบสมัครแล้ว") || []);
 
         } catch (err) {
             console.error("Error fetching data:", err);
@@ -70,28 +70,45 @@ const Page = () => {
     useEffect(() => {
         fetchData();
     }, []);
-    console.log("all apps",applicants)
+    console.log("all apps", applicants)
 
-    const [selectedApplicantIds, setSelectedApplicantIds] = useState<string[]>([]);
+    type SelectedApplicant = {
+        applicantId: string;
+        programRegistered: string;
+    };
+
+    type ApplicantCommitteePair = {
+        app_id: string;
+        program_id: string;
+        com_id: string;
+    };
+
+    const [selectedApplicantIds, setSelectedApplicantIds] = useState<SelectedApplicant[]>([]);
     const [selectedCommittees, setSelectedCommittees] = useState<string[]>([]);
     const [editSelectedCommittees, setEditSelectedCommittees] = useState<string[]>([]);
-    const [editSelectedApplicantIds, setEditSelectedApplicantIds] = useState<string[]>([]);
+    const [editSelectedApplicantIds, setEditSelectedApplicantIds] = useState<SelectedApplicant[]>([]);
 
-    const createApplicantCommitteePairs = (applicantIds: string[], committees: string[]) => {
-        const validApplicantIds = Array.isArray(applicantIds) ? applicantIds : [];
-        const pairs = validApplicantIds.map((applicantId, index) => {
+    const createApplicantCommitteePairs = (
+        applicants: SelectedApplicant[],
+        committees: string[]
+    ): ApplicantCommitteePair[] => {
+        if (!Array.isArray(applicants) || !Array.isArray(committees) || committees.length === 0) return [];
+
+        return applicants.map((applicant, index) => {
             const committeeId = committees[index % committees.length];
-            return { app_id: applicantId, com_id: committeeId };
+            return {
+                app_id: applicant.applicantId,
+                program_id: applicant.programRegistered,
+                com_id: committeeId,
+            };
         });
-
-        return pairs;
     };
 
     const applicantCommitteePairs = createApplicantCommitteePairs(selectedApplicantIds, selectedCommittees);
     const editApplicantCommitteePairs = createApplicantCommitteePairs(editSelectedApplicantIds, editSelectedCommittees);
 
 
-    const sendPairsToBackend = async (pairs: { app_id: string; com_id: string }[]) => {
+    const sendPairsToBackend = async (pairs: { app_id: string; com_id: string; program_id: string }[]) => {
         try {
             const response = await fetch(`${process.env.API_BASE_URL}/education-department/update-edu-preEva`, {
                 method: 'PUT',
@@ -128,7 +145,7 @@ const Page = () => {
         committee?: string;
         grouping?: string;
     }
-    
+
 
     const [filters, setFilters] = useState<FilterState>({
         docStatus: "03 - เอกสารครบถ้วน",
@@ -199,16 +216,19 @@ const Page = () => {
 
     const [showPopup, setShowPopup] = useState(false)
     const [isGroupingMode, setIsGroupingMode] = useState(false);
-    const [isAssignedShowing, setIsAssignedShowing] = useState(false);
-    const isAllSelected = paginatedApplicants.every(app => selectedApplicantIds.includes(app.applicantId));
-    const [assignedCommitteeMap, setAssignedCommitteeMap] = useState<Record<string, string>>({});
+
     const [isEditing, setIsEditing] = useState(false);
-    const [showingEditDropdown, setShowingEditDropdown] = useState('');
+    const [currentEditingApplicant, setCurrentEditingApplicant] = useState<SelectedApplicant | null>(null);
+    const [showingEditDropdown, setShowingEditDropdown] = useState<string>(""); // for dropdown value
+
 
     const handleEnterGroupingMode = () => {
         setIsGroupingMode(!isGroupingMode);
     }
 
+    // handleAssign Committees
+    const [isAssignedShowing, setIsAssignedShowing] = useState(false);
+    const [assignedCommitteeMap, setAssignedCommitteeMap] = useState<Record<string, string>>({});
     const handleAssignCommittees = () => {
         const assignments: Record<string, string> = {};
         const totalApplicants = selectedApplicantIds.length;
@@ -226,10 +246,10 @@ const Page = () => {
 
             for (let i = 0; i < numberToAssign; i++) {
                 if (currentIndex >= totalApplicants) break;
-                const applicantId = selectedApplicantIds[currentIndex];
+                const { applicantId, programRegistered } = selectedApplicantIds[currentIndex];
                 const committee = committeeGroups.find((c) => c.value === committeeId);
                 if (committee) {
-                    assignments[applicantId] = committee.full;
+                    assignments[`${applicantId}_${programRegistered}`] = committee.full;
                 }
                 currentIndex++;
             }
@@ -241,9 +261,31 @@ const Page = () => {
 
 
 
+    //debugging
+    console.log("selected app", selectedApplicantIds)
+    console.log("select com", selectedCommittees)
+    console.log("to send to backend 1", applicantCommitteePairs)
+    console.log("to send to backend 2", editApplicantCommitteePairs)
+
+    //handle select all app
+    const currentPageItems = paginatedApplicants.filter(app => app.courseComId === null); // only selectable ones
+    const allPageSelections = currentPageItems.map(app => ({
+        applicantId: app.applicantId,
+        programRegistered: app.programRegistered,
+    }));
+
+    const isAllSelected = allPageSelections.every(sel =>
+        selectedApplicantIds.some(
+            item =>
+                item.applicantId === sel.applicantId &&
+                item.programRegistered === sel.programRegistered
+        )
+    );
+
+
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            {showModal && <Modal role="admin"/>}
+            {showModal && <Modal role="admin" />}
             <AdminNavbar
                 isCollapsed={isCollapsed}
             />
@@ -508,6 +550,7 @@ const Page = () => {
 
 
                                     <div className="flex flex-row space-x-2">
+                                        {/* กำลังจัดกลุ่ม */}
                                         <button
                                             className="min-w-[160px] border border-[#008A90] text-[#008A90] bg-white px-3 py-2 rounded-md flex items-center gap-2"
                                             onClick={handleAssignCommittees}
@@ -581,8 +624,29 @@ const Page = () => {
                                                 checked={isAllSelected}
                                                 className="w-5 h-5 accent-[#008A90] text-white rounded-md border-2"
                                                 onChange={(e) => {
-                                                    const allIds = paginatedApplicants.map(app => app.applicantId);
-                                                    setSelectedApplicantIds(e.target.checked ? allIds : []);
+                                                    setSelectedApplicantIds(prev => {
+                                                        if (e.target.checked) {
+                                                            // Add all items on this page that aren't already selected
+                                                            const newItems = allPageSelections.filter(sel =>
+                                                                !prev.some(
+                                                                    item =>
+                                                                        item.applicantId === sel.applicantId &&
+                                                                        item.programRegistered === sel.programRegistered
+                                                                )
+                                                            );
+                                                            return [...prev, ...newItems];
+                                                        } else {
+                                                            // Remove all items on this page
+                                                            return prev.filter(
+                                                                item =>
+                                                                    !allPageSelections.some(
+                                                                        sel =>
+                                                                            sel.applicantId === item.applicantId &&
+                                                                            sel.programRegistered === item.programRegistered
+                                                                    )
+                                                            );
+                                                        }
+                                                    });
                                                 }}
                                             />
                                         </th>)}
@@ -611,15 +675,35 @@ const Page = () => {
                                             {isGroupingMode && (<td className="text-center">
                                                 <input
                                                     type="checkbox"
-                                                    checked={selectedApplicantIds.includes(app.applicantId)}
+                                                    checked={selectedApplicantIds.some(
+                                                        item => item.applicantId === app.applicantId && item.programRegistered === app.programRegistered
+                                                    )}
                                                     disabled={app.courseComId !== null}
-                                                    className={`w-5 h-5 accent-[#008A90] text-white rounded-md border-2 ${app.courseComId !== null ? "border-gray-300 cursor-not-allowed" : ""}`}
+                                                    className={`w-5 h-5 accent-[#008A90] text-white rounded-md border-2 ${app.courseComId !== null ? "border-gray-300 cursor-not-allowed" : ""
+                                                        }`}
                                                     onChange={(e) => {
-                                                        setSelectedApplicantIds(prev =>
-                                                            e.target.checked
-                                                                ? [...prev, app.applicantId]
-                                                                : prev.filter(id => id !== app.applicantId)
-                                                        );
+                                                        setSelectedApplicantIds(prev => {
+                                                            const exists = prev.some(
+                                                                item => item.applicantId === app.applicantId && item.programRegistered === app.programRegistered
+                                                            );
+
+                                                            if (e.target.checked) {
+                                                                // Only add if not already in the list
+                                                                if (!exists) {
+                                                                    return [...prev, { applicantId: app.applicantId, programRegistered: app.programRegistered }];
+                                                                }
+                                                                return prev;
+                                                            } else {
+                                                                // Remove only this specific pair
+                                                                return prev.filter(
+                                                                    item =>
+                                                                        !(
+                                                                            item.applicantId === app.applicantId &&
+                                                                            item.programRegistered === app.programRegistered
+                                                                        )
+                                                                );
+                                                            }
+                                                        });
                                                     }}
                                                 />
                                             </td>)}
@@ -631,6 +715,7 @@ const Page = () => {
                                             <td className="text-center whitespace-nowrap">{app.program}</td>
                                             <td>
                                                 <div className={`mr-4 whitespace-nowrap
+                                                    ${app.admissionStatus === "02 - ยื่นใบสมัครแล้ว" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : ""}
                                                     ${app.admissionStatus === "03 - รอพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : ""}
                                                     ${app.admissionStatus === "04 - ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E2F5E2] text-[#166534]" : ""}
                                                     ${app.admissionStatus === "05 - ไม่ผ่านการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-[#991B1B]" : ""}
@@ -663,14 +748,12 @@ const Page = () => {
                                             <td className="text-center text-[#565656] whitespace-nowrap">
                                                 {isAssignedShowing ? (
                                                     (() => {
-                                                        const committee = committeeGroups.find(group =>
-                                                            group.value === applicantCommitteePairs.find(pair => pair.app_id === app.applicantId)?.com_id
-                                                        );
-                                                        return committee ? (
-                                                            <span>{committee.full}</span>
-                                                        ) : null;
-                                                    })()
+                                                        const key = `${app.applicantId}_${app.programRegistered}`;
+                                                        const assignedCommittee = assignedCommitteeMap[key];
+                                                        const committee = committeeGroups.find(group => group.full === assignedCommittee);
 
+                                                        return committee ? <span>{committee.full}</span> : null;
+                                                    })()
                                                 ) : app.prefix ? (
                                                     <span>{app.prefix} {app.firstName} {app.lastName}</span>
                                                 ) : (
@@ -694,9 +777,29 @@ const Page = () => {
                                                         <button
                                                             className="min-w-[160px] border border-[#F59E0B] text-[#F59E0B] bg-white mx-5 px-1 py-1 rounded-[10px] flex items-center gap-2"
                                                             onClick={() => {
-                                                                setShowPopup(true)
-                                                                setEditSelectedApplicantIds([...editApplicantCommitteePairs, app.applicantId])
+                                                                setShowPopup(true);
+
+                                                                const selected: SelectedApplicant = {
+                                                                    applicantId: app.applicantId,
+                                                                    programRegistered: app.programRegistered,
+                                                                };
+
+                                                                setCurrentEditingApplicant(selected); // Track who's being edited
+                                                                setShowingEditDropdown(app.courseComId);  // Set their initial committee
+                                                                setEditSelectedApplicantIds(prev => {
+                                                                    const exists = prev.some(
+                                                                        item =>
+                                                                            item.applicantId === selected.applicantId &&
+                                                                            item.programRegistered === selected.programRegistered
+                                                                    );
+                                                                    return exists ? prev : [...prev, selected];
+                                                                });
+
+                                                                setEditSelectedCommittees(prev =>
+                                                                    prev.includes(app.courseComId) ? prev : [...prev, app.courseComId]
+                                                                );
                                                             }}
+
                                                         >
                                                             <Image src="/images/admin/interview/edit_icon.svg" alt="แก้ไขการจัดกลุ่ม" width={20} height={20} />
                                                             <div>แก้ไขการจัดกลุ่ม</div>
@@ -710,11 +813,25 @@ const Page = () => {
                                                                         <div className="relative w-full">
                                                                             <select
                                                                                 onChange={(e) => {
-                                                                                    const value = e.target.value;
-                                                                                    if (value) {
-                                                                                        setShowingEditDropdown(value);
-                                                                                        setEditSelectedCommittees([...editSelectedCommittees, value]);
-                                                                                    }
+                                                                                    const newCommitteeId = e.target.value;
+                                                                                    setShowingEditDropdown(newCommitteeId);
+
+                                                                                    if (!currentEditingApplicant) return;
+
+                                                                                    // Replace the committee for the current editing applicant
+                                                                                    setEditSelectedCommittees(prev => {
+                                                                                        const index = editSelectedApplicantIds.findIndex(
+                                                                                            item =>
+                                                                                                item.applicantId === currentEditingApplicant.applicantId &&
+                                                                                                item.programRegistered === currentEditingApplicant.programRegistered
+                                                                                        );
+
+                                                                                        if (index === -1) return prev;
+
+                                                                                        const updated = [...prev];
+                                                                                        updated[index] = newCommitteeId;
+                                                                                        return updated;
+                                                                                    });
                                                                                 }}
                                                                                 value={showingEditDropdown}
                                                                                 className="appearance-none border border-gray-300 text-gray-500 rounded-md px-2 py-2 w-full pr-10"
@@ -726,6 +843,7 @@ const Page = () => {
                                                                                     </option>
                                                                                 ))}
                                                                             </select>
+
 
                                                                             <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
                                                                                 <Image

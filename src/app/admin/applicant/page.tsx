@@ -71,6 +71,8 @@ const Page = () => {
     useEffect(() => {
         fetchAllApplicants();
     }, []);
+    // debugging
+    console.log("all apps", applicants)
 
 
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -677,7 +679,7 @@ const Page = () => {
                                                     <td className="text-center whitespace-nowrap">{app.roundName}</td>
                                                     <td className="text-center whitespace-nowrap">{app.applicantNumber}</td>
                                                     <td className="whitespace-nowrap">{app.firstnameEN} {app.lastnameEN}</td>
-                                                    <td className="text-center whitespace-nowrap">{app.program}</td>
+                                                    <td className="text-center whitespace-nowrap">{app.programRegistered}</td>
 
                                                     <td>
                                                         <div className={`mr-4 whitespace-nowrap

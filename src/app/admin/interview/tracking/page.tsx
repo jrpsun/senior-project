@@ -203,8 +203,8 @@ const Page = () => {
 
     const router = useRouter();
 
-    const handleClickView = (appId: string) => {
-        router.push(`/admin/applicant/view?id=${appId}`);
+    const handleClickView = (appId: string, admId: string) => {
+        router.push(`/admin/applicant/view?id=${appId}&admId=${admId}`);
     }
 
     return (
@@ -462,7 +462,7 @@ const Page = () => {
                                                                                 : com.InterviewResult === "รอพิจารณาเพิ่มเติม"
                                                                                     ? "/images/admin/interview/statusFollowUp/wait_icon.svg"
                                                                                     : com.InterviewResult === "รอผลการประเมิน" || com.InterviewResult === null
-                                                                                        ? ""
+                                                                                        ? "/images/admin/interview/statusFollowUp/followUP_icon.svg"
                                                                                         : "/images/admin/interview/statusFollowUp/calendar_icon.svg"
                                                                     }
                                                                     alt={com.InterviewResult || ""}
@@ -477,7 +477,7 @@ const Page = () => {
                                                 <td className="py-2 text-center whitespace-nowrap">
 
                                                     <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] "
-                                                        onClick={() => handleClickView(app.applicantId || "")}>
+                                                        onClick={() => handleClickView(app.applicantId || "", app.programRegistered || "")}>
                                                         <div className="flex flex-row gap-1">
                                                             <div className="pt-1">
                                                                 <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">

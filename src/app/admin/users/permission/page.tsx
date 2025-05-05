@@ -575,6 +575,21 @@ const PermissionPage = () => {
   // handle hide password column
   const [revealedPasswordUserId, setRevealedPasswordUserId] = useState(null);
 
+// handle change eng date to thai date
+function toThaiDateTime(dateTimeStr: string): string {
+  const monthsThaiShort = [
+    "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+    "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+  ];
+  
+
+  const [datePart, timePart] = dateTimeStr.split(" ");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const thaiYear = year + 543;
+  const thaiMonth = monthsThaiShort[month - 1];
+
+  return `${day} ${thaiMonth} ${thaiYear} ${timePart} น.`;
+}
 
   return (
     <div className="flex flex-col h-screen bg-white">
@@ -793,7 +808,7 @@ const PermissionPage = () => {
                         </span>
                       ))}
                     </td>
-                    <td className="px-6 py-3 text-[#565656] whitespace-nowrap">{user.lastSeen}</td>
+                    <td className="px-6 py-3 text-[#565656] whitespace-nowrap">{toThaiDateTime(user.lastSeen)}</td>
                     <td className="px-6 py-3 text-[#565656] whitespace-nowrap flex items-center gap-2">
                       {revealedPasswordUserId === user.adminId ? user.password : '********'}
                       <button

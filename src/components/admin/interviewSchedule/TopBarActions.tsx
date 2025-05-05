@@ -159,7 +159,7 @@ const TopBarActions: React.FC<TopBarActionsProps> = ({
               width={20}
               height={20}
             />
-            <div>จัดกลุ่มอัตโนมัติ</div>
+            <div>จัดกลุ่มอัตโนมัติ 2</div>
           </button>
 
           <button
@@ -218,7 +218,7 @@ const TopBarActions: React.FC<TopBarActionsProps> = ({
               width={20}
               height={20}
             />
-            <div>จัดกลุ่มอัตโนมัติ</div>
+            <div>จัดกลุ่มอัตโนมัติ 1</div>
           </button>
 
           <button

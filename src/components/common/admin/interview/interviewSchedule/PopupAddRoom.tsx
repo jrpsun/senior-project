@@ -111,7 +111,7 @@ const PopupAddRoom = ({
 
                 {/* Room */}
                 <div className="mb-4">
-                    <label className="block text-[#565656] font-bold mb-1">ห้องสัมภาษณ์</label>
+                    <label className="block text-[#565656] font-bold mb-1">ห้องสัมภาษณ์ / ลิงก์ออนไลน์</label>
                     <input
                         type="text"
                         placeholder="ระบุห้องสัมภาษณ์"

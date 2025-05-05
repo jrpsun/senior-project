@@ -1,5 +1,6 @@
 export interface PreEvainterface {
     applicantId?: string;
+    programRegisteredId?: string;
     courseComId?: string;
     committeeName?: string;
     preEvaDate?: string;
@@ -10,8 +11,8 @@ export interface PreEvainterface {
 
 export interface PreEvaDataInterface {
     applicantId?: string; 
-    firstnameEN?: string; 
-    lastnameEN?: string; 
+    firstnameTH?: string; 
+    lastnameTH?: string; 
     comPrefix?: string; 
     firstName?: string; 
     lastName?: string; 
