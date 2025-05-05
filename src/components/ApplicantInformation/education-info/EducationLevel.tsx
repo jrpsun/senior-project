@@ -30,16 +30,17 @@ const DEFAULT_DEGREE = "Mathayom6";
 
 interface EducationLevelProps {
     data: EducationBackground;
+    appId: string;
+    name: string;
     onChange: (data: any) => void;
 }
 
-const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
+const EducationLevel: React.FC<EducationLevelProps> = ({ data, appId, name, onChange }) => {
     const searchParams = useSearchParams(); // ใช้สำหรับดึงค่าจาก URL
-    const programParam = searchParams.get("program"); // ดึงค่าจาก query params
-    const [program, setProgram] = useState("ICT")
+    const program = searchParams.get("program"); // ดึงค่าจาก query params
 
     const [formData, setFormData] = useState({
-        currentStatus: "studying", // ตั้งค่าเริ่มต้นให้เป็น "กำลังศึกษา"
+        currentStatus: "studying", // ตั้งค่าเริ่มต้นให้เป็น "กำลังศึกษา" studying
         graduateDate: "", //
         graduateYear: "", //
         gedMathematics: "", // ged
@@ -49,9 +50,9 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
         docCopyTrans: "", // ใช้สำหรับอัปโหลดไฟล์
         docCopyName: "",
         docCopySize: "",
-        academicType: "Mathayom6",//
+        academicType: "",//
         customAcademicType: "", //
-        academicCountry: "Thailand", //
+        academicCountry: "", //
         academicProvince: "", //
         schoolName: "", //
         studyPlan: "", //
@@ -69,48 +70,56 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
         g12EnCredit: "", // g12
         g12EnTitle: "", // g12
     });
+    
 
-    useEffect(() =>{
+    useEffect(() => {
         if (data) {
-            if (data?.graduateDate) {
-                setDisplayDate(new Date(data.graduateDate))
-            }
-            setFormData({
-                currentStatus: data?.currentStatus || "studying",
-                graduateDate: data?.graduateDate || "",
-                graduateYear: data?.graduateYear || "",
-                gedMathematics: data?.gedMathematics || "",
-                gedScience: data?.gedScience || "",
-                gedSocialStudies: data?.gedSocialStudies || "",
-                gedLanguageArts: data?.gedLanguageArts || "",
-                docCopyTrans: data?.docCopyTrans || "",
-                docCopyName: data?.docCopyName || "",
-                docCopySize: data?.docCopySize || "",
-                academicType: data?.academicType || "Mathayom6",
-                customAcademicType: data?.customAcademicType || "",
-                academicCountry: data?.academicCountry || "Thailand",
-                academicProvince: data?.academicProvince || "",
-                schoolName: data?.schoolName || "",
-                studyPlan: data?.studyPlan || "",
-                customStudyPlan: data?.customStudyPlan || "",
-                cumulativeGPA: data?.cumulativeGPA || "",
-                dstMathematics: data?.dstMathematics || "",
-                dstEnglish: data?.dstEnglish || "",
-                dstScitech: data?.dstScitech || "",
-                comSciCredit: data?.comSciCredit || "",
-                comSciTitle: data?.comSciTitle || "",
-                g12MathCredit: data?.g12MathCredit || "",
-                g12MathTitle: data?.g12MathTitle || "",
-                g12SciCredit: data?.g12SciCredit || "",
-                g12SciTitle: data?.g12SciTitle || "",
-                g12EnCredit: data?.g12EnCredit || "",
-                g12EnTitle: data?.g12EnTitle || "",
-            })
+          if (data.graduateDate) {
+            setDisplayDate(new Date(data.graduateDate));
+          }
+     
+          const mergedData = {
+            currentStatus: data.currentStatus || "studying",
+            graduateDate: data.graduateDate || "",
+            graduateYear: data.graduateYear || "",
+            gedMathematics: data.gedMathematics || "",
+            gedScience: data.gedScience || "",
+            gedSocialStudies: data.gedSocialStudies || "",
+            gedLanguageArts: data.gedLanguageArts || "",
+            docCopyTrans: data.docCopyTrans || "",
+            docCopyName: data.docCopyName || "",
+            docCopySize: data.docCopySize || "",
+            academicType: data.academicType || "Mathayom6",
+            customAcademicType: data.customAcademicType || "",
+            academicCountry: data.academicCountry || "Thailand",
+            academicProvince: data.academicProvince || "",
+            schoolName: data.schoolName || "",
+            studyPlan: data.studyPlan || "",
+            customStudyPlan: data.customStudyPlan || "",
+            cumulativeGPA: data.cumulativeGPA || "",
+            dstMathematics: data.dstMathematics || "",
+            dstEnglish: data.dstEnglish || "",
+            dstScitech: data.dstScitech || "",
+            comSciCredit: data.comSciCredit || "",
+            comSciTitle: data.comSciTitle || "",
+            g12MathCredit: data.g12MathCredit || "",
+            g12MathTitle: data.g12MathTitle || "",
+            g12SciCredit: data.g12SciCredit || "",
+            g12SciTitle: data.g12SciTitle || "",
+            g12EnCredit: data.g12EnCredit || "",
+            g12EnTitle: data.g12EnTitle || "",
+          };
+      
+          setFormData(mergedData);
+          setChangedData(mergedData);
+          onChange(mergedData);
         }
-    },[data])
+      }, [data]);
+      
+
 
     const { language } = useLanguage();
-    const isDST = formData.academicType === "Mathayom6" && program === "DST";
+    const isDST = formData.academicType === "Mathayom6" && program?.includes("DST");;
     //const isICT = formData.academicType === "Mathayom6" && program === "ICT";
     const currentLanguage = language || "ENG";
     const [displayDate, setDisplayDate] = useState<Date | null>(null);
@@ -122,9 +131,12 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
     const shouldShowGraduationDate = ["Mathayom6", "VocCert"].includes(formData.academicType) && formData.currentStatus === "graduated";
     const shouldShowSubjectFields = formData.academicType === "Grade12/13";
     const shouldShowGPAX = ["Mathayom6", "VocCert"].includes(formData.academicType);
-    const safeLanguage = (language === "ENG" ? "ENG" : language) as keyof typeof majorOptions;
+    let safeLanguage = (language === "ENG" ? "ENG" : language) as keyof typeof majorOptions;
+    if (safeLanguage == "EN") {
+        safeLanguage = "ENG"
+    }
     const majorType = formData.academicType === "VocCert" ? "vocational" : "highSchool";
-    const majorList = majorOptions[safeLanguage]?.[majorType] || [];
+    const majorList = majorOptions[safeLanguage]?.[majorType] || []; // TODO
     const isVocCert = formData.academicType === "VocCert";
     const isThaiEducation = ["Mathayom6", "VocCert"].includes(formData.academicType);
     const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
@@ -235,6 +247,7 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
             
             try {
                 const fileTranscriptICT = new FormData();
+                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2) + " MB";
                 fileTranscriptICT.append("file", file);
                 console.log("📤 กำลังอัปโหลดไฟล์ไป API...");
                 const response = await fetch(`${process.env.API_BASE_URL}/upload/transcript-ict`, {
@@ -256,8 +269,8 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
                 setFormData({
                     ...formData,
                     docCopyTrans: base64String,
-                    docCopyName: file.name,
-                    docCopySize: String(file.size),
+                    docCopyName: `Transcript_${appId}_${name}`,
+                    docCopySize: fileSizeMB,
                     academicProvince: result[0].academicProvince,
                     schoolName: result[0].schoolName,
                     cumulativeGPA: result[0].cumulativeGPA,
@@ -266,8 +279,8 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
                 const newChangedData = { 
                     ...changedData,
                     docCopyTrans: base64String,
-                    docCopyName: file.name,
-                    docCopySize: String(file.size),
+                    docCopyName: `Transcript_${appId}_${name}`,
+                    docCopySize: fileSizeMB,
                     academicProvince: result[0].academicProvince,
                     schoolName: result[0].schoolName,
                     cumulativeGPA: result[0].cumulativeGPA,
@@ -285,10 +298,10 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
     }
     // กรองตัวเลือกระดับการศึกษา ตามโปรแกรมที่เลือก
     const filteredDegreeOptions = (degreeOptions[language] || degreeOptions["ENG"]).filter(option => {
-        if (program === "DST") {
+        if (program?.includes("DST")) {
             return ["Mathayom6", "VocCert", "other"].includes(option.value); // DST แสดงเฉพาะ ม.6, ปวช., และ อื่นๆ
         }
-        if (program === "ICT") {
+        if (program?.includes("ICT")) {
             return option.value !== "VocCert"; // ICT แสดงทุกตัวเลือก ยกเว้น ปวช.
         }
         return true; // กรณีไม่มี program แสดงทั้งหมด
@@ -313,23 +326,17 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
         let formattedValue = value;
 
         if (value instanceof Date) {
+            console.log("DATADATA")
             formattedValue = value.toISOString().split("T")[0]; // "2025-04-09"
             setDisplayDate(value)
         }
         const updatedData = { ...formData, [field]: formattedValue };
 
         setFormData(updatedData);
-        const newChangedData = { ...changedData, [field]: value };
+        const newChangedData = { ...changedData, [field]: formattedValue };
         setChangedData(newChangedData);
         onChange(newChangedData);
       };
-
-
-    useEffect(() => {
-        if (programParam) {
-            setFormData((prev) => ({ ...prev, program: programParam }));
-        }
-    }, [programParam]);
 
     useEffect(() => {
         setFormData((prev) => ({
@@ -337,6 +344,7 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, onChange }) => {
             academicType: data?.academicType || DEFAULT_DEGREE,
         }));
     }, []);
+
     useEffect(() => {
         if (formData.academicType === "GED") {
             setFormData((prev) => ({

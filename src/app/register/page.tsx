@@ -500,7 +500,7 @@ export default function RegisterPage() {
       </div>
       {/* Popups */}
       <Popup type="confirmation" isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} onConfirm={handleConfirmRegistration} />
-      <Popup type="success" isOpen={isSuccessPopupOpen} onClose={() => setIsSuccessPopupOpen(false)} />
+      <Popup type="success" isOpen={isSuccessPopupOpen} onClose={() => router.push("/login")} />
       <Popup type="error" isOpen={isErrorPopupOpen} onClose={() => setIsErrorPopupOpen(false)} />
     </div>
   );

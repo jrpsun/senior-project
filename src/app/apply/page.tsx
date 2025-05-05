@@ -1,6 +1,7 @@
 "use client";
 
 import Modal from "@components/components/common/popup-login";
+import LoadingSpinner from "@components/components/LoadingSpinner";
 import { authFetch } from "@components/lib/auth";
 import { TokenApplicantPayload } from "@components/types/token";
 import { jwtDecode } from "jwt-decode";
@@ -12,8 +13,9 @@ export default function Home() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [appId, setAppId] = useState("");
-  const [admision, setAdmission] = useState("");
+  const [admision, setAdmission] = useState<string[]>([""]);
   const [filterStatus, setFilterStatus] = useState("");
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState([{
     admissionId: "",
     program: "",
@@ -50,7 +52,7 @@ export default function Home() {
       disabled = true;
     } else if (now >= start && now <= end) {
       status = "เปิดรับสมัคร";
-      text = `เปิดรับสมัคร เหลืออีก ${hoursLeft} ชั่วโมง`;
+      text = `เหลืออีก ${hoursLeft} ชม.`;
       disabled = false;
     } else {
       status = "ปิดรับสมัคร";
@@ -92,10 +94,12 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    setLoading(true);
     fetchAdmission();
     if (appId) {
         fetchApplicantAdmission();
     }
+    setLoading(false);
   },[appId])
 
   const fetchAdmission = async() => {
@@ -131,13 +135,17 @@ export default function Home() {
     }
   };
 
+  const handleApplicant = async(admisionId: string, program: string) => {
+    router.push(`/apply/ApplicationInfo?program=${program}&id=${admisionId}`);
+  }
+
   return (
     <div>
     {showModal && <Modal role="applicant"/>}
     <div className='mr-[200px] ml-[200px]'>
         <div className='flex flex-col p-0 gap-16 pt-10'>
             <div className='font-bold text-[36px] leading-7 text-center'>โครงการรับสมัคร</div>
-            <div className='flex flex-row items-center justify-between w-full gap-2'>
+            {/* <div className='flex flex-row items-center justify-between w-full gap-2'>
                 <div className='flex items-center gap-2 flex-none'>
                     <div className='w-[32px] h-[32px] bg-[#008A91] rounded-full text-white flex items-center justify-center'>
                         1
@@ -151,7 +159,7 @@ export default function Home() {
                     </div>
                     <div className='font-normal text-xl leading-4 text-[#6B7280]'>กรอกข้อมูลส่วนตัว</div>
                 </div>
-            </div>
+            </div> */}
         </div>
         <div className='flex w-full mt-[20px]'>
             <div className='ml-auto border-[#E5E7EB] rounded-xl p-1 text-[#565656] border-2'>
@@ -168,7 +176,10 @@ export default function Home() {
             </div>
         </div>
         
-        <div className="flex flex-wrap justify-center gap-6 mt-2">
+        {loading ? (
+        <LoadingSpinner />
+        ) : (
+        <div className="flex flex-wrap justify-center gap-10 mt-2">
         {filteredFormData.map((data, index) => {
             const courseStatus = calculateStatus(data.startDate, data.endDate);
 
@@ -209,18 +220,29 @@ export default function Home() {
                 </svg>
                 <span>{courseStatus.dateRange}</span>
               </div>
-
+              
               <div className="flex justify-between items-center mt-4">
-                <button
-                  onClick={() => handleApplyClick(courseStatus.disabled, data.admissionId, data.program)}
-                  disabled={courseStatus.disabled}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-lg text-white text-sm ${
-                    courseStatus.disabled ? "bg-gray-300 cursor-not-allowed" : "bg-[#008A91]"
-                  }`}
-                >
-                  สมัครเรียน
+                {admision.includes(data.admissionId) ? (
+                  <button
+                    onClick={() => handleApplicant(data.admissionId, data.program)}
+                    disabled={courseStatus.disabled}
+                    className={`flex items-center gap-2 px-5 py-2 rounded-lg text-white text-sm ${
+                      courseStatus.disabled ? "bg-gray-300 cursor-not-allowed" : "bg-[#008A91]"
+                    }`}
+                  >
+                  ดูใบสมัคร
                 </button>
-
+                ):(
+                  <button
+                    onClick={() => handleApplyClick(courseStatus.disabled, data.admissionId, data.program)}
+                    disabled={courseStatus.disabled}
+                    className={`flex items-center gap-2 px-5 py-2 rounded-lg text-white text-sm ${
+                      courseStatus.disabled ? "bg-gray-300 cursor-not-allowed" : "bg-[#008A91]"
+                    }`}
+                  >
+                    สมัครเรียน
+                </button>
+                )}
                 <button className="flex items-center gap-2 text-sm text-[#008A91]">
                   <div className="bg-[#008A91] rounded-full w-5 h-5 flex items-center justify-center text-white">
                     <svg className="w-[9px] h-[10px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 10" fill="none">
@@ -238,7 +260,7 @@ export default function Home() {
             </div>
           );
         })}
-      </div>
+      </div>)}
 
     </div>
     </div> 

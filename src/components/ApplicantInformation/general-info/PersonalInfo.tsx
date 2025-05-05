@@ -57,10 +57,11 @@ const sortByLanguage = (data: CountryOrNationality[], lang: string, type: "count
 interface PersonalInfoProps {
   data: GeneralInfoInterface;
   regisData: ApplicantRegistrationsInfoResponse;
+  appId: string;
   onChange: (data: any) => void;
 }
 
-const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, regisData, onChange }) => {
+const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, regisData, appId, onChange }) => {
   const { language } = useLanguage();
   const currentTexts = generalInfoTexts[language as keyof typeof generalInfoTexts] || generalInfoTexts["ENG"];
   const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
@@ -431,20 +432,25 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
         let fieldfile = "";
         let fieldName = "";
         let fieldSize = "";
+        let fileName = "";
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2) + " MB";
         console.log("file name: ",URL.createObjectURL(file))
 
         if (documentType === 'idCard') {
             fieldfile = "docCopyIdCard";
             fieldName = "docCopyIdCardName";
             fieldSize = "docCopyIdCardSize"
+            fileName = `IDCard_${appId}_${regisData.firstnameEN}_${regisData.lastnameEN}`
         } else if (documentType === 'passport') {
             fieldfile = "docCopyPassport";
             fieldName = "docCopyPassportName";
             fieldSize = "docCopyPassportSize";
+            fileName = `Passport_${appId}_${regisData.firstnameEN}_${regisData.lastnameEN}`
         } else if (documentType === 'houseRegis') {
             fieldfile = "docCopyHouseRegis";
             fieldName = "docCopyHouseRegisName";
             fieldSize = "docCopyHouseRegisSize";
+            fileName = `ResidentRegistration_${appId}_${regisData.firstnameEN}_${regisData.lastnameEN}`
         }
 
         // อัปเดต formData
@@ -452,19 +458,18 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
             ...prev,
             [fieldfile]: base64String,
             [fieldName]: file.name,
-            [fieldSize]: String(file.size)
+            [fieldSize]: fileSizeMB
         }));
 
         // อัปเดตข้อมูลที่เปลี่ยนแปลง
         const newChangedData = { 
             ...changedData, 
             [fieldfile]: base64String,
-            [fieldName]: file.name,
-            [fieldSize]: String(file.size)
+            [fieldName]: fileName,
+            [fieldSize]: fileSizeMB
         };
         setChangedData(newChangedData);
         onChange(newChangedData);
-        console.log("formData", formData)
     };
 
     reader.readAsDataURL(file);

@@ -38,17 +38,17 @@ const EmergencyContactSummary: React.FC<EmergencyContactProps> = ({ props, isVis
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <p className="text-[#565656] font-bold">{texts.firstName}</p>
-                            <p className="text-[#565656] text-left pl-6">{props?.contactFirstNameTH}</p>
+                            <p className="text-[#565656] text-left pl-6">{props?.contactFirstNameTH || "-"}</p>
                         </div>
                         {props?.contactMiddleNameTH && (
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.middleName}</p>
-                                <p className="text-[#565656] text-left pl-6">{props?.contactMiddleNameTH}</p>
+                                <p className="text-[#565656] text-left pl-6">{props?.contactMiddleNameTH || "-"}</p>
                             </div>
                         )}
                         <div>
                             <p className="text-[#565656] font-bold">{texts.lastName}</p>
-                            <p className="text-[#565656] text-left pl-6">{props?.contactLastNameTH}</p>
+                            <p className="text-[#565656] text-left pl-6">{props?.contactLastNameTH || "-"}</p>
                         </div>
                     </div>
 
@@ -60,7 +60,7 @@ const EmergencyContactSummary: React.FC<EmergencyContactProps> = ({ props, isVis
                         {props?.contactMiddleNameEN && (
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.middleNameEng}</p>
-                                <p className="text-[#565656] text-left pl-6">{props?.contactMiddleNameEN}</p>
+                                <p className="text-[#565656] text-left pl-6">{props?.contactMiddleNameEN || "-"}</p>
                             </div>
                         )}
                         <div>
@@ -83,7 +83,7 @@ const EmergencyContactSummary: React.FC<EmergencyContactProps> = ({ props, isVis
                         </div>
                         <div>
                             <p className="text-[#565656] font-bold">{texts.email}</p>
-                            <p className="text-[#565656] text-left pl-6">{props?.contactEmail}</p>
+                            <p className="text-[#565656] text-left pl-6">{props?.contactEmail || "-"}</p>
                         </div>
                     </div>
                 </div>

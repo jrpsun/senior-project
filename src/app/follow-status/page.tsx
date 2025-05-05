@@ -5,46 +5,109 @@ import { useLanguage } from "../../hooks/LanguageContext";
 import Navbar from "../../components/Navbar";
 import { ViewDetailButton, PaymentButton } from "../../components/common/button";
 import { InterviewInfoButton } from "../../components/common/button";
-import useStatusData from "../../components/common/statusList";
+import { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+import { TokenApplicantPayload } from "@components/types/token";
+import Modal from "@components/components/common/popup-login";
+import { authFetch } from "@components/lib/auth";
+import LoadingSpinner from "@components/components/LoadingSpinner";
+
+
+interface ApplicantStatus {
+  admissionId?: string;
+  course?: string;
+  period?: string;
+  applicant_number?: string;
+  admissionStatus?: string;
+  docStatus?: string;
+  paymentStatus?: string;
+}
+
 
 export default function ApplicationStatus() {
   const router = useRouter();
   const { language } = useLanguage();
-  const { getStatusById } = useStatusData();
+  const [loading, setLoading] = useState(true);
+  const [appId, setAppId] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [applications, setApplications] = useState<ApplicantStatus[]>([]);
 
-  const applications = [
-    {
-      id: "0000025",
-      course: {
-        TH: "สาขาเทคโนโลยีสารสนเทศและการสื่อสาร (ICT) หลักสูตรนานาชาติ - ICT Portfolio",
-        EN: "Information and Communication Technology (ICT) - ICT Portfolio",
-      },
-      period: {
-        TH: "01 ม.ค. 68 - 31 มี.ค. 68",
-        EN: "01 Jan 25 - 31 Mar 25",
-      },
-      statusId: "01",
-      documentStatusId: "02",
-      paymentStatusId: "01",
-    },
-    {
-      id: "0000017",
-      course: {
-        TH: "สาขาวิชาการและเทคโนโลยีดิจิทัล (DST) หลักสูตรไทย MU - Portfolio (TCAS 1) ปีการศึกษา 2568",
-        EN: "Digital Science and Technology (DST) - Thai Program MU - Portfolio (TCAS 1) 2025",
-      },
-      period: {
-        TH: "01 ม.ค. 68 - 31 มี.ค. 68",
-        EN: "01 Jan 25 - 31 Mar 25",
-      },
-      statusId: "06",
-      documentStatusId: "03",
-      paymentStatusId: "03",
+
+  useEffect(() => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          setShowModal(true);
+          return;
+        }
+    
+        const decoded: TokenApplicantPayload & { exp: number } = jwtDecode(token);
+        const now = Date.now() / 1000;
+    
+        if (decoded.exp < now) {
+          localStorage.removeItem("access_token");
+          setShowModal(true);
+          return;
+        }
+    
+        setAppId(decoded.appId);
+      } catch {
+        localStorage.removeItem("access_token");
+        setShowModal(true);
+      }
+  }, []);
+
+  const fetchFollowStatus = async() => {
+    setLoading(true);
+    const response = await authFetch(`${process.env.API_BASE_URL}/applicant/follow-status/${appId}`, {
+      method: 'GET',
+    });
+
+    const data = await response.json();
+    setApplications(data)
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    if (appId) {
+      fetchFollowStatus();
     }
-  ];
+  }, [appId])
+
+  // const applications = [
+  //   {
+  //     id: "0000025",
+  //     course: {
+  //       TH: "สาขาเทคโนโลยีสารสนเทศและการสื่อสาร (ICT) หลักสูตรนานาชาติ - ICT Portfolio",
+  //       EN: "Information and Communication Technology (ICT) - ICT Portfolio",
+  //     },
+  //     period: {
+  //       TH: "01 ม.ค. 68 - 31 มี.ค. 68",
+  //       EN: "01 Jan 25 - 31 Mar 25",
+  //     },
+  //     statusId: "01",
+  //     documentStatusId: "02",
+  //     paymentStatusId: "01",
+  //   },
+  //   {
+  //     id: "0000017",
+  //     course: {
+  //       TH: "สาขาวิชาการและเทคโนโลยีดิจิทัล (DST) หลักสูตรไทย MU - Portfolio (TCAS 1) ปีการศึกษา 2568",
+  //       EN: "Digital Science and Technology (DST) - Thai Program MU - Portfolio (TCAS 1) 2025",
+  //     },
+  //     period: {
+  //       TH: "01 ม.ค. 68 - 31 มี.ค. 68",
+  //       EN: "01 Jan 25 - 31 Mar 25",
+  //     },
+  //     statusId: "06",
+  //     documentStatusId: "03",
+  //     paymentStatusId: "03",
+  //   }
+  // ];
 
   return (
     <div className="bg-white min-h-screen">
+      {showModal && <Modal role="applicant"/>}
       <Navbar />
 
       {/* Breadcrumb */}
@@ -70,15 +133,10 @@ export default function ApplicationStatus() {
           </svg>
           {language === "TH" ? "ตรวจสอบสถานะการสมัคร" : "Check Application Status"}
         </h1>
-        <div className="bg-yellow-50 text-[#008A90] border-l-4 border-[#008A90] p-4 flex items-center mb-8">
-          <svg className="mr-2" width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8.54247 0.0341307C4.11959 0.00878598 0.525679 3.56641 0.515126 7.9798C0.50459 12.4026 4.07425 16.0085 8.48768 16.0338C12.9106 16.0592 16.5045 12.5016 16.515 8.08816C16.535 3.66533 12.9559 0.0594617 8.54247 0.0341307ZM8.43314 2.1887C8.82061 2.18926 9.1422 2.33149 9.40733 2.60594C9.6819 2.87096 9.81483 3.20192 9.81556 3.58939C9.8163 3.97687 9.6846 4.29799 9.41105 4.57166C9.14694 4.83589 8.81642 4.96772 8.4384 4.96716C8.04147 4.96659 7.71991 4.83381 7.44534 4.5688C7.18023 4.30379 7.03784 3.97282 7.03711 3.58534C7.03636 3.18842 7.17751 2.86731 7.45107 2.60309C7.71517 2.32941 8.04567 2.18813 8.43314 2.1887ZM6.18124 5.76717L9.8575 5.77253L9.87045 12.6242L10.9762 12.6258L10.9778 13.5047L6.19586 13.4977L6.1942 12.6188L7.29046 12.6204L7.27916 6.64767L6.1829 6.64608L6.18124 5.76717Z" fill="#008A91" />
-          </svg>
 
-          <span>{language === "TH" ? "กรุณาชำระเงินภายในวันที่ 31 มีนาคม 2568" : "Please complete your payment no later than March 31, 2025."}</span>
-        </div>
-
-
+        {loading ? (
+          <LoadingSpinner />
+        ):(
         <div className="overflow-x-auto">
           {/* ตารางจะแสดงเฉพาะบนจอใหญ่ */}
           <table className="hidden md:table w-full border-collapse border border-gray-300">
@@ -95,37 +153,33 @@ export default function ApplicationStatus() {
             </thead>
             <tbody>
               {applications.map((app, index) => {
-                const appStatus = getStatusById("application", app.statusId) ?? {};
-                const docStatus = getStatusById("documents", app.documentStatusId) ?? {};
-                const payStatus = getStatusById("payment", app.paymentStatusId) ?? {};
-
                 return (
                   <tr key={index} className="text-[#565656] text-sm align-middle">
-                    <td className="border px-4 py-2">{app.course[language]}</td>
-                    <td className="border px-4 py-2">{app.period[language]}</td>
-                    <td className="border px-4 py-2 text-center">{app.id}</td>
+                    <td className="border px-4 py-2">{app.course}</td>
+                    <td className="border px-4 py-2">{app.period}</td>
+                    <td className="border px-4 py-2 text-center">{app.applicant_number}</td>
                     <td className="border px-4 py-2 text-center">
-                      <span className={`${appStatus?.style || ""}`}>{language === "TH" ? appStatus?.labelTH : appStatus?.labelEN}</span>
+                      <span>{app.admissionStatus}</span>
                     </td>
                     <td className="border px-4 py-2 text-center">
-                      <span className={`${docStatus?.style || ""}`}>{language === "TH" ? docStatus?.labelTH : docStatus?.labelEN}</span>
+                      <span>{app.docStatus}</span>
                     </td>
                     <td className="border px-4 py-2 text-center">
-                      <span className={`${payStatus?.style || ""}`}>{language === "TH" ? payStatus?.labelTH : payStatus?.labelEN}</span>
+                      <span>{app.paymentStatus}</span>
                     </td>
 
                     <td className="border px-4 py-2 h-full text-center align-middle">
                       <div className="flex justify-center items-center gap-2">
-                        <ViewDetailButton onClick={() => router.push(`/application/${app.id}`)}>
+                        <ViewDetailButton onClick={() => router.push(`/apply/ApplicationInfo?id=${app.admissionId}`)}>
                           {language === "TH" ? "ดูใบสมัคร" : "View Detail"}
                         </ViewDetailButton>
-                        {payStatus?.id === "01" && (
+                        {app.paymentStatus === "01 - ยังไม่ได้ชำระเงิน" && (
                           <PaymentButton onClick={() => setPopupOpen(true)}>
                             {language === "TH" ? "ชำระเงิน" : "Payment"}
                           </PaymentButton>
                         )}
-                        {appStatus?.id === "06" && (
-                          <InterviewInfoButton onClick={() => router.push(`/interview/${app.id}`)}>
+                        {app.admissionStatus === "06 - รอสัมภาษณ์" && (
+                          <InterviewInfoButton onClick={() => console.log("interview")}>
                             {language === "TH" ? "ดูข้อมูลสัมภาษณ์" : "Interview Info"}
                           </InterviewInfoButton>
                         )}
@@ -140,47 +194,44 @@ export default function ApplicationStatus() {
           {/* Mobile Responsive List (แสดงเฉพาะบนมือถือ) */}
           <div className="block md:hidden space-y-4">
             {applications.map((app, index) => {
-              const appStatus = getStatusById("application", app.statusId) ?? {};
-              const docStatus = getStatusById("documents", app.documentStatusId) ?? {};
-              const payStatus = getStatusById("payment", app.paymentStatusId) ?? {};
 
               return (
                 <div key={index} className="border border-gray-300 p-4 rounded-lg shadow-md bg-white">
                   <p className="text-base font-semibold text-[#565656]">
-                    {language === "TH" ? "หลักสูตร" : "Course"}: {app.course[language]}
+                    {language === "TH" ? "หลักสูตร" : "Course"}: {app.course}
                   </p>
                   <p className="text-base text-[#565656]">
-                    {language === "TH" ? "ช่วงเวลาสมัคร" : "Application Period"}: {language === "TH" ? app.period.TH : app.period.EN}
+                    {language === "TH" ? "ช่วงเวลาสมัคร" : "Application Period"}: {app.period}
                   </p>
                   <p className="text-base text-[#565656]">
-                    {language === "TH" ? "เลขที่สมัคร" : "Application ID"}: {app.id}
+                    {language === "TH" ? "เลขที่สมัคร" : "Application ID"}: {app.applicant_number}
                   </p>
 
                   {/* เพิ่มช่องว่างให้ปุ่มสถานะ */}
                   <div className=" mt-2 flex flex-wrap inline-flex gap-1">
-                    <span className={`text-lg font-medium px-1 py-2 rounded-full inline-block ${appStatus?.style || ""}`}>
-                      {language === "TH" ? appStatus?.labelTH : appStatus?.labelEN}
+                    <span className={`text-lg font-medium px-1 py-2 rounded-full inline-block`}>
+                      {app.admissionStatus}
                     </span>
-                    <span className={`text-lg font-medium px-1 py-2 rounded-full inline-block  ${docStatus?.style || ""}`}>
-                      {language === "TH" ? docStatus?.labelTH : docStatus?.labelEN}
+                    <span className={`text-lg font-medium px-1 py-2 rounded-full inline-block`}>
+                      {app.docStatus}
                     </span>
-                    <span className={`text-lg font-medium px-1 py-2 rounded-full inline-block ${payStatus?.style || ""}`}>
-                      {language === "TH" ? payStatus?.labelTH : payStatus?.labelEN}
+                    <span className={`text-lg font-medium px-1 py-2 rounded-full inline-block`}>
+                      {app.paymentStatus}
                     </span>
                   </div>
 
                   {/* ปรับให้ปุ่มอยู่ชิดซ้าย */}
                   <div className="mt-4 flex flex-wrap justify-start gap-3">
-                    <ViewDetailButton className="text-lg" onClick={() => router.push(`/application/${app.id}`)}>
+                    <ViewDetailButton className="text-lg" onClick={() => router.push(`/apply/ApplicationInfo?id=${app.admissionId}`)}>
                       {language === "TH" ? "ดูใบสมัคร" : "View Detail"}
                     </ViewDetailButton>
-                    {payStatus?.id === "01" && (
-                      <PaymentButton className="text-lg" onClick={() => router.push(`/application/${app.id}`)}>
+                    {app.paymentStatus === "01 - ยังไม่ได้ชำระเงิน" && (
+                      <PaymentButton className="text-lg" onClick={() => console.log("payment")}>
                         {language === "TH" ? "ชำระเงิน" : "Payment"}
                       </PaymentButton>
                     )}
-                    {appStatus?.id === "06" && (
-                      <InterviewInfoButton onClick={() => router.push(`/interview/${app.id}`)}>
+                    {app.admissionStatus === "06 - รอสัมภาษณ์" && (
+                      <InterviewInfoButton onClick={() => console.log("interview")}>
                         {language === "TH" ? "ดูข้อมูลสัมภาษณ์" : "Interview Info"}
                       </InterviewInfoButton>
                     )}
@@ -190,7 +241,7 @@ export default function ApplicationStatus() {
             })}
           </div>
 
-        </div>
+        </div>)}
       </div>
     </div>
   );

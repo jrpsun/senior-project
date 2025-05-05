@@ -34,7 +34,7 @@ interface GuidanceTexts {
 export default function CourseList() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const program = searchParams.get("program") || "DST"; // ค่าเริ่มต้นเป็น DST
+  const program = searchParams.get("program"); // ค่าเริ่มต้นเป็น DST
   const id = searchParams.get("id")
 
   const { language } = useLanguage() as { language: "TH" | "ENG" };

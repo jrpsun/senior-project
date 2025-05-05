@@ -21,9 +21,15 @@ const courseOptions = [
     {label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)"}
 ];
 const roundOptions = [
-    { label: "1/68 - MU – Portfolio (TCAS 1)", value: "1/68 - MU – Portfolio (TCAS 1)" },
-    { label: "1/68 - ICT Portfolio", value: "1/68 - ICT Portfolio" },
+    { label: "DST – Portfolio", value: "DST – Portfolio" },
+    { label: "ICT - Portfolio", value: "ICT - Portfolio" },
 ];
+
+const currentYear = new Date().getFullYear() + 543;
+const yearOptions = Array.from({ length: 10 }, (_, i) => {
+  const year = currentYear - i;
+  return { label: `${year}`, value: `${year}` };
+});
 
 const admitStatusOptions = ["01 - ยังไม่ยื่นใบสมัคร", "02 - ยื่นใบสมัครแล้ว", "03 - รอพิจารณา", "04 - ผ่านการพิจารณา", "05 - ไม่ผ่านการพิจารณา", "06 - รอสัมภาษณ์", "07 - ผ่านการสัมภาษณ์", "08 - ไม่ผ่านการสัมภาษณ์", "09 - ยกเลิกการสมัคร"];
 const docStatusOptions = ["01 - ยังไม่มีเอกสาร", "02 - รอตรวจสอบเอกสาร", "03 - เอกสารครบถ้วน", "04 - เอกสารไม่ครบถ้วน"];
@@ -71,6 +77,7 @@ const Page = () => {
     interface FilterState {
         course?: string;
         round?: string;
+        year?: string;
         admitStatus?: string;
         docStatus?: string;
         paymentStatus?: string;
@@ -95,6 +102,7 @@ const Page = () => {
     const filteredApplicants = applicants.filter(app =>
         (!filters.course || app.program === filters.course) &&
         (!filters.round || app.roundName === filters.round) &&
+        (!filters.year || app.year === filters.year) &&
         (!filters.admitStatus || app.admissionStatus === filters.admitStatus) &&
         (!filters.docStatus || app.docStatus === filters.docStatus) &&
         (!filters.paymentStatus || app.paymentStatus === filters.paymentStatus) &&
@@ -132,46 +140,194 @@ const Page = () => {
         setCurrentPage(1); // Reset to first page when changing items per page
     };
     const [showCheckboxes, setShowCheckboxes] = useState(false);
-    const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
+    const [selectedApplicants, setSelectedApplicants] = useState<
+        { applicantId: string; admissionId: string }[]
+    >([]);
 
-    const eligibleApplicants = filteredApplicants.filter(
-        (app) => app.admissionStatus === "02 - ยื่นใบสมัครแล้ว"
-    );
+    // const eligibleApplicants = filteredApplicants.filter(
+    //     (app) => app.admissionStatus === "02 - ยื่นใบสมัครแล้ว"
+    // );
 
-    const hasSelectableApplicants = eligibleApplicants.length > 0;
-    const isAllSelected = eligibleApplicants.length > 0 && eligibleApplicants.every(app => selectedApplicants.includes(app.applicantId));
+    // const hasSelectableApplicants = eligibleApplicants.length > 0;
+    // const isAllSelected = eligibleApplicants.length > 0 && eligibleApplicants.every(app => selectedApplicants.includes(app.applicantId));
 
-    const toggleSelectAll = () => {
-        if (isAllSelected) {
-            setSelectedApplicants([]);
-        } else {
-            setSelectedApplicants(eligibleApplicants.map(app => app.applicantId));
-        }
-    };
+    // const toggleSelectAll = () => {
+    //     if (isAllSelected) {
+    //         setSelectedApplicants([]);
+    //     } else {
+    //         setSelectedApplicants(eligibleApplicants.map(app => app.applicantId));
+    //     }
+    // };
 
-    const handleCheckboxChange = (applicantId: string) => {
-        setSelectedApplicants(prev =>
-            prev.includes(applicantId)
-                ? prev.filter(id => id !== applicantId)
-                : [...prev, applicantId]
-        );
-    };
+    // const handleCheckboxChange = (applicantId: string, admissionId: string) => {
+    //     setSelectedApplicants((prev) => {
+    //       const exists = prev.some(
+    //         (item) => item.applicantId === applicantId && item.admissionId === admissionId
+    //       );
+      
+    //       if (exists) {
+    //         return prev.filter(
+    //           (item) =>
+    //             !(item.applicantId === applicantId && item.admissionId === admissionId)
+    //         );
+    //       } else {
+    //         return [...prev, { applicantId, admissionId }];
+    //       }
+    //     });
+    // };
 
     const handleToggleDownloadMode = () => {
         setShowCheckboxes(true);
         setSelectedApplicants([]);
     };
-    const handleConfirmDownload = () => {
+    const handleConfirmDownload = async() => {
         console.log("ดาวน์โหลดเอกสารสำหรับ:", selectedApplicants);
+        await downloadSelectedApplicants();
         setShowAlert(true);            // แสดง Alert
         setSelectedApplicants([]);     // ล้างรายการที่เลือก
         setShowCheckboxes(false);      // ปิดโหมด checkbox
+    };
+
+    const downloadSelectedApplicants = async () => {
+        try {
+          const res = await fetch(`${process.env.API_BASE_URL}/upload/download-applicants`, {
+            method: "POST",
+            body: JSON.stringify(selectedApplicants),
+            headers: { "Content-Type": "application/json" },
+          });
+      
+          if (!res.ok) {
+            throw new Error("Download failed");
+          }
+      
+          const blob = await res.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "Applicants.zip";
+          a.click();
+          window.URL.revokeObjectURL(url);
+        } catch (err) {
+          console.error("Error downloading file:", err);
+          alert("มีข้อผิดพลาดในการดาวน์โหลดไฟล์");
+        }
     };
 
     
     const handleClickView = ( appId: string, admId: string ) => {
         router.push(`/admin/applicant/view?id=${appId}&admId=${admId}`);
     }
+
+    const isChecked = (applicantId: string, admissionId: string) => {
+        return selectedApplicants.some(
+          (item) => item.applicantId === applicantId && item.admissionId === admissionId
+        );
+    };
+
+    const handleCheckboxChange = (applicantId: string, admissionId: string) => {
+        setSelectedApplicants((prev) => {
+          const exists = prev.some(
+            (item) => item.applicantId === applicantId && item.admissionId === admissionId
+          );
+      
+          if (exists) {
+            return prev.filter(
+              (item) => !(item.applicantId === applicantId && item.admissionId === admissionId)
+            );
+          } else {
+            return [...prev, { applicantId, admissionId }];
+          }
+        });
+    };
+
+    const isSelectable = (app: EduScreeningInterface) => {
+        // เงื่อนไขที่ใช้กำหนดว่า checkbox กดได้ไหม เช่น app.status === "ผ่าน"
+        return  app.admissionStatus === "02 - ยื่นใบสมัครแล้ว"
+    };
+
+    const hasSelectableApplicants = applicants.some((app) => isSelectable(app));
+
+    const isAllSelected =
+        hasSelectableApplicants &&
+        applicants
+            .filter((app) => isSelectable(app))
+            .every((app) => isChecked(app.applicantId, app.admissionId));
+
+    const toggleSelectAll = () => {
+        const selectableApps = applicants.filter((app) => isSelectable(app));
+
+            if (isAllSelected) {
+                // ถ้ากดอีกที → ยกเลิกทั้งหมด
+                setSelectedApplicants((prev) =>
+                prev.filter(
+                    (item) =>
+                    !selectableApps.some(
+                        (app) =>
+                        app.applicantId === item.applicantId &&
+                        app.admissionId === item.admissionId
+                    )
+                )
+                );
+            } else {
+                // เลือกทั้งหมดที่เลือกได้
+                const newSelections = selectableApps.map((app) => ({
+                    applicantId: app.applicantId,
+                    admissionId: app.admissionId,
+                }));
+
+                setSelectedApplicants((prev) => {
+                const merged = [...prev];
+                newSelections.forEach((sel) => {
+                    const exists = merged.some(
+                    (item) =>
+                        item.applicantId === sel.applicantId &&
+                        item.admissionId === sel.admissionId
+                    );
+                    if (!exists) merged.push(sel);
+                });
+                return merged;
+            });
+        }
+    };
+    
+    const export_excel = async () => {
+        try {
+            const response = await fetch(`${process.env.API_BASE_URL}/excel/applicant-list`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(filters),
+            });
+    
+            if (!response.ok) {
+                throw new Error("Download failed");
+            }
+    
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+    
+            // สร้าง element <a> เพื่อดาวน์โหลด
+            const a = document.createElement("a");
+            a.href = url;
+    
+            // ดึงชื่อไฟล์จาก Content-Disposition (ถ้ามี)
+            const disposition = response.headers.get("Content-Disposition");
+            const match = disposition?.match(/filename\*?=.*?''(.+)/);
+            const filename = match ? decodeURIComponent(match[1]) : `Applicant_List_${filters.course}_${filters.round}.xlsx`;
+    
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+    
+            // ล้าง
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Download error:", error);
+            alert("ไม่สามารถดาวน์โหลดไฟล์ได้");
+        }
+    };
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
@@ -215,7 +371,7 @@ const Page = () => {
                                     />
                                 </div>
 
-                                <div className="w-[280px] z-50 relative">
+                                <div className="w-[220px] z-50">
                                     <SearchField
                                         label="รอบรับสมัคร"
                                         type="dropdown"
@@ -228,6 +384,23 @@ const Page = () => {
                                             }
                                         }}
                                         options={roundOptions}
+                                        placeholder="เลือกรอบรับสมัคร"
+                                    />
+                                </div>
+
+                                <div className="w-[145px] z-50">
+                                    <SearchField
+                                        label="ปีการศึกษา"
+                                        type="dropdown"
+                                        value={filterValues.year || ""}
+                                        onChange={(option) => {
+                                            if (typeof option === "object" && option !== null && "value" in option) {
+                                                setFilterValues({ ...filterValues, year: option.value });
+                                            } else {
+                                                setFilterValues({ ...filterValues, year: "" });
+                                            }
+                                        }}
+                                        options={yearOptions}
                                         placeholder="เลือกรอบรับสมัคร"
                                     />
                                 </div>
@@ -416,7 +589,7 @@ const Page = () => {
                                     )}
 
                                     {/* ปุ่ม Export to Excel (แสดงตลอด แต่อาจ disabled) */}
-                                    <button disabled={showCheckboxes}>
+                                    <button disabled={showCheckboxes} onClick={export_excel}>
                                         <div
                                             className={`px-3 py-2 rounded-md flex items-center gap-2 ${showCheckboxes
                                                 ? "bg-[#C4C4C4] cursor-not-allowed text-white"
@@ -449,12 +622,14 @@ const Page = () => {
                                             <th className="px-2 py-4 whitespace-nowrap">
                                                 {showCheckboxes && (
                                                     <input
-                                                        type="checkbox"
-                                                        checked={isAllSelected}
-                                                        onChange={toggleSelectAll}
-                                                        disabled={!hasSelectableApplicants}
-                                                        className={`w-5 h-5 accent-[#008A90] text-white rounded-md border-2 ${!hasSelectableApplicants ? "border-gray-300 cursor-not-allowed" : "border-[#008A90]"}`}
-                                                        title={!hasSelectableApplicants ? "ไม่มีผู้สมัครที่สามารถเลือกได้" : ""}
+                                                    type="checkbox"
+                                                    checked={isAllSelected}
+                                                    onChange={toggleSelectAll}
+                                                    disabled={!hasSelectableApplicants}
+                                                    className={`w-5 h-5 accent-[#008A90] text-white rounded-md border-2 
+                                                        ${!hasSelectableApplicants ? "border-gray-300 cursor-not-allowed" : "border-[#008A90]"}
+                                                    `}
+                                                    title={!hasSelectableApplicants ? "ไม่มีผู้สมัครที่สามารถเลือกได้" : ""}
                                                     />
                                                 )}
                                             </th>
@@ -488,8 +663,8 @@ const Page = () => {
                                                         {showCheckboxes ? (
                                                             <input
                                                                 type="checkbox"
-                                                                checked={isSelectable && selectedApplicants.includes(app.applicantId)}
-                                                                onChange={() => handleCheckboxChange(app.applicantId)}
+                                                                checked={isSelectable && isChecked(app.applicantId, app.admissionId)}
+                                                                onChange={() => handleCheckboxChange(app.applicantId, app.admissionId)}
                                                                 disabled={!isSelectable}
                                                                 className={`w-5 h-5 rounded border-2 
                                                                     ${isSelectable ? "accent-[#008A90]" : "border-gray-300 bg-white cursor-not-allowed"}

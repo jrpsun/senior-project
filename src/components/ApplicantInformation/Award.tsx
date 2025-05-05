@@ -13,6 +13,7 @@ import Popup from '../../components/common/popup';
 import { AwardResponse } from '@components/types/AwardType';
 import { authFetch } from '@components/lib/auth';
 import { OCRLoadingModal } from '../OCRLoading';
+import FileMultiUpload from '../form/FileMultiUpload';
 //import Alert from '../../components/common/alert';
 
 const Award = ({ setAward, setTalent, appId, admId }: any) => {
@@ -57,7 +58,7 @@ const Award = ({ setAward, setTalent, appId, admId }: any) => {
     if (data.length === 0) {
       // ถ้าไม่มีข้อมูล สร้าง container เปล่า 1 อัน
       setFormData([{
-        rewardId: generateLongId(),
+        rewardId: "",
         applicantId: appId,
         programRegistered: admId,
         nameOfCompetition: "",
@@ -89,9 +90,8 @@ const Award = ({ setAward, setTalent, appId, admId }: any) => {
 
   // Function to add a new container
   const addContainer = () => {
-    const id = generateLongId()
     setFormData([...formData, {
-      rewardId: id,
+      rewardId: "",
       applicantId: appId,
       programRegistered: admId,
       nameOfCompetition: "",
@@ -217,6 +217,76 @@ const Award = ({ setAward, setTalent, appId, admId }: any) => {
     reader.readAsDataURL(file);
   }
 
+  const handleMultipleFileUpload = (files: File[]) => {
+    files.forEach(async (file) => {
+      if (!file) return;
+  
+      const isImage = file.type.match('image.*');
+      const isPDF = file.type === 'application/pdf';
+  
+      if (!isImage && !isPDF) {
+        alert('กรุณาเลือกไฟล์ภาพหรือ PDF เท่านั้น');
+        return;
+      }
+  
+      if (file.size > 5 * 1024 * 1024) {
+        alert('ขนาดไฟล์ไม่ควรเกิน 5MB');
+        return;
+      }
+  
+      const reader = new FileReader();
+      setOcrLoading(true);
+  
+      reader.onload = async (event) => {
+        const base64String = event.target?.result as string;
+  
+        try {
+          const fileAward = new FormData();
+          fileAward.append("file", file);
+  
+          const res = await fetch(`${process.env.API_BASE_URL}/upload/certificate/reward`, {
+            method: 'POST',
+            body: fileAward
+          });
+  
+          if (!res.ok) throw new Error(`OCR Award failed`);
+          const result = await res.json();
+  
+          const newContainer = {
+            rewardId: generateLongId(),
+            applicantId: appId,
+            programRegistered: admId,
+            rewardAwards: result[0].rewardAwards || "",
+            rewardLevel: result[0].rewardLevel || "",
+            nameOfCompetition: result[0].NameOfCompetition || "",
+            project: result[0].project || "",
+            rewardYear: result[0].rewardYear || "",
+            rewardCer: base64String || "",
+            rewardCerName: file.name,
+            rewardCerSize: String(file.size),
+          };
+  
+          setFormData(prev => {
+            const cleaned = prev.filter(item => item.rewardCer !== "");
+            return [...cleaned, newContainer];
+          });
+  
+          setAward(prev => {
+            const cleaned = prev.filter(item => item.rewardCer !== "");
+            return [...cleaned, newContainer];
+          });
+        } catch (error) {
+          console.error('OCR Error:', error);
+          alert('การอ่านข้อมูล Award ล้มเหลว');
+        } finally {
+          setOcrLoading(false);
+        }
+      };
+  
+      reader.readAsDataURL(file);
+    });
+  };
+
 
   return (
     <div>
@@ -267,14 +337,12 @@ const Award = ({ setAward, setTalent, appId, admId }: any) => {
                     </div>
                   ) : null
                 ) : (
-                  <FileUpload
+                  <FileMultiUpload
                     label={currentTexts.uploadCertificate}
-                    onChange={(file) => {
-                      handleFileUpload(container.rewardId, "rewardCer", file);
-                    }}
-                    fileType="jpg., png., jpeg., pdf."
+                    onChange={(files) => handleMultipleFileUpload(files)}
+                    fileType="jpg, png, jpeg, pdf"
                     maxSize="5 MB"
-                    accept="jpg., png., jpeg., pdf."
+                    accept="jpg, png, jpeg, pdf"
                     infoMessage={<p>{currentTexts.uploadCertificateInfo}</p>}
                     required={false}
                   />

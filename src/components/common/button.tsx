@@ -61,8 +61,8 @@ const NextButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> 
 };
 
 
-const ViewDetailButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children }) => {
-  return <Button variant="viewDetail">{children}</Button>;
+const ViewDetailButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children, onClick }) => {
+  return <Button variant="viewDetail" onClick={onClick}>{children}</Button>;
 };
 
 const PaymentButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children }) => {
@@ -83,8 +83,8 @@ const PrintDocumentButton: React.FC<{ children: React.ReactNode; onClick?: () =>
 };
 
 // ปุ่มยกเลิกการสมัคร
-const CancelApplicationButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children }) => {
-  return <Button variant="cancelApplication">{children}</Button>;
+const CancelApplicationButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children, onClick }) => {
+  return <Button variant="cancelApplication" onClick={onClick}>{children}</Button>;
 };
 
 export {
