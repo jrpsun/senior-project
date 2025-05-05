@@ -7,7 +7,7 @@ import { ApplicantEducationResponse, EducationBackground, EducationEngExam, Educ
 import { authFetch } from "@components/lib/auth";
 
 
-const EducationInformation = ({ onUpdate, appId, admId }: { onUpdate: any, appId: string, admId: string }) => {
+const EducationInformation = ({ onUpdate, appId, admId, name }: { onUpdate: any, appId: string, admId: string, name: string }) => {
   const [data, setData] = useState<ApplicantEducationResponse | null>(null);
 
   const [allChanges, setAllChanges] = useState({
@@ -59,9 +59,24 @@ const EducationInformation = ({ onUpdate, appId, admId }: { onUpdate: any, appId
 
   return (
   <div className="flex flex-col gap-4 pb-10">
-    <EducationLevel data={data?.background as EducationBackground} onChange={(data) => handleChildUpdate('background', data)}/>
-    <EnglishTestScore data={data?.eng_exam as EducationEngExam} onChange={(data) => handleChildUpdate('eng_exam', data)}/>
-    <MathTestScore data={data?.math_exam as EducationMathExam} onChange={(data) => handleChildUpdate('math_exam', data)}/>
+    <EducationLevel 
+      data={data?.background as EducationBackground} 
+      appId={appId} 
+      name={name}
+      onChange={(data) => handleChildUpdate('background', data)}
+    />
+    <EnglishTestScore 
+      data={data?.eng_exam as EducationEngExam} 
+      appId={appId} 
+      name={name} 
+      onChange={(data) => handleChildUpdate('eng_exam', data)}
+    />
+    <MathTestScore 
+      data={data?.math_exam as EducationMathExam} 
+      appId={appId} 
+      name={name} 
+      onChange={(data) => handleChildUpdate('math_exam', data)}
+    />
   </div>
 );
 };

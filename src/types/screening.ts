@@ -6,6 +6,7 @@ export interface EduScreeningInterface {
     firstnameEN?: string;
     lastnameEN?: string;
     program?: string;
+    year?: string;
     admissionStatus?: string;
     docStatus?: string;
     paymentStatus?: string;

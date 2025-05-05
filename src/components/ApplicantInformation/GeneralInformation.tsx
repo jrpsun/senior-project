@@ -16,7 +16,7 @@ import {
 import { authFetch } from "@components/lib/auth";
 
 
-const GeneralInformation = ({ onUpdate, appId, admId }: { onUpdate: any, appId: string, admId: string }) => {
+const GeneralInformation = ({ onUpdate, appId, admId, name }: { onUpdate: any, appId: string, admId: string, name: string }) => {
   const [data, setData] = useState<ApplicantGeneralInformationResponse | null>(null);
   const [regisData, setRegisData] = useState<ApplicantRegistrationsInfoResponse | null>(null);
   
@@ -60,6 +60,7 @@ const GeneralInformation = ({ onUpdate, appId, admId }: { onUpdate: any, appId: 
     const result = await response.json();
     setData(result)
     console.log("success fetchGeneralInfoData")
+    console.log("result", result)
   }
 
   const fetchRegistrationData = async() => {
@@ -81,8 +82,17 @@ const GeneralInformation = ({ onUpdate, appId, admId }: { onUpdate: any, appId: 
 
   return (
     <div className="flex flex-col gap-4 pb-10">
-      <PersonalInfo data={data?.general_info as GeneralInfoInterface} regisData={regisData as ApplicantRegistrationsInfoResponse} onChange={(data) => handleChildUpdate('personalInfo', data)}/>
-      <ContactInfo data={data?.contact_info as ContactInfoInterface} email={regisData?.applicantEmail as string} onChange={(data) => handleChildUpdate('contactInfo', data)}/>
+      <PersonalInfo 
+        data={data?.general_info as GeneralInfoInterface}
+        regisData={regisData as ApplicantRegistrationsInfoResponse}
+        appId={appId}
+        onChange={(data) => handleChildUpdate('personalInfo', data)}
+      />
+      <ContactInfo 
+        data={data?.contact_info as ContactInfoInterface}
+        email={regisData?.applicantEmail as string}
+        onChange={(data) => handleChildUpdate('contactInfo', data)}
+      />
       <EmergencyContact data={data?.emergency_contact as EmergencyContactInterface} onChange={(data) => handleChildUpdate('emergencyContact', data)}/>
       <NewsSubscription data={data?.admission_channel as AdmissionChannelInterface} onChange={(data) => handleChildUpdate('newsSubscription', data)}/>
     </div>

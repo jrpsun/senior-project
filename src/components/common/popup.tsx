@@ -8,13 +8,13 @@ interface PopupProps {
   type: "success" | "error" | "confirmation" | "successInfo" | "errorPasswordInfo" | "deleteConfirmation" | "confirmApplication" | "applicationSuccess" | "cancelApplication"| "cancelSuccess" ;
   isOpen: boolean;
   onClose: () => void;
-  onConfirm?: () => void;
+  onConfirm?: (data?: { reason: string | null; details: string }) => void;
   children?: React.ReactNode;
 }
 
 export default function Popup({ type, isOpen, onClose, onConfirm }: PopupProps) {
   const { language } = useLanguage();
-  const currentLanguage = (language.toUpperCase() === "EN" ? "ENG" : language.toUpperCase()) || "ENG";
+  const currentLanguage = (language.toUpperCase() === "ENG" ? "ENG" : language.toUpperCase()) || "ENG";
 
   // ใช้ useMemo เพื่อป้องกันการคำนวณซ้ำ
   const popupData = useMemo(() => {
@@ -105,7 +105,7 @@ export default function Popup({ type, isOpen, onClose, onConfirm }: PopupProps) 
               onClick={() => {
                 console.log("ยืนยันการยกเลิกสมัคร", { reason, details });
                 if (onConfirm) {
-                  onConfirm();
+                  onConfirm({ reason, details });
                 }
               }}
               disabled={!reason || !details}

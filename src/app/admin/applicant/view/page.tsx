@@ -716,7 +716,13 @@ const viewApplicantInfo = () => {
                                 />
                             </div>
                         ): (
-                            <GeneralInformation key="general" onUpdate={handleGeneralInfoUpdate} appId={appId}/>
+                            <GeneralInformation 
+                                key="general" 
+                                onUpdate={handleGeneralInfoUpdate} 
+                                appId={appId} 
+                                admId={admId} 
+                                name={regisData?.firstnameEN + " " + regisData?.lastnameEN || ""}
+                            />
                         ))
                     }
 
@@ -746,7 +752,13 @@ const viewApplicantInfo = () => {
                                 />
                             </div>
                         ): (
-                            <EducationInformation key="education" onUpdate={handleEducationUpdate} appId={appId}/>
+                            <EducationInformation 
+                                key="education" 
+                                onUpdate={handleEducationUpdate} 
+                                appId={appId} 
+                                admId={admId} 
+                                name={regisData?.firstnameEN + " " + regisData?.lastnameEN || ""}
+                            />
                         ))
                     }
 
@@ -768,7 +780,13 @@ const viewApplicantInfo = () => {
                                 />
                             </div>
                         ): (
-                            <Award key="award" setAward={setEditedAwardData} setTalent={setEditedTalentData} appId={appId}/>
+                            <Award 
+                                key="award" 
+                                setAward={setEditedAwardData} 
+                                setTalent={setEditedTalentData} 
+                                appId={appId} 
+                                admId={admId}
+                            />
                         ))
                     }
 
@@ -784,7 +802,12 @@ const viewApplicantInfo = () => {
                                 />
                             </div>
                         ):(
-                            <Training key="training" setTrain={setEditedTrainData} appId={appId}/>
+                            <Training 
+                                key="training" 
+                                setTrain={setEditedTrainData} 
+                                appId={appId} 
+                                admId={admId}
+                            />
                         ))
                     }
 
@@ -800,7 +823,13 @@ const viewApplicantInfo = () => {
                                 />
                             </div>
                         ):(
-                            <AdditionalDocuments key="documents" setDoc={setEditedDocData} appId={appId}/>
+                            <AdditionalDocuments 
+                                key="documents" 
+                                setDoc={setEditedDocData} 
+                                appId={appId} 
+                                admId={admId} 
+                                name={regisData?.firstnameEN + " " + regisData?.lastnameEN || ""}
+                            />
                         ))
                     }
 

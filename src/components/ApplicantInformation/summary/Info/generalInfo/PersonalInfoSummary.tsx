@@ -78,19 +78,19 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-1">
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.firstName}</p>
-                                <p className="text-[#565656] text-left pl-6">{regisData?.firstnameTH}</p>
+                                <p className="text-[#565656] text-left pl-6">{regisData?.firstnameTH  || "-"}</p>
                             </div>
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.middleName}</p>
-                                <p className="text-[#565656] text-left pl-6">{props?.middlenameTH}</p>
+                                <p className="text-[#565656] text-left pl-6">{props?.middlenameTH || "-"}</p>
                             </div>
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.lastName}</p>
-                                <p className="text-[#565656] text-left pl-6">{regisData?.lastnameTH}</p>
+                                <p className="text-[#565656] text-left pl-6">{regisData?.lastnameTH  || "-"}</p>
                             </div>
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.nickname}</p>
-                                <p className="text-[#565656] text-left pl-6">{props?.nicknameTH}</p>
+                                <p className="text-[#565656] text-left pl-6">{props?.nicknameTH  || "-"}</p>
                             </div>
 
                             <div>
@@ -99,7 +99,7 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                             </div>
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.middleNameEng}</p>
-                                <p className="text-[#565656] text-left pl-6">{props?.middlenameEN}</p>
+                                <p className="text-[#565656] text-left pl-6">{props?.middlenameEN  || "-"}</p>
                             </div>
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.lastNameEng}</p>
@@ -107,7 +107,7 @@ const PersonalInfoSummary: React.FC<PersonalInfoProps> = ({ props, isVisible, se
                             </div>
                             <div>
                                 <p className="text-[#565656] font-bold">{texts.nicknameEng}</p>
-                                <p className="text-[#565656] text-left pl-6">{props?.nicknameEN}</p>
+                                <p className="text-[#565656] text-left pl-6">{props?.nicknameEN  || "-"}</p>
                             </div>
                         </div>
                         <div className="mb-4">

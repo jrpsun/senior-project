@@ -102,7 +102,7 @@ const Navbar = () => {
 
             {/* Dropdown เมนู (Profile) */}
             <div
-              className="relative"
+              className="relative z-50"
               onMouseEnter={() => {
                 clearTimeout(window.dropdownTimeout);
                 window.dropdownTimeout = setTimeout(() => setDropdownOpen(true), 200);

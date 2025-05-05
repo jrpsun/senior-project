@@ -18,30 +18,25 @@ const initialFormValues: EducationMathExam = {
 
 interface EducationLevelProps {
     data: EducationMathExam;
+    appId: string;
+    name: string;
     onChange: (data: any) => void;
 }
 
-const MathTestScore: React.FC<EducationLevelProps> = ({ data, onChange}) => {
-    const searchParams = useSearchParams();
-    const programParam = searchParams.get("program"); // ดึงค่าจาก query params
+const MathTestScore: React.FC<EducationLevelProps> = ({ data, appId, name, onChange}) => {
+    const searchParams = useSearchParams(); 
 
     const { language } = useLanguage();
     const currentLanguage = language || "ENG";
     const currentTexts = educationInfoTexts[currentLanguage] || educationInfoTexts["ENG"];
 
-    const [program, setProgram] = useState(programParam || "ICT");
     const [changedData, setChangedData] = useState({});
     const [displayDate, setDisplayDate] = useState<Date | null>(null);
     const [formData, setFormData] = useState(initialFormValues);
+    const program = searchParams.get("program");
 
 
-    useEffect(() => {
-        if (programParam) {
-            setProgram(programParam);
-        }
-    }, [programParam]);
-
-    if (program !== "ICT") return null;
+    if (program?.includes("DST")) return null;
 
     useEffect(() => {
         if (data) {
@@ -86,11 +81,6 @@ const MathTestScore: React.FC<EducationLevelProps> = ({ data, onChange}) => {
         onChange(newChangedData);
     }
 
-    // ถ้าโปรแกรมไม่ใช่ ICT ให้ return null (ไม่แสดงอะไรเลย)
-    if (program !== "ICT") {
-        return null;
-    }
-
     const handleMathCerUpload = async (file: File) => {
         if (!file) return;
         console.log("file", file)
@@ -109,24 +99,22 @@ const MathTestScore: React.FC<EducationLevelProps> = ({ data, onChange}) => {
 
         reader.onload = (event) => {
             const base64String = event.target?.result as string;
-    
-            // ระบุฟิลด์ที่ต้องอัปเดตตามประเภทเอกสาร
-            console.log("file name: ",URL.createObjectURL(file))
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2) + " MB";
 
             // อัปเดต formData
             setFormData(prev => ({
                 ...prev,
                 mathCer: base64String,
-                mathCerName: file.name,
-                mathCerSize: String(file.size)
+                mathCerName: `MathTest_${appId}_${name}`,
+                mathCerSize: fileSizeMB
             }));
     
             // อัปเดตข้อมูลที่เปลี่ยนแปลง
             const newChangedData = { 
                 ...changedData, 
                 mathCer: base64String,
-                mathCerName: file.name,
-                mathCerSize: String(file.size)
+                mathCerName: `MathTest_${appId}_${name}`,
+                mathCerSize: fileSizeMB
             };
             setChangedData(newChangedData);
             onChange(newChangedData);

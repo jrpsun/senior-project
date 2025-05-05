@@ -29,26 +29,20 @@ const initialFormValues: EducationEngExam = {
 
 interface EducationLevelProps {
     data: EducationEngExam;
+    appId: string;
+    name: string;
     onChange: (data: any) => void;
 }
 
-const EnglishTestScore: React.FC<EducationLevelProps> = ({ data, onChange }) => {
+const EnglishTestScore: React.FC<EducationLevelProps> = ({ data, appId, name, onChange }) => {
   const searchParams = useSearchParams();
-  const programParam = searchParams.get("program"); // ดึงค่าจาก query params
+  const program = searchParams.get("program"); // ดึงค่าจาก query params
 
   const { language } = useLanguage();
   const currentLanguage = language || "ENG";
   const currentTexts = educationInfoTexts[currentLanguage] || educationInfoTexts["ENG"];
   const [changedData, setChangedData] = useState({});
   const [displayDate, setDisplayDate] = useState<Date | null>(null);
-
-  const [program, setProgram] = useState(programParam || "ICT");
-
-  useEffect(() => {
-    if (programParam) {
-      setProgram(programParam);
-    }
-  }, [programParam]);
 
   useEffect(() => {
     if (data) {
@@ -83,7 +77,7 @@ const EnglishTestScore: React.FC<EducationLevelProps> = ({ data, onChange }) => 
 
   const [errors, setErrors] = useState<Record<string, string>>({}); // เก็บข้อผิดพลาด
 
-  if (program !== "ICT") return null;
+  if (program?.includes("DST")) return null;
 
   const handleChange = (field: string, value: string | Date) => {
     let formattedValue = value;
@@ -140,24 +134,22 @@ const EnglishTestScore: React.FC<EducationLevelProps> = ({ data, onChange }) => 
 
     reader.onload = (event) => {
         const base64String = event.target?.result as string;
-
-        // ระบุฟิลด์ที่ต้องอัปเดตตามประเภทเอกสาร
-        console.log("file name: ",URL.createObjectURL(file))
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2) + " MB";
 
         // อัปเดต formData
         setFormData(prev => ({
             ...prev,
             enCer: base64String,
-            enCerName: file.name,
-            enCerSize: String(file.size)
+            enCerName: `EnglishTest_${appId}_${name}`,
+            enCerSize: fileSizeMB
         }));
 
         // อัปเดตข้อมูลที่เปลี่ยนแปลง
         const newChangedData = { 
             ...changedData, 
             enCer: base64String,
-            enCerName: file.name,
-            enCerSize: String(file.size)
+            enCerName: `EnglishTest_${appId}_${name}`,
+            enCerSize: fileSizeMB
         };
         setChangedData(newChangedData);
         onChange(newChangedData);

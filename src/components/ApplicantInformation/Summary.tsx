@@ -11,15 +11,48 @@ import Training from "./summary/Training";
 import AdditionalDoc from "./summary/AdditionalDoc";
 import { BackButton, ConfirmApplicationButton, PrintDocumentButton, CancelApplicationButton } from "../common/button";
 import Popup from "../common/popup";
+import { authFetch } from "@components/lib/auth";
 
-const Summary = ({onOpenPopup, appId, admId}: any) => {
+const Summary = ({appId, admId, isConfirmed}: any) => {
     const router = useRouter();
-    const { language } = useLanguage() as { language: "TH" | "EN" };
+    const { language } = useLanguage() as { language: "TH" | "ENG" };
     const [isConfirmOpen, setConfirmOpen] = useState(false);
     const [isSuccessOpen, setSuccessOpen] = useState(false);
     const [isCancelOpen, setCancelOpen] = useState(false);
     const [isCancelSuccessOpen, setCancelSuccessOpen] = useState(false); // true = แสดง popup ยืนยันการสมัครหลังจากกดปุ่มยืนยันการสมัคร (คิดสักอย่างใน applicationInfo)
-    const [isConfirmed, setIsConfirmed] = useState(false); // true = กดยืนยันการสมัคร (ข้อมูลการสมัคร+แถบเลือกหน้าหาย)
+    //const [isConfirmed, setIsConfirmed] = useState(true); // true = กดยืนยันการสมัคร (ข้อมูลการสมัคร+แถบเลือกหน้าหาย)
+
+    const handleCancelConfirm = async (data?: { reason: string | null; details: string }) => {
+        if (!data) return;
+      
+        const { reason, details } = data;
+      
+        setCancelOpen(false);
+        setCancelSuccessOpen(true);
+        
+        try {
+          const response = await authFetch(
+            `${process.env.API_BASE_URL}/applicant/applicant-cancel`,
+            {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  applicantId: appId,
+                  admissionId: admId,
+                  reason: reason,
+                  details: details,
+                }),
+              }
+          );
+          if (!response.ok) {
+            throw new Error("Failed to cancel application");
+          }
+        } catch (error) {
+          console.error("เกิดข้อผิดพลาดในการตรวจสอบสถานะการกรอกข้อมูล:", error);
+        }
+      };
 
     return (
         <div className="py-5 bg-white w-full ">
@@ -43,10 +76,6 @@ const Summary = ({onOpenPopup, appId, admId}: any) => {
                     {language === "TH"
                         ? "รอบ MU – Portfolio (TCAS 1) ปีการศึกษา 2568"
                         : "MU – Portfolio (TCAS 1) Academic Year 2025"}
-                </span>
-                <span className="mx-1 text-gray-400">/</span>
-                <span className="text-[#565656]">
-                    {language === "TH" ? "เลขที่สมัคร 0000025" : "Application Number 0000025"}
                 </span>
             </div>
         )}
@@ -89,7 +118,7 @@ const Summary = ({onOpenPopup, appId, admId}: any) => {
                             </div>
                         </div>
                         <p className="text-[20px] text-[#565656] mt-2">
-                            {summaryTexts[language].applicationNumber}
+                            {""}
                         </p>
                         <GeneralInfo appId={appId} admId={admId}/>
                         <EducationInfo appId={appId} admId={admId}/>
@@ -144,11 +173,7 @@ const Summary = ({onOpenPopup, appId, admId}: any) => {
                 type="cancelApplication"
                 isOpen={isCancelOpen}
                 onClose={() => setCancelOpen(false)}
-                onConfirm={() => {
-                    setCancelOpen(false);
-                    setCancelSuccessOpen(true);
-                    setIsConfirmed(false);
-                }}
+                onConfirm={handleCancelConfirm}
             />
             {/* Popup ยกเลิกสมัครสำเร็จ */}
             <Popup
