@@ -21,4 +21,7 @@ export interface InterviewSlot {
   interviewRoundId?: string; 
   interviewRoom?: string; 
   interviewTime?: string[]; 
+  startTime?: string;
+  endTime?: string;
+  duration?: string;
 }

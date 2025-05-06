@@ -431,7 +431,7 @@ const Page = () => {
                                                         ${app.interviewStatus === "01 - รอสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520]" : "py-2"}
                                                         ${app.interviewStatus === "05 - ไม่ผ่านการสัมภาษณ์" ? "h-[30px] pt-[2px] rounded-xl bg-[#FEE2E2] text-red-600 " : "py-2"}
                                                         ${app.interviewStatus === "03 - รอพิจารณาเพิ่มเติม" ? "h-[30px] pt-[2px] rounded-xl bg-[#FFF4E2] text-[#DAA520] " : "py-2"}
-                                                        ${app.interviewStatus === "06 - รอผลการประเมิน" ? "h-[30px] pt-[2px] rounded-xl bg-[#E3F2FD] text-[#0D47A1]" : "py-2"}
+                                                        ${app.interviewStatus === "06 - รอผลการพิจารณา" ? "h-[30px] pt-[2px] rounded-xl bg-[#E3F2FD] text-[#0D47A1]" : "py-2"}
                                                         `}>
                                                         {app.interviewStatus}
                                                     </div>

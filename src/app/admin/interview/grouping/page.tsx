@@ -77,6 +77,7 @@ const Page = () => {
             const data_slot = await res_slot.json()
 
             setApplicants(data_app.applicants.filter((app) => app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "06 - รอสัมภาษณ์") || []);
+            //.filter((app) => app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "06 - รอสัมภาษณ์")
             setRooms(data_room.room || []);
             if (!res_slot.ok) {
                 setInterviewSlot([]);
@@ -491,10 +492,10 @@ const Page = () => {
     console.log('selected room(s)', selectedRooms)
     console.log('grouped applicant', groupedApplicants)
     //console.log('is all app are grouped?????', isAllGrouped)
-    console.log('str --->', startTime, endTime)
-    console.log('end --->', endTime)
+    // console.log('str --->', startTime, endTime)
+    // console.log('end --->', endTime)
     console.log('now edit', editingInterview)
-    console.log('current adm id', currentADMID)
+    // console.log('current adm id', currentADMID)
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
@@ -773,7 +774,7 @@ const Page = () => {
                     onClose={() => setShowSuccessAlert(false)}
                 />
             )}
-            {/* this way */}
+
             {showEditInterviewPopup && editingInterview && (
                 <PopupEditInterviewGrouping
                     isOpen={showEditInterviewPopup}
@@ -783,6 +784,7 @@ const Page = () => {
                         room: editingInterview.interviewRoom || "",
                         startTime: startTime.trim() || "",
                         endTime: endTime.trim() || "",
+                        roundId: editingInterview.interviewRoundId || ""
                     }}
                     existingSchedules={applicantData
                         .filter(a => a.grouping === "grouped" && a.applicantId !== editingInterview.applicantId)

@@ -877,7 +877,7 @@ const InterviewEvaSummary: React.FC<InterviewEvaProps> = ({ props }) => {
                                                                 </svg>
 
                                                             </div>
-                                                            <div>รอผลการประเมิน</div>
+                                                            <div>รอผลการพิจารณา</div>
                                                         </div>
                                                     ) : (
                                                         <div className={`text-[#565656] text-left mb-[20px] flex flex-row w-[325px] space-x-[50px]

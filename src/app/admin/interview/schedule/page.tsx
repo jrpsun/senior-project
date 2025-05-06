@@ -705,6 +705,7 @@ const InterviewSchedulePage = () => {
                     <th className="p-2 w-[100px] whitespace-nowrap">เวลาสิ้นสุด</th>
                     <th className="p-2 w-[200px] whitespace-nowrap">ระยะเวลาสัมภาษณ์ (ต่อคน)</th>
                     <th className="p-2 w-[300px]"></th>
+                    <th className="p-2 w-[150px]"></th>
                   </tr>
                 </thead>
                 <tbody className="text-[#565656]">
@@ -746,6 +747,9 @@ const InterviewSchedulePage = () => {
                               เพิ่มห้องสัมภาษณ์
                             </button>
                           </div>
+                        </td>
+                        <td className="font-bold p-2">
+                            จำนวนห้อง: {item.interviewRoomNumber}
                         </td>
                       </tr>
                     ))
