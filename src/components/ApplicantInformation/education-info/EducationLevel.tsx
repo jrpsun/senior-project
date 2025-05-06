@@ -119,7 +119,7 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, appId, name, onCh
 
 
     const { language } = useLanguage();
-    const isDST = formData.academicType === "Mathayom6" && program?.includes("DST");;
+    const isDST = formData.academicType === "Mathayom6" && program?.includes("MU");;
     //const isICT = formData.academicType === "Mathayom6" && program === "ICT";
     const currentLanguage = language || "ENG";
     const [displayDate, setDisplayDate] = useState<Date | null>(null);
