@@ -69,7 +69,7 @@ const AdmissionRoundsPage = () => {
   const [selectedEditRound, setSelectedEditRound] = useState<{
     id: number;
     course: { value: string; label: string } | null;
-    roundName: string;
+    roundName: { value: string; label: string } | null;
     academicYear: { value: string; label: string } | null;
     startDate: string;
     endDate: string;
@@ -119,7 +119,7 @@ const AdmissionRoundsPage = () => {
 
   interface NewRound {
     course: { value: string; label: string } | null;
-    roundName: string;
+    roundName: { value: string; label: string } | null;
     academicYear: { value: string; label: string } | null;
     startDate: string;
     endDate: string;
@@ -138,7 +138,7 @@ const AdmissionRoundsPage = () => {
     const body = {
       admissionId: `${Math.random().toString(36).substring(2, 11)}`,
       program: newRound.course?.value,
-      roundName: newRound.roundName,
+      roundName: newRound.roundName?.value,
       academicYear: newRound.academicYear?.value,
       startDate: newRound.startDate,
       endDate: newRound.endDate,
@@ -232,7 +232,7 @@ const AdmissionRoundsPage = () => {
     setSelectedEditRound({
       id: round.admissionId,
       course: round.program ? { value: round.program, label: round.program } : null,
-      roundName: round.roundName,//.replace(/ ปีการศึกษา \d{4}/, "").trim(),
+      roundName: round.roundName ? { value: round.roundName, label: round.roundName } : null,//.replace(/ ปีการศึกษา \d{4}/, "").trim(),
       academicYear: round.academicYear ? { value: round.academicYear, label: round.academicYear } : null,
       startDate: round.startDate, //? format(parse(startDate, "dd MMM yyyy", new Date()), "yyyy-MM-dd") : "",
       endDate: round.endDate //? format(parse(endDate, "dd MMM yyyy", new Date()), "yyyy-MM-dd") : "",
@@ -247,7 +247,7 @@ const AdmissionRoundsPage = () => {
   const handleSaveEditRound = async (updatedRound: NewRound) => {
     const body = {
       program: updatedRound.course?.value,
-      roundName: updatedRound.roundName,
+      roundName: updatedRound.roundName?.value,
       academicYear: updatedRound.academicYear?.value,
       startDate: updatedRound.startDate,
       endDate: updatedRound.endDate,

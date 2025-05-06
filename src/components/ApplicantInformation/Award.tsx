@@ -185,7 +185,6 @@ const Award = ({ setAward, setTalent, appId, admId }: any) => {
         if (!res.ok) {throw new Error(`OCR Award failed`);}
 
         const result = await res.json()
-        console.log("result:", result)
 
         const updatedData = formData.map(item =>
           item.rewardId === rewardId
@@ -219,6 +218,7 @@ const Award = ({ setAward, setTalent, appId, admId }: any) => {
 
   const handleMultipleFileUpload = (files: File[]) => {
     files.forEach(async (file) => {
+      console.log("file", file.name)
       if (!file) return;
   
       const isImage = file.type.match('image.*');
@@ -265,16 +265,14 @@ const Award = ({ setAward, setTalent, appId, admId }: any) => {
             rewardCerName: file.name,
             rewardCerSize: String(file.size),
           };
+
   
           setFormData(prev => {
             const cleaned = prev.filter(item => item.rewardCer !== "");
             return [...cleaned, newContainer];
           });
-  
-          setAward(prev => {
-            const cleaned = prev.filter(item => item.rewardCer !== "");
-            return [...cleaned, newContainer];
-          });
+
+          setAward(prev => [...prev.filter(item => Object.keys(item).length > 0), newContainer]);
         } catch (error) {
           console.error('OCR Error:', error);
           alert('การอ่านข้อมูล Award ล้มเหลว');
