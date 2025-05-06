@@ -77,7 +77,7 @@ const EnglishTestScore: React.FC<EducationLevelProps> = ({ data, appId, name, on
 
   const [errors, setErrors] = useState<Record<string, string>>({}); // เก็บข้อผิดพลาด
 
-  if (program?.includes("MU")) return null;
+  if (program?.includes("ITDS")) return null;
 
   const handleChange = (field: string, value: string | Date) => {
     let formattedValue = value;

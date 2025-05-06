@@ -151,8 +151,8 @@ const PopupAdmissionRound: React.FC<PopupAdmissionRoundProps> = ({
                 <CustomSelect
                   label="หลักสูตร (Program/Course)"
                   options={[
-                    { value: "หลักสูตร DST (ไทย)", label: "หลักสูตร DST (ไทย)" },
-                    { value: "หลักสูตร ICT (นานาชาติ)", label: "หลักสูตร ICT (นานาชาติ)" }
+                    { value: "ITDS/B", label: "หลักสูตร DST (ไทย)" },
+                    { value: "ITCS/B", label: "หลักสูตร ICT (นานาชาติ)" }
                   ]}
                   value={formData.course?.value || null}
                   onChange={(option) => handleChange("course", option ? { value: option.value, label: option.label } : null)}

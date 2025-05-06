@@ -36,7 +36,7 @@ const MathTestScore: React.FC<EducationLevelProps> = ({ data, appId, name, onCha
     const program = searchParams.get("program");
 
 
-    if (program?.includes("MU")) return null;
+    if (program?.includes("ITDS")) return null;
 
     useEffect(() => {
         if (data) {
