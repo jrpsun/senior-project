@@ -13,7 +13,7 @@ interface PopupAdmissionRoundProps {
   onDelete?: () => void;
   initialData?: {
     course?: { value: string; label: string } | null;
-    roundName?: string;
+    roundName?: { value: string; label: string } | null;
     academicYear?: { value: string; label: string } | null;
     startDate?: string;
     endDate?: string;
@@ -33,13 +33,13 @@ const PopupAdmissionRound: React.FC<PopupAdmissionRoundProps> = ({
 }) => {
   const [formData, setFormData] = useState<{
     course: { value: string; label: string } | null;
-    roundName: string;
+    roundName: { value: string; label: string } | null;
     academicYear: { value: string; label: string } | null;
     startDate: string;
     endDate: string;
   }>({
     course: null,
-    roundName: "",
+    roundName: null,
     academicYear: null,
     startDate: "",
     endDate: "",
@@ -56,7 +56,14 @@ const PopupAdmissionRound: React.FC<PopupAdmissionRoundProps> = ({
             label: initialData.course.label || String(initialData.course.value)
           }
           : null,
-        roundName: initialData.roundName || "",
+        roundName: initialData.roundName
+          ? {
+            value: typeof initialData.roundName?.value == "object" && "value" in (initialData.roundName?.value as { value: string })
+            ? (initialData.roundName.value as { value: string }).value
+            : String(initialData.roundName.value),
+          label: initialData.roundName.label || String(initialData.roundName.value)
+          }
+        : null,
         academicYear: initialData.academicYear
           ? {
             value: typeof initialData.academicYear?.value === "object" && "value" in (initialData.academicYear.value as { value: string })
@@ -71,7 +78,7 @@ const PopupAdmissionRound: React.FC<PopupAdmissionRoundProps> = ({
     } else {
       setFormData({
         course: null,
-        roundName: "",
+        roundName: null,
         academicYear: null,
         startDate: "",
         endDate: "",
@@ -155,11 +162,15 @@ const PopupAdmissionRound: React.FC<PopupAdmissionRoundProps> = ({
                 />
 
                 {/* ชื่อรอบรับสมัคร */}
-                <FormField
+                <CustomSelect
                   label="ชื่อรอบรับสมัคร (Round Name)"
-                  value={formData.roundName || ""}
-                  onChange={(value) => handleChange("roundName", value)}
-                  placeholder="ระบุชื่อรอบรับสมัคร"
+                  options={[
+                    { value: "รอบ 1 ICT - Portfolio", label: "รอบ 1 ICT - Portfolio" },
+                    { value: "รอบ 1 MU - Portfolio (TCAS 1)", label: "รอบ 1 MU - Portfolio (TCAS 1)" }
+                  ]}
+                  value={formData.roundName?.value || null}
+                  onChange={(option) => handleChange("roundName", option ? { value: option.value, label: option.label } : null)}
+                  placeholder="เลือกหลักสูตร"
                   required={false}
                   boldLabel={true}
                 />

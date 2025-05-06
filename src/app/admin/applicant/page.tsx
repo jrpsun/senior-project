@@ -754,7 +754,7 @@ const Page = () => {
                                                             </div>
                                                         </Link>
                                                         )} */}
-                                                        {app.admissionStatus !== "01 - ยังไม่ยื่นใบสมัคร" && (
+                                                        {app.admissionStatus !== "01 - ยังไม่ยื่นใบสมัคร" && app.admissionStatus !== "09 - ยกเลิกการสมัคร"  && (
                                                             <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] "
                                                             onClick={() => handleClickView(app.applicantId || "", app.admissionId || "")}>
                                                                 <div className="flex flex-row gap-1">

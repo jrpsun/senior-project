@@ -127,7 +127,9 @@ const ApplicationInfo = () => {
         await updatedEducationInfo();
         await checkCompleted();
       } else if (selected === 2) {
+        console.log("editedAward", editedAwardData)
         if (editedAwardData.length > 0 && Object.keys(editedAwardData[0]).length > 0) {
+          console.log("pass")
           await updatedAward();
         }
         if (editedTalentData.length > 0 && Object.keys(editedTalentData[0]).length > 0) {
