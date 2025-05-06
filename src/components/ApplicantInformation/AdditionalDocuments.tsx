@@ -7,6 +7,7 @@ import { useLanguage } from "../../hooks/LanguageContext";
 import { additionalDocumentsTexts } from "../../translation/AdditionalDocsInfo";
 import Image from "next/image";
 import { authFetch } from '@components/lib/auth';
+import { openPdfInNewTab } from '@components/utils/pdfUtils';
 
 const AdditionalDocuments = ({ setDoc, appId, admId, name }: any) => {
   const { language } = useLanguage();
@@ -151,7 +152,11 @@ const AdditionalDocuments = ({ setDoc, appId, admId, name }: any) => {
                 <div className="flex justify-between items-center w-full gap-4">
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
-                    <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                    <span
+                      className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px] cursor-pointer hover:underline"
+                      title={formData.stateOfPurposeName}
+                      onClick={() => openPdfInNewTab(formData.stateOfPurpose, formData.stateOfPurposeName)}
+                    >
                       {formData.stateOfPurposeName}
                     </span>
                     <span className="text-[#565656] text-xs md:text-sm">
@@ -208,11 +213,15 @@ const AdditionalDocuments = ({ setDoc, appId, admId, name }: any) => {
                 <div className="flex justify-between items-center w-full gap-4">
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
-                    <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                    <span
+                      className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px] cursor-pointer hover:underline"
+                      title={formData.portfolioName}
+                      onClick={() => openPdfInNewTab(formData.portfolio, formData.portfolioName)}
+                    >
                       {formData.portfolioName}
                     </span>
                     <span className="text-[#565656] text-xs md:text-sm">
-                      {formData.portfolioSize} bytes
+                      {formData.portfolioSize}
                     </span>
                   </div>
                   <button className="ml-auto" onClick={() => handleDeleteDocCopy("portfolio", "portfolioName", "portfolioSize")}>
@@ -289,11 +298,15 @@ const AdditionalDocuments = ({ setDoc, appId, admId, name }: any) => {
                 <div className="flex justify-between items-center w-full gap-4">
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
-                    <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                    <span
+                      className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px] cursor-pointer hover:underline"
+                      title={formData.applicantResumeName}
+                      onClick={() => openPdfInNewTab(formData.applicantResume, formData.applicantResumeName)}
+                    >
                       {formData.applicantResumeName}
                     </span>
                     <span className="text-[#565656] text-xs md:text-sm">
-                      {formData.applicantResumeSize} bytes
+                      {formData.applicantResumeSize}
                     </span>
                   </div>
                   <button className="ml-auto" onClick={() => handleDeleteDocCopy("applicantResume", "applicantResumeName", "applicantResumeSize")}>
@@ -346,11 +359,15 @@ const AdditionalDocuments = ({ setDoc, appId, admId, name }: any) => {
                 <div className="flex justify-between items-center w-full gap-4">
                   <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                   <div className="flex flex-col">
-                    <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                    <span
+                      className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px] cursor-pointer hover:underline"
+                      title={formData.additionalName}
+                      onClick={() => openPdfInNewTab(formData.additional, formData.additionalName)}
+                    >
                       {formData.additionalName}
                     </span>
                     <span className="text-[#565656] text-xs md:text-sm">
-                      {formData.additionalSize} bytes
+                      {formData.additionalSize}
                     </span>
                   </div>
                   <button className="ml-auto" onClick={() => handleDeleteDocCopy("additional", "additionalName", "additionalSize")}>

@@ -12,6 +12,7 @@ import Popup from '../components/common/popup'; // เพิ่ม import popup
 import { TalentResponse } from '@components/types/TalentTypes';
 import { authFetch } from '@components/lib/auth';
 import { OCRLoadingModal } from './OCRLoading';
+import { openPdfInNewTab } from '@components/utils/pdfUtils';
 
 const Talent = ({ setTalent, appId, admId }: any) => {
   const { language } = useLanguage();
@@ -244,11 +245,15 @@ const Talent = ({ setTalent, appId, admId }: any) => {
                       <div className="flex items-center w-full gap-4">
                         <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                         <div className="flex flex-col">
-                          <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                          <span
+                            className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px] cursor-pointer hover:underline"
+                            title={container.talentCerName}
+                            onClick={() => openPdfInNewTab(container.talentCer, container.talentCerName)}
+                          >
                             {container.talentCerName}
                           </span>
                           <span className="text-[#565656] text-xs md:text-sm">
-                            {container.talentCerSize} bytes
+                            {container.talentCerSize}
                           </span>
                         </div>
                       </div> 

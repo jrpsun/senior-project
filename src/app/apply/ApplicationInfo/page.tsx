@@ -158,8 +158,9 @@ const ApplicationInfo = () => {
   };
 
   const handleSubmit = async () => {
-    await submitForm();
     setPopupOpen(false)
+    await submitForm();
+    window.location.reload();
   }
   
   const contents = [
@@ -403,7 +404,7 @@ const ApplicationInfo = () => {
           <BackButton onClick={prevStep}>{currentTexts.backButton}</BackButton>
           {selected === 5 ? (
             <button
-              onClick={handleSubmit}
+              onClick={()=>{setPopupOpen(true)}}
               className="bg-[#008A91] hover:bg-[#006d74] text-white font-medium py-3 px-6 rounded-lg shadow-sm transition-colors duration-200"
             >
               ยืนยันการสมัคร

@@ -266,7 +266,7 @@ const Training = ({ setTrain, appId, admId }: any) => {
                               {container.trainingCerName}
                             </span>
                             <span className="text-[#565656] text-xs md:text-sm">
-                              {container.trainingCerSize} bytes
+                              {container.trainingCerSize}
                             </span>
                           </div>
                         </div> 

@@ -105,9 +105,9 @@ const Summary = ({appId, admId, isConfirmed}: any) => {
                             <span className="block md:inline"> {summaryTexts[language].subtitle}</span>
                         </h2>
                         <div className="flex flex-col items-end mt-4">
-                            <p className="text-[#565656] text-right">
+                            {/* <p className="text-[#565656] text-right">
                                 {summaryTexts[language].submissionDate}
-                            </p>
+                            </p> */}
 
                             {/* ปุ่มเพิ่มเติม จัดชิดขวา */}
                             <div className="flex gap-4 mt-2">

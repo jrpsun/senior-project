@@ -15,6 +15,7 @@ import { generalInfoTexts, genderOptions } from "../../../translation/generalInf
 import { validateThaiCharacters, preventThaiInput, validateEnglishCharacters, preventEnglishInput, allowHouseNumber, allowOnlyNumbers, preventNonHouseNumberInput, preventNonNumericInput } from "../../../utils/validation";
 import DateInput from "../../common/date";
 import { ApplicantRegistrationsInfoResponse, GeneralInfoInterface } from "@components/types/generalInfoType";
+import { openPdfInNewTab } from "@components/utils/pdfUtils";
 
 
 const fetchData = async (url: string, isLocal: boolean = false) => {
@@ -70,6 +71,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, regisData, appId, onC
   const [districts, setDistricts] = useState<{ value: string; label: string; province_id: string }[]>([]);
   const [subDistricts, setSubDistricts] = useState<{ value: string; label: string; postalCode: number; amphure_id: string }[]>([]);
   const [changedData, setChangedData] = useState({});
+  const [age, setAge] = useState<number | null>(null);
 
 
   const handleChange = (field: string, value: string | Date) => {
@@ -79,19 +81,35 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, regisData, appId, onC
       formattedValue = value.toISOString().split("T")[0]; // "2025-04-09"
       setExpiryDate(value)
     }
-    if ((value instanceof Date) && (field === "passportexpiryDate")) {
+    if ((value instanceof Date) && (field === "passportExpDate")) {
       formattedValue = value.toISOString().split("T")[0];
       setpassportExpiryDate(value)
     }
     if ((value instanceof Date) && (field === "birthDate")) {
       formattedValue = value.toISOString().split("T")[0];
       setBirthDate(value)
+
+      const calculatedAge = calculateAge(value);
+      setAge(calculatedAge);
     }
     const updatedData = { ...formData, [field]: formattedValue };
     setFormData(updatedData);
     const newChangedData = { ...changedData, [field]: value };
     setChangedData(newChangedData);
     onChange(newChangedData);
+  };
+
+  const calculateAge = (birthDate: Date): number => {
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const dayDiff = today.getDate() - birthDate.getDate();
+  
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+      age--;
+    }
+  
+    return age;
   };
 
   const [expiryDate, setExpiryDate] = useState<Date | null>(null);
@@ -166,7 +184,10 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ data, regisData, appId, onC
         setExpiryDate(new Date(data.idCardExpDate))
       }
       if (data?.birthDate) {
-        setBirthDate(new Date(data.birthDate))
+        const birth = new Date(data.birthDate);
+        setBirthDate(birth);
+        const calculatedAge = calculateAge(birth);
+        setAge(calculatedAge);
       }
       if (data?.passportExpDate) {
         setExpiryDate(new Date(data.passportExpDate))
@@ -560,7 +581,7 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
               <label className="block text-[#565656] mb-1">
                 {currentTexts.firstName} {formData.nationality === "Thai" && <span className="text-red-500">*</span>}
               </label>
-              <p className="text-[#565656] indent-5">{formData.firstnameTH}</p>
+              <p className="text-[#565656] indent-5">{formData.firstnameTH || "-"}</p>
             </div>
 
             <FormField
@@ -575,7 +596,7 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
               <label className="block text-[#565656] mb-1">
                 {currentTexts.lastName} {formData.nationality === "Thai" && <span className="text-red-500">*</span>}
               </label>
-              <p className="text-[#565656] indent-5">{formData.lastnameTH}</p>
+              <p className="text-[#565656] indent-5">{formData.lastnameTH || "-"}</p>
             </div>
 
             <FormField
@@ -634,11 +655,15 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
                     <div className="flex justify-between items-center w-full gap-4">
                       <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                       <div className="flex flex-col">
-                        <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                        <span
+                          className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px] cursor-pointer hover:underline"
+                          title={formData.docCopyIdCardName}
+                          onClick={() => openPdfInNewTab(formData.docCopyIdCard, formData.docCopyIdCardName)}
+                        >
                           {formData.docCopyIdCardName}
                         </span>
                         <span className="text-[#565656] text-xs md:text-sm">
-                          {formData.docCopyIdCardSize} bytes
+                          {formData.docCopyIdCardSize}
                         </span>
                       </div>
                       <button className="ml-auto" onClick={() => handleDeleteDocCopy("docCopyIdCard", "docCopyIdCardName", "docCopyIdCardSize")}>
@@ -711,11 +736,15 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
                     <div className="flex justify-between items-center w-full gap-4">
                       <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                       <div className="flex flex-col">
-                        <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                        <span
+                          className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px] cursor-pointer hover:underline"
+                          title={formData.docCopyIdCardName}
+                          onClick={() => openPdfInNewTab(formData.docCopyPassport, formData.docCopyPassportName)}
+                        >
                           {formData.docCopyPassportName}
                         </span>
                         <span className="text-[#565656] text-xs md:text-sm">
-                          {formData.docCopyPassportSize} bytes
+                          {formData.docCopyPassportSize}
                         </span>
                       </div>
                       <button className="ml-auto" onClick={() => handleDeleteDocCopy("docCopyPassport", "docCopyPassportName", "docCopyPassportSize")}>
@@ -759,8 +788,8 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
                   </label>
                   <DateInput
                       selected={passportexpiryDate}
-                      onChange={(date) => handleChange("passportexpiryDate", date)}
-                      placeholderText={currentTexts?.SelectPassportExpiry || "เลือกวันหมดอายุของหนังสือเดินทาง"} mode={"birthdate"}                  />
+                      onChange={(date) => handleChange("passportExpDate", date)}
+                      placeholderText={currentTexts?.SelectPassportExpiry || "เลือกวันหมดอายุของหนังสือเดินทาง"} mode={"expiry"}                  />
                 </div>
 
                 {/* วัน/เดือน/ปีเกิด */}
@@ -785,7 +814,7 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
               <label className="block text-[#565656] mb-1">
                 {currentTexts?.age || "อายุ"}
               </label>
-              <p className="text-[#565656] font-medium">-</p>
+              <p className="text-[#565656] font-medium">{age || "-"}</p>
             </div>
             {/* เพศ */}
             <div className="mb-4 w-full max-w-xs md:max-w-md lg:max-w-lg">
@@ -809,11 +838,15 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
               <div className="flex justify-between items-center w-full gap-4">
                 <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                 <div className="flex flex-col">
-                  <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                  <span
+                    className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px] cursor-pointer hover:underline"
+                    title={formData.docCopyIdCardName}
+                    onClick={() => openPdfInNewTab(formData.docCopyHouseRegis, formData.docCopyHouseRegisName)}
+                  >
                     {formData.docCopyHouseRegisName}
                   </span>
                   <span className="text-[#565656] text-xs md:text-sm">
-                    {formData.docCopyHouseRegisSize} bytes
+                    {formData.docCopyHouseRegisSize}
                   </span>
                 </div>
                 <button className="ml-auto" onClick={() => handleDeleteDocCopy("docCopyHouseRegis", "docCopyHouseRegisName", "docCopyHouseRegisSize")}>
