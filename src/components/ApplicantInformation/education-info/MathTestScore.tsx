@@ -8,6 +8,7 @@ import CustomSelect from "../../form/CustomSelect";
 import DateInput from "../../common/date";
 import { validateTestScore, preventInvalidTestScoreInput } from "../../../utils/validation";
 import { EducationMathExam } from "@components/types/educationInfoType";
+import { openPdfInNewTab } from "@components/utils/pdfUtils";
 
 const initialFormValues: EducationMathExam = {
     mathType: "",
@@ -161,11 +162,15 @@ const MathTestScore: React.FC<EducationLevelProps> = ({ data, appId, name, onCha
                                 <div className="flex justify-between items-center w-full gap-4">
                                 <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                                 <div className="flex flex-col">
-                                    <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                                    <span
+                                        className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px] cursor-pointer hover:underline"
+                                        title={formData.mathCerName}
+                                        onClick={() => openPdfInNewTab(formData.mathCer || "", formData.mathCerName)}
+                                    >
                                     {formData.mathCerName}
                                     </span>
                                     <span className="text-[#565656] text-xs md:text-sm">
-                                    {formData.mathCerSize} bytes
+                                    {formData.mathCerSize}
                                     </span>
                                 </div>
                                 <button className="ml-auto" onClick={() => handleDeleteDocCopy()}>

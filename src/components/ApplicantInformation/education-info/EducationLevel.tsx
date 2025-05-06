@@ -12,6 +12,7 @@ import DateInput from "../../common/date";
 import { useSearchParams } from "next/navigation";
 import { EducationBackground, OCRTranscriptICTResponse } from "@components/types/educationInfoType";
 import { OCRLoadingModal } from "@components/components/OCRLoading";
+import { openPdfInNewTab } from "@components/utils/pdfUtils";
 
 
 const generateGraduationYears = (language: string) => {
@@ -491,11 +492,15 @@ const EducationLevel: React.FC<EducationLevelProps> = ({ data, appId, name, onCh
                                 <div className="flex justify-between items-center w-full gap-4">
                                 <img src="/images/summary/doc_icon.svg" alt="Document Icon" className="w-6 h-6 md:w-7 md:h-7" />
                                 <div className="flex flex-col">
-                                    <span className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px]">
+                                    <span
+                                        className="text-[#008A90] font-medium truncate max-w-[250px] md:max-w-[400px] cursor-pointer hover:underline"
+                                        title={formData.docCopyName}
+                                        onClick={() => openPdfInNewTab(formData.docCopyTrans, formData.docCopyName)}
+                                    >
                                     {formData.docCopyName}
                                     </span>
                                     <span className="text-[#565656] text-xs md:text-sm">
-                                    {formData.docCopySize} bytes
+                                    {formData.docCopySize}
                                     </span>
                                 </div>
                                 <button className="ml-auto" onClick={() => handleDeleteDocCopy()}>

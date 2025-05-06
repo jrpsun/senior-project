@@ -40,7 +40,7 @@ export default function CourseList() {
   const { language } = useLanguage() as { language: "TH" | "ENG" };
 
   // เลือก guidanceTexts ตามหลักสูตรที่สมัคร
-  const texts: GuidanceTexts = program === "ICT" ? ictGuidance[language] : dstGuidance[language];
+  const texts: GuidanceTexts = (program?.includes("ITCS")) ? ictGuidance[language] : dstGuidance[language];
   return (
     <div className="bg-white min-h-screen">
       <Navbar />
