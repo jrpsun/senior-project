@@ -101,10 +101,11 @@ const SummaryResultPage = () => {
 
     // กดปุ่ม "ยืนยัน" ใน popup
     const handleConfirmEvaluation = () => {
-        const hasPendingResult = filteredData.some(group =>
-            group.applicants.some(app =>
-                app.interviewResult === "รอ" ||
-                app.interviewResult === "รอผลการประเมิน"
+        const hasPendingResult = intEvaSum.some(group =>
+            group.applicants?.some(app =>
+                app.interviewStatus === "06 - รอผลการพิจารณา" ||
+                app.interviewStatus === "03 - รอพิจารณาเพิ่มเติม" ||
+                app.interviewStatus === "01 - รอสัมภาษณ์"
             )
         );
 
@@ -124,7 +125,7 @@ const SummaryResultPage = () => {
             const failed = group.applicants.filter(a => a.interviewResult === "ไม่ผ่าน").length;
             const pending = group.applicants.filter(a => a.interviewResult === "รอ").length;
             const notInterview = group.applicants.filter(a => a.interviewResult === "ไม่มา").length;
-            const waitingEval = group.applicants.filter(a => a.interviewResult === "รอผลการประเมิน").length;
+            const waitingEval = group.applicants.filter(a => a.interviewResult === "รอผลการพิจารณา").length;
 
             const validApplicants = group.applicants.filter(a =>
                 typeof a.englishScore === "number" &&
@@ -264,6 +265,7 @@ const SummaryResultPage = () => {
         applicantName?: string;
         committee?: string;
         room?: string;
+        year?: string;
     }
 
     const [filters, setFilters] = useState<FilterState>();
@@ -278,7 +280,8 @@ const SummaryResultPage = () => {
                 (!filters?.applicantId || applicant.applicantId?.includes(filters.applicantId)) &&
                 (!filters?.applicantName || `${applicant.firstnameEN} ${applicant.lastnameEN}`.includes(filters.applicantName)) &&
                 (!filters?.committee || group.committee?.includes(filters.committee)) &&
-                (!filters?.room || group.interviewRoom?.includes(filters.room))
+                (!filters?.room || group.interviewRoom?.includes(filters.room)) &&
+                (!filters?.year || group.academicYear?.includes(filters.year))
             );
 
             if (filteredApplicants.length === 0) return null; // no applicants matched
@@ -308,7 +311,7 @@ const SummaryResultPage = () => {
         "03 - รอพิจารณาเพิ่มเติม": 0,
         "04 - ผ่านการสัมภาษณ์": 0,
         "05 - ไม่ผ่านการสัมภาษณ์": 0,
-        "06 - รอผลการประเมิน": 0,
+        "06 - รอผลการพิจารณา": 0,
     };
 
     let totalApplicants = 0;
@@ -335,6 +338,17 @@ const SummaryResultPage = () => {
             totalApplicants++;
         });
     });
+
+    const totalApps = intEvaSum.reduce((sum, room) => {
+        return sum + room.applicants.length;
+    }, 0);
+    console.log('apps amount', totalApps)
+
+    const coneToInt = interviewStatusCount["04 - ผ่านการสัมภาษณ์"] || 0 +
+        interviewStatusCount["05 - ไม่ผ่านการสัมภาษณ์"] || 0 +
+        interviewStatusCount["03 - รอพิจารณาเพิ่มเติม"] || 0 +
+        interviewStatusCount["06 - รอผลการพิจารณา"] || 0
+
 
     const avgEnglish = sumEnglish / totalApplicants;
     const avgPersonality = sumPersonality / totalApplicants;
@@ -387,6 +401,26 @@ const SummaryResultPage = () => {
                                 />
                             </div>
 
+                            <div className="w-[200px] z-20">
+                                <SearchField
+                                    label="ปีการศึกษา"
+                                    type="dropdown"
+                                    value={filterValues?.year || ""}
+                                    onChange={(option) => {
+                                        if (typeof option === "object" && option !== null && "value" in option) {
+                                            setFilterValues({ ...filterValues, year: option.value });
+                                        } else {
+                                            setFilterValues({ ...filterValues, year: "" });
+                                        }
+                                    }}
+                                    options={[
+                                        { value: "2568", label: "2568" },
+                                        { value: "2569", label: "2569" },
+                                    ]}
+                                    placeholder="เลือกปีการศึกษา"
+                                />
+                            </div>
+
                             <div className="w-[300px] z-50 relative">
                                 <SearchField
                                     label="รอบรับสมัคร"
@@ -423,7 +457,7 @@ const SummaryResultPage = () => {
                                         { value: "03 - รอพิจารณาเพิ่มเติม", label: "03 - รอพิจารณาเพิ่มเติม" },
                                         { value: "04 - ผ่านการสัมภาษณ์", label: "04 - ผ่านการสัมภาษณ์" },
                                         { value: "05 - ไม่ผ่านการสัมภาษณ์", label: "05 - ไม่ผ่านการสัมภาษณ์" },
-                                        { value: "06 - รอผลการประเมิน", label: "06 - รอผลการประเมิน" },
+                                        { value: "06 - รอผลการพิจารณา", label: "06 - รอผลการพิจารณา" },
                                     ]}
                                     placeholder="เลือกผลการสัมภาษณ์"
                                 />
@@ -583,26 +617,26 @@ const SummaryResultPage = () => {
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 text-[18px] mb-6 mt-6 font-semibold text-[#1D2939]">
                                 <div className="flex items-center gap-2">
                                     <Image src="/images/admin/interview/summary/afterConfirm/eval_eligible_icon.svg" alt="ผู้มีสิทธิ์" width={24} height={24} />
-                                    ผู้มีสิทธิ์สัมภาษณ์ <span className="text-[#F59E0B]">{summaryData.passed + summaryData.failed + summaryData.notInterview} คน</span>
+                                    ผู้มีสิทธิ์สัมภาษณ์ <span className="text-[#F59E0B]">{totalApps} คน</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Image src="/images/admin/interview/summary/afterConfirm/eval_attend_icon.svg" alt="มาสัมภาษณ์" width={24} height={24} />
-                                    มาสัมภาษณ์ <span className="text-[#2563EB]">{summaryData.passed + summaryData.failed} คน</span>
+                                    มาสัมภาษณ์ <span className="text-[#2563EB]">{coneToInt} คน</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Image src="/images/admin/interview/summary/afterConfirm/eval_attend_percent_icon.svg" alt="เปอร์เซ็นต์มาสัมภาษณ์" width={24} height={24} />
                                     เปอร์เซ็นต์มาสัมภาษณ์ <span className="text-[#2563EB]">
-                                        {((summaryData.passed + summaryData.failed) / (summaryData.passed + summaryData.failed + summaryData.notInterview) * 100 || 0).toFixed(2)}%
+                                        {((coneToInt) / (totalApps) * 100 || 0).toFixed(2)}%
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Image src="/images/admin/interview/summary/afterConfirm/eval_passed_icon.svg" alt="ผ่านสัมภาษณ์" width={24} height={24} />
-                                    ผ่านสัมภาษณ์ <span className="text-[#15803D]">{summaryData.passed} คน</span>
+                                    ผ่านสัมภาษณ์ <span className="text-[#15803D]">{interviewStatusCount["04 - ผ่านการสัมภาษณ์"] || 0} คน</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Image src="/images/admin/interview/summary/afterConfirm/eval_passed_percent_icon.svg" alt="เปอร์เซ็นต์ผ่าน" width={24} height={24} />
                                     เปอร์เซ็นต์ผ่านสัมภาษณ์ <span className="text-[#15803D]">
-                                        {((summaryData.passed) / (summaryData.passed + summaryData.failed) * 100 || 0).toFixed(2)}%
+                                        {((interviewStatusCount["04 - ผ่านการสัมภาษณ์"] || 0) / (interviewStatusCount["04 - ผ่านการสัมภาษณ์"] || 0 + interviewStatusCount["05 - ไม่ผ่านการสัมภาษณ์"] || 0) * 100 || 0).toFixed(2)}%
                                     </span>
                                 </div>
                             </div>
@@ -625,8 +659,8 @@ const SummaryResultPage = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Image src="/images/admin/interview/summary/beforeConfirm/wait_eval_icon.svg" alt="รอผลประเมิน" width={25} height={30} />
-                                    <span className="text-[#1D2939] font-bold">รอผลการประเมิน</span>
-                                    <span className="font-semibold text-blue-700">{interviewStatusCount["06 - รอผลการประเมิน"] || 0} คน</span>
+                                    <span className="text-[#1D2939] font-bold">รอผลการพิจารณา</span>
+                                    <span className="font-semibold text-blue-700">{interviewStatusCount["06 - รอผลการพิจารณา"] || 0} คน</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Image src="/images/admin/interview/summary/beforeConfirm/absent_icon.svg" alt="ไม่มาสัมภาษณ์" width={30} height={30} />
@@ -671,7 +705,7 @@ const SummaryResultPage = () => {
                                 "03 - รอพิจารณาเพิ่มเติม": 0,
                                 "04 - ผ่านการสัมภาษณ์": 0,
                                 "05 - ไม่ผ่านการสัมภาษณ์": 0,
-                                "06 - รอผลการประเมิน": 0,
+                                "06 - รอผลการพิจารณา": 0,
                             };
 
                             let totalEnglishScore = 0;
@@ -702,18 +736,18 @@ const SummaryResultPage = () => {
                             return (
                                 <div key={index} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
                                     {/* หัวตาราง */}
-                                    <div className="bg-[#C4C4C4] px-6 py-3 text-[#333] font-semibold flex flex-wrap gap-x-8">
-                                        <div>หลักสูตร: {group.admissionProgram}</div>
-                                        <div>ปีการศึกษา: </div>
-                                        <div>รอบรับสมัคร: {group.admissionRoundName}</div>
-                                        <div>ห้องสัมภาษณ์: <span className="font-bold">{group.interviewRoom}</span></div>
-                                        <div>กรรมการสัมภาษณ์: {group.committee}</div>
+                                    <div className="bg-[#C4C4C4] px-6 py-3 text-[#333] flex flex-wrap gap-x-8">
+                                        <div className="font-semibold">หลักสูตร:</div> <span>{group.admissionProgram}</span>
+                                        <div className="font-semibold">ปีการศึกษา:</div> <span>{group.academicYear}</span>
+                                        <div className="font-semibold">รอบรับสมัคร:</div> <span>{group.admissionRoundName}</span>
+                                        <div className="font-semibold">ห้องสัมภาษณ์:</div> <span>{group.interviewRoom}</span>
+                                        <div className="font-semibold">กรรมการสัมภาษณ์:</div> <span>{group.committee}</span>
                                     </div>
 
                                     {/* แถบรวม: คะแนนเฉลี่ย + สรุปผล */}
-                                    <div 
-                                    className=
-                                    "bg-[#f9f9f9] px-6 py-2 text-[#565656] border rounded-md flex flex-row "
+                                    <div
+                                        className=
+                                        "bg-[#f9f9f9] px-6 py-2 text-[#565656] border rounded-md flex flex-row "
                                     >
 
                                         {/* แถบสรุปผล - อยู่ซ้าย */}
@@ -731,8 +765,8 @@ const SummaryResultPage = () => {
                                                 <span className="text-yellow-600">{statusCount["03 - รอพิจารณาเพิ่มเติม"]}</span>
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <span>รอผลการประเมิน :</span>
-                                                <span className="text-[#0D47A1]">{statusCount["06 - รอผลการประเมิน"]}</span>
+                                                <span>รอผลการพิจารณา :</span>
+                                                <span className="text-[#0D47A1]">{statusCount["06 - รอผลการพิจารณา"]}</span>
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 <span>ไม่มาสัมภาษณ์ :</span>
@@ -801,7 +835,7 @@ const SummaryResultPage = () => {
                                                                 ${a.interviewStatus === "04 - ผ่านการสัมภาษณ์" ? "bg-[#E2F5E2] text-[#13522B]" : ""}
                                                                 ${a.interviewStatus === "05 - ไม่ผ่านการสัมภาษณ์" ? "bg-[#FEE2E2] text-red-600" : ""}
                                                                 ${a.interviewStatus === "03 - รอพิจารณาเพิ่มเติม" ? "bg-[#FFF4E2] text-[#DAA520]" : ""}
-                                                                ${a.interviewStatus === "06 - รอผลการประเมิน" ? "bg-[#E0F2FE] text-[#0077B6]" : ""}
+                                                                ${a.interviewStatus === "06 - รอผลการพิจารณา" ? "bg-[#E0F2FE] text-[#0077B6]" : ""}
                                                                 ${a.interviewStatus === "02 - ไม่มาสัมภาษณ์" ? "bg-[#EEEEEE] text-[#666666]" : ""}
                                                             `}
                                                             >

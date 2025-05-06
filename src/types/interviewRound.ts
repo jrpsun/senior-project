@@ -6,4 +6,5 @@ export interface InterviewRound {
     startTime?: string;
     endTime?: string;
     duration?: string;
+    interviewRoomNumber?: number;
 }

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import CustomSelect from "@components/components/form/CustomSelect";
+import { InterviewSlot } from "@components/types/interviewRooms";
 
 interface Props {
     isOpen: boolean;
@@ -10,6 +11,7 @@ interface Props {
         room: string;
         startTime: string;
         endTime: string;
+        roundId: string;
     };
     existingSchedules: {
         room: string;
@@ -35,9 +37,40 @@ const PopupEditInterviewGrouping: React.FC<Props> = ({
     existingSchedules,
     currentData,
     roomOptions,
-    interviewSchedules, 
+    interviewSchedules,
 
 }) => {
+    const [timeSlot, setTimeSlot] = useState<InterviewSlot[]>([]);
+    const [loading, setLoading] = useState(true);
+    const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+
+    async function fetchData() {
+        try {
+            const [res_slot] = await Promise.all([
+                fetch(`${API_BASE_URL}/education-department/get-all-int-slot`)
+            ])
+
+            const data_slot = await res_slot.json()
+            if (!res_slot.ok) {
+                setTimeSlot([]);
+            }
+            else {
+                setTimeSlot(data_slot || []);
+            }
+
+
+        } catch (err) {
+            console.error("Error fetching data:", err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const [roundId, setRoundId] = useState(currentData.roundId);
     const [room, setRoom] = useState(currentData.room);
     const [startTime, setStartTime] = useState(currentData.startTime);
     const [endTime, setEndTime] = useState(currentData.endTime);
@@ -45,24 +78,24 @@ const PopupEditInterviewGrouping: React.FC<Props> = ({
 
     const filteredRoomOptions = roomOptions.filter((roomOpt) => {
         const roomName = roomOpt.value;
-    
+
         // ถ้าเป็นห้องเดิมที่ผู้สมัครเคยอยู่ ให้แสดงเสมอ
         if (roomName === currentData.room) return true;
-    
+
         // ตรวจสอบว่าห้องนี้เต็มหรือยัง (ใน existingSchedules)
         const countInRoom = existingSchedules.filter(s => s.room === roomName).length;
-    
+
         // หา schedule ของห้องเพื่อดูจำนวน slot สูงสุด
         const schedule = interviewSchedules.find(s => s.room === roomName);
         if (!schedule) return false;
-    
+
         const start = new Date(`2025-04-10T${schedule.startTime}:00`);
         const end = new Date(`2025-04-10T${schedule.endTime}:00`);
         const maxSlot = Math.floor((end.getTime() - start.getTime()) / (schedule.duration * 60000));
-    
+
         return countInRoom < maxSlot;
     });
-    
+
 
 
     useEffect(() => {
@@ -78,6 +111,44 @@ const PopupEditInterviewGrouping: React.FC<Props> = ({
 
         if (selectedStart >= selectedEnd) {
             return "เวลาเริ่มต้นต้องน้อยกว่าเวลาสิ้นสุด";
+        }
+
+        const matchingSlot = timeSlot.find(
+            (slot) => slot.interviewRoundId === roundId && slot.interviewRoom === room
+        );
+
+        if (!matchingSlot) {
+            return "ไม่พบข้อมูลช่วงเวลาในการสัมภาษณ์";
+        }
+
+        const slotStart = new Date(`1970-01-01T${matchingSlot.startTime}:00`);
+        const slotEnd = new Date(`1970-01-01T${matchingSlot.endTime}:00`);
+        const requiredDuration = parseInt(matchingSlot.duration, 10);
+
+        if (selectedStart < slotStart || selectedEnd > slotEnd) {
+            return "เวลาที่เลือกอยู่นอกช่วงเวลาที่กำหนดไว้";
+        }
+
+        const actualDuration = (selectedEnd.getTime() - selectedStart.getTime()) / (1000 * 60);
+        if (actualDuration !== requiredDuration) {
+            return `ช่วงเวลาที่เลือกต้องมีระยะเวลา ${requiredDuration} นาที`;
+        }
+
+        if (matchingSlot) {
+            for (const time of matchingSlot.interviewTime) {
+                const [slotStartStr, slotEndStr] = time.replace('–', '-').split('-');
+                const slotStart = new Date(`1970-01-01T${slotStartStr}:00`);
+                const slotEnd = new Date(`1970-01-01T${slotEndStr}:00`);
+
+                const overlap =
+                    (selectedStart >= slotStart && selectedStart < slotEnd) ||
+                    (selectedEnd > slotStart && selectedEnd <= slotEnd) ||
+                    (selectedStart <= slotStart && selectedEnd >= slotEnd);
+
+                if (overlap) {
+                    return "เวลาที่เลือกทับซ้อนกับช่วงเวลาที่มีอยู่ในรอบสัมภาษณ์นี้";
+                }
+            }
         }
 
         for (const schedule of existingSchedules) {
@@ -96,14 +167,15 @@ const PopupEditInterviewGrouping: React.FC<Props> = ({
                 schedule.endTime === currentData.endTime &&
                 schedule.room === currentData.room;
 
-            // ❗ ต้องเทียบกับ currentData ไม่ใช่ schedule
             if (overlap && !isSameTime) {
                 return "เวลาที่เลือกตรงกับกำหนดการที่มีอยู่ กรุณาเลือกเวลาใหม่";
             }
         }
 
         return "";
-    }, [room, startTime, endTime, existingSchedules, currentData]);
+    }, [room, roundId, startTime, endTime, existingSchedules, currentData, timeSlot]);
+
+
 
 
     useEffect(() => {
@@ -117,11 +189,14 @@ const PopupEditInterviewGrouping: React.FC<Props> = ({
             onSave({ room, roundId, startTime, endTime });
         }
     };
-    
+
 
     if (!isOpen) return null;
 
-    console.log('room start end',room)
+    // debugging
+    // console.log('room start end', room)
+    // console.log('round id', roundId)
+    // console.log("time slot", timeSlot)
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">

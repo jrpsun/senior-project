@@ -102,6 +102,8 @@ export interface InterviewScreeningForEduInterface {
     roundName?: string;
 
     InterviewCommittee?: CommitteeResult[];
+
+    interviewRoundId?: string;
 }
 
 
