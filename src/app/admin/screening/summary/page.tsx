@@ -7,6 +7,7 @@ import Image from "next/image";
 import { CourseComScreeningInterface, PreEvaSummaryApplicantsResponse } from "@components/types/screening";
 import { getDecodedToken } from "@components/lib/auth";
 import Modal from "@components/components/common/popup-login";
+import { AdmissionResponse } from "@components/types/admission";
 
 interface GroupedData {
     committeeName: string;
@@ -50,6 +51,7 @@ const mockGroupedData: GroupedData[] = [
 
 const ScreeningResultPage = () => {
     const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+    const [admOption, setAdmOption] = useState<AdmissionResponse[]>([]);
     const [preEvaSum, setPreEvaSum] = useState<PreEvaSummaryApplicantsResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -70,14 +72,16 @@ const ScreeningResultPage = () => {
     async function fetchData() {
         try {
             const res = await fetch(`${API_BASE_URL}/education-department/get-pre-eva-sum`)
-
+            const res_adm = await fetch(`${process.env.API_BASE_URL}/admission/`);
             if (!res.ok) {
                 throw new Error("Failed to fetch one or more resources");
             }
 
             const data_app = await res.json();
+            const adm = await res_adm.json();
 
             setPreEvaSum(data_app.preEva || []);
+            setAdmOption(adm || []);
 
         } catch (err) {
             console.error("Error fetching data:", err);
@@ -90,6 +94,20 @@ const ScreeningResultPage = () => {
         fetchData();
     }, []);
     console.log('pre eva summary #####', preEvaSum);
+
+    const courseOptions = admOption.map(adm => ({
+        label: adm.program === 'ITDS/B'
+            ? 'หลักสูตร DST (ไทย)'
+            : adm.program === 'ITCS/B'
+                ? 'หลักสูตร ICT (นานาชาติ)'
+                : '',
+        value: adm.program
+    }));
+
+    const roundOptions = admOption.map(adm => ({
+        label: adm.roundName,
+        value: adm.roundName
+    }));
 
     const [isPopupVisible, setIsPopupVisible] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -324,10 +342,7 @@ const ScreeningResultPage = () => {
                                             setFilterValues({ ...filterValues, program: "" });
                                         }
                                     }}
-                                    options={[
-                                        { value: "หลักสูตร ICT (นานาชาติ)", label: "หลักสูตร ICT (นานาชาติ)" },
-                                        { value: "หลักสูตร DST (ไทย)", label: "หลักสูตร DST (ไทย)" },
-                                    ]}
+                                    options={courseOptions}
                                     placeholder="เลือกหลักสูตร"
                                 />
                             </div>
@@ -344,9 +359,7 @@ const ScreeningResultPage = () => {
                                             setFilterValues({ ...filterValues, roundName: "" });
                                         }
                                     }}
-                                    options={[{ value: "1/68 - ICT Portfolio", label: "1/68 - ICT Portfolio" },
-                                    { value: "1/68 - MU – Portfolio (TCAS 1)", label: "1/68 - MU – Portfolio (TCAS 1)" }
-                                    ]}
+                                    options={roundOptions}
                                     placeholder="เลือกรอบรับสมัคร"
                                 />
                             </div>

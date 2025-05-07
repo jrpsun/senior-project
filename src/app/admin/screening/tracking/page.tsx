@@ -11,6 +11,7 @@ import Link from "next/link";
 import { getDecodedToken } from "@components/lib/auth";
 import Modal from "@components/components/common/popup-login";
 import { useRouter } from "next/navigation";
+import { AdmissionResponse } from "@components/types/admission";
 
 // const applicant = [
 //     { round: 'DST01', applicantId: '0000001', name: 'อาทิตย์ แสงจันทร์', course: 'ITDS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 09.04 น.' },
@@ -47,14 +48,7 @@ import { useRouter } from "next/navigation";
 //     { round: 'ICT01', applicantId: '0000025', name: 'ธนบดี มิ่งมงคลทรัพย์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.24 น.' }
 // ]
 
-const courseOptions = [
-    { label: "ITDS/B", value: "หลักสูตร DST (ไทย)" },
-    { label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)" }
-];
-const roundOptions = [
-    { label: "1/68 - MU - Portfolio", value: "1/68 - MU - Portfolio" },
-    { label: "1/68 - ICT Portfolio", value: "1/68 - ICT Portfolio" },
-];
+
 
 const ScreeningStatusOptions = [
     { label: "แสดงทั้งหมด", value: '' },
@@ -67,6 +61,7 @@ const Page = () => {
     const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
     const [committees, setCommittees] = useState<EduScreeningGroupingAllCourseComInterface[]>([]);
     const [applicants, setApplicants] = useState<CourseComScreeningInterface[]>([]);
+    const [admOption, setAdmOption] = useState<AdmissionResponse[]>([]);
     //const [appTest, setAppTest] = useState<InterviewScreeningForEduInterface[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -86,9 +81,10 @@ const Page = () => {
 
     async function fetchData() {
         try {
-            const [res_com, res_app] = await Promise.all([
+            const [res_com, res_app, res_adm] = await Promise.all([
                 fetch(`${API_BASE_URL}/course-committee/get-all-courseC`),
-                fetch(`${API_BASE_URL}/course-committee/all-applicant-courseC`)
+                fetch(`${API_BASE_URL}/course-committee/all-applicant-courseC`),
+                fetch(`${process.env.API_BASE_URL}/admission/`)
                 //fetch(`${API_BASE_URL}/education-department/get-summary-applicants-interview`)
             ]);
 
@@ -98,10 +94,12 @@ const Page = () => {
 
             const data_com = await res_com.json();
             const data_app = await res_app.json();
+            const adm = await res_adm.json();
             //const data_test = await res_test.json();
 
             setCommittees(data_com || []);
             setApplicants(data_app.applicants.filter((app) => app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "03 - รอพิจารณา" || app.admissionStatus === "05 - ไม่ผ่านการพิจารณา") || []);
+            setAdmOption(adm || []);
             //setAppTest(data_test.applicants || []);
 
         } catch (err) {
@@ -115,6 +113,20 @@ const Page = () => {
         fetchData();
     }, []);
     //console.log("appTest", appTest);
+
+    const courseOptions = admOption.map(adm => ({
+        label: adm.program === 'ITDS/B'
+            ? 'หลักสูตร DST (ไทย)'
+            : adm.program === 'ITCS/B'
+                ? 'หลักสูตร ICT (นานาชาติ)'
+                : '',
+        value: adm.program
+    }));
+
+    const roundOptions = admOption.map(adm => ({
+        label: adm.roundName,
+        value: adm.roundName
+    }));
 
     const committeeOptions = committees.map((com) => ({
         label: `อ. ${com.firstName}`,

@@ -15,20 +15,14 @@ import { TokenAdminPayload } from "@components/types/token";
 import { jwtDecode } from "jwt-decode";
 import Modal from "@components/components/common/popup-login";
 import { getDecodedToken } from "@components/lib/auth";
+import { AdmissionResponse } from "@components/types/admission";
 
-const courseOptions = [
-    {label: "ITDS/B", value: "หลักสูตร DST (ไทย)"},
-    {label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)"}
-];
-const roundOptions = [
-    { label: "DST – Portfolio", value: "DST – Portfolio" },
-    { label: "ICT - Portfolio", value: "ICT - Portfolio" },
-];
+
 
 const currentYear = new Date().getFullYear() + 543;
 const yearOptions = Array.from({ length: 10 }, (_, i) => {
-  const year = currentYear - i;
-  return { label: `${year}`, value: `${year}` };
+    const year = currentYear - i;
+    return { label: `${year}`, value: `${year}` };
 });
 
 const admitStatusOptions = ["01 - ยังไม่ยื่นใบสมัคร", "02 - ยื่นใบสมัครแล้ว", "03 - รอพิจารณา", "04 - ผ่านการพิจารณา", "05 - ไม่ผ่านการพิจารณา", "06 - รอสัมภาษณ์", "07 - ผ่านการสัมภาษณ์", "08 - ไม่ผ่านการสัมภาษณ์", "09 - ยกเลิกการสมัคร"];
@@ -37,6 +31,7 @@ const paymentStatusOptions = ["01 - ยังไม่ได้ชำระเ�
 
 const Page = () => {
     const [applicants, setApplicants] = useState<EduScreeningInterface[]>([]);
+    const [admOption, setAdmOption] = useState<AdmissionResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const [showModal, setShowModal] = useState(false);
@@ -55,12 +50,17 @@ const Page = () => {
     const fetchAllApplicants = async () => {
         try {
             const res = await fetch(`${process.env.API_BASE_URL}/education-department/all-applicant-edu`);
+            const res_adm = await fetch(`${process.env.API_BASE_URL}/admission/`);
+
             if (!res.ok) {
                 throw new Error("Failed to fetch applicants");
             }
             const data = await res.json();
+            const adm = await res_adm.json();
+
             console.log("data", data)
             setApplicants(data || []);
+            setAdmOption(adm || []);
         } catch (err) {
             console.error(err);
         } finally {
@@ -71,9 +71,21 @@ const Page = () => {
     useEffect(() => {
         fetchAllApplicants();
     }, []);
-    // debugging
-    console.log("all apps", applicants)
+    //console.log('adm', admOption)
 
+    const courseOptions = admOption.map(adm => ({
+        label: adm.program === 'ITDS/B'
+            ? 'หลักสูตร DST (ไทย)'
+            : adm.program === 'ITCS/B'
+                ? 'หลักสูตร ICT (นานาชาติ)'
+                : '',
+        value: adm.program
+    }));
+
+    const roundOptions = admOption.map(adm => ({
+        label: adm.roundName,
+        value: adm.roundName
+    }));
 
     const [isCollapsed, setIsCollapsed] = useState(false);
     interface FilterState {
@@ -166,7 +178,7 @@ const Page = () => {
     //       const exists = prev.some(
     //         (item) => item.applicantId === applicantId && item.admissionId === admissionId
     //       );
-      
+
     //       if (exists) {
     //         return prev.filter(
     //           (item) =>
@@ -182,7 +194,7 @@ const Page = () => {
         setShowCheckboxes(true);
         setSelectedApplicants([]);
     };
-    const handleConfirmDownload = async() => {
+    const handleConfirmDownload = async () => {
         console.log("ดาวน์โหลดเอกสารสำหรับ:", selectedApplicants);
         await downloadSelectedApplicants();
         setShowAlert(true);            // แสดง Alert
@@ -192,59 +204,59 @@ const Page = () => {
 
     const downloadSelectedApplicants = async () => {
         try {
-          const res = await fetch(`${process.env.API_BASE_URL}/upload/download-applicants`, {
-            method: "POST",
-            body: JSON.stringify(selectedApplicants),
-            headers: { "Content-Type": "application/json" },
-          });
-      
-          if (!res.ok) {
-            throw new Error("Download failed");
-          }
-      
-          const blob = await res.blob();
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "Applicants.zip";
-          a.click();
-          window.URL.revokeObjectURL(url);
+            const res = await fetch(`${process.env.API_BASE_URL}/upload/download-applicants`, {
+                method: "POST",
+                body: JSON.stringify(selectedApplicants),
+                headers: { "Content-Type": "application/json" },
+            });
+
+            if (!res.ok) {
+                throw new Error("Download failed");
+            }
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "Applicants.zip";
+            a.click();
+            window.URL.revokeObjectURL(url);
         } catch (err) {
-          console.error("Error downloading file:", err);
-          alert("มีข้อผิดพลาดในการดาวน์โหลดไฟล์");
+            console.error("Error downloading file:", err);
+            alert("มีข้อผิดพลาดในการดาวน์โหลดไฟล์");
         }
     };
 
-    
-    const handleClickView = ( appId: string, admId: string ) => {
+
+    const handleClickView = (appId: string, admId: string) => {
         router.push(`/admin/applicant/view?id=${appId}&admId=${admId}`);
     }
 
     const isChecked = (applicantId: string, admissionId: string) => {
         return selectedApplicants.some(
-          (item) => item.applicantId === applicantId && item.admissionId === admissionId
+            (item) => item.applicantId === applicantId && item.admissionId === admissionId
         );
     };
 
     const handleCheckboxChange = (applicantId: string, admissionId: string) => {
         setSelectedApplicants((prev) => {
-          const exists = prev.some(
-            (item) => item.applicantId === applicantId && item.admissionId === admissionId
-          );
-      
-          if (exists) {
-            return prev.filter(
-              (item) => !(item.applicantId === applicantId && item.admissionId === admissionId)
+            const exists = prev.some(
+                (item) => item.applicantId === applicantId && item.admissionId === admissionId
             );
-          } else {
-            return [...prev, { applicantId, admissionId }];
-          }
+
+            if (exists) {
+                return prev.filter(
+                    (item) => !(item.applicantId === applicantId && item.admissionId === admissionId)
+                );
+            } else {
+                return [...prev, { applicantId, admissionId }];
+            }
         });
     };
 
     const isSelectable = (app: EduScreeningInterface) => {
         // เงื่อนไขที่ใช้กำหนดว่า checkbox กดได้ไหม เช่น app.status === "ผ่าน"
-        return  app.admissionStatus === "02 - ยื่นใบสมัครแล้ว"
+        return app.admissionStatus === "02 - ยื่นใบสมัครแล้ว"
     };
 
     const hasSelectableApplicants = applicants.some((app) => isSelectable(app));
@@ -258,32 +270,32 @@ const Page = () => {
     const toggleSelectAll = () => {
         const selectableApps = applicants.filter((app) => isSelectable(app));
 
-            if (isAllSelected) {
-                // ถ้ากดอีกที → ยกเลิกทั้งหมด
-                setSelectedApplicants((prev) =>
+        if (isAllSelected) {
+            // ถ้ากดอีกที → ยกเลิกทั้งหมด
+            setSelectedApplicants((prev) =>
                 prev.filter(
                     (item) =>
-                    !selectableApps.some(
-                        (app) =>
-                        app.applicantId === item.applicantId &&
-                        app.admissionId === item.admissionId
-                    )
+                        !selectableApps.some(
+                            (app) =>
+                                app.applicantId === item.applicantId &&
+                                app.admissionId === item.admissionId
+                        )
                 )
-                );
-            } else {
-                // เลือกทั้งหมดที่เลือกได้
-                const newSelections = selectableApps.map((app) => ({
-                    applicantId: app.applicantId,
-                    admissionId: app.admissionId,
-                }));
+            );
+        } else {
+            // เลือกทั้งหมดที่เลือกได้
+            const newSelections = selectableApps.map((app) => ({
+                applicantId: app.applicantId,
+                admissionId: app.admissionId,
+            }));
 
-                setSelectedApplicants((prev) => {
+            setSelectedApplicants((prev) => {
                 const merged = [...prev];
                 newSelections.forEach((sel) => {
                     const exists = merged.some(
-                    (item) =>
-                        item.applicantId === sel.applicantId &&
-                        item.admissionId === sel.admissionId
+                        (item) =>
+                            item.applicantId === sel.applicantId &&
+                            item.admissionId === sel.admissionId
                     );
                     if (!exists) merged.push(sel);
                 });
@@ -291,7 +303,7 @@ const Page = () => {
             });
         }
     };
-    
+
     const export_excel = async () => {
         try {
             const response = await fetch(`${process.env.API_BASE_URL}/excel/applicant-list`, {
@@ -301,27 +313,27 @@ const Page = () => {
                 },
                 body: JSON.stringify(filters),
             });
-    
+
             if (!response.ok) {
                 throw new Error("Download failed");
             }
-    
+
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
-    
+
             // สร้าง element <a> เพื่อดาวน์โหลด
             const a = document.createElement("a");
             a.href = url;
-    
+
             // ดึงชื่อไฟล์จาก Content-Disposition (ถ้ามี)
             const disposition = response.headers.get("Content-Disposition");
             const match = disposition?.match(/filename\*?=.*?''(.+)/);
             const filename = match ? decodeURIComponent(match[1]) : `Applicant_List_${filters.course}_${filters.round}.xlsx`;
-    
+
             a.download = filename;
             document.body.appendChild(a);
             a.click();
-    
+
             // ล้าง
             a.remove();
             window.URL.revokeObjectURL(url);
@@ -331,9 +343,11 @@ const Page = () => {
         }
     };
 
+    // debugging
+    console.log("all apps", applicants)
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            {showModal && <Modal role="admin"/>}
+            {showModal && <Modal role="admin" />}
             <div>
                 <AdminNavbar
                     isCollapsed={isCollapsed}
@@ -624,14 +638,14 @@ const Page = () => {
                                             <th className="px-2 py-4 whitespace-nowrap">
                                                 {showCheckboxes && (
                                                     <input
-                                                    type="checkbox"
-                                                    checked={isAllSelected}
-                                                    onChange={toggleSelectAll}
-                                                    disabled={!hasSelectableApplicants}
-                                                    className={`w-5 h-5 accent-[#008A90] text-white rounded-md border-2 
+                                                        type="checkbox"
+                                                        checked={isAllSelected}
+                                                        onChange={toggleSelectAll}
+                                                        disabled={!hasSelectableApplicants}
+                                                        className={`w-5 h-5 accent-[#008A90] text-white rounded-md border-2 
                                                         ${!hasSelectableApplicants ? "border-gray-300 cursor-not-allowed" : "border-[#008A90]"}
                                                     `}
-                                                    title={!hasSelectableApplicants ? "ไม่มีผู้สมัครที่สามารถเลือกได้" : ""}
+                                                        title={!hasSelectableApplicants ? "ไม่มีผู้สมัครที่สามารถเลือกได้" : ""}
                                                     />
                                                 )}
                                             </th>
@@ -679,7 +693,7 @@ const Page = () => {
                                                     <td className="text-center whitespace-nowrap">{app.roundName}</td>
                                                     <td className="text-center whitespace-nowrap">{app.applicantNumber}</td>
                                                     <td className="whitespace-nowrap">{app.firstnameEN} {app.lastnameEN}</td>
-                                                    <td className="text-center whitespace-nowrap">{app.programRegistered}</td>
+                                                    <td className="text-center whitespace-nowrap">{app.program}</td>
 
                                                     <td>
                                                         <div className={`mr-4 whitespace-nowrap
@@ -756,9 +770,9 @@ const Page = () => {
                                                             </div>
                                                         </Link>
                                                         )} */}
-                                                        {app.admissionStatus !== "01 - ยังไม่ยื่นใบสมัคร" && app.admissionStatus !== "09 - ยกเลิกการสมัคร"  && (
+                                                        {app.admissionStatus !== "01 - ยังไม่ยื่นใบสมัคร" && app.admissionStatus !== "09 - ยกเลิกการสมัคร" && (
                                                             <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] "
-                                                            onClick={() => handleClickView(app.applicantId || "", app.admissionId || "")}>
+                                                                onClick={() => handleClickView(app.applicantId || "", app.admissionId || "")}>
                                                                 <div className="flex flex-row gap-1">
                                                                     <div className="pt-1">
                                                                         <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">

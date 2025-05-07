@@ -28,11 +28,7 @@ const interviewSchedules = mockInterviewSchedules.map(s => ({
     ...s,
     committee: Array.isArray(s.committee) ? s.committee.join(", ") : s.committee
 }));
-const courseOptions = ["ITDS/B", "ITCS/B"];
-const roundOptions = [
-    { label: "1/68 - MU – Portfolio (TCAS 1)", value: "DST01" },
-    { label: "1/68 - ICT Portfolio", value: "ICT01" },
-];
+
 
 const admitStatusOptions = ["04 - ผ่านการพิจารณา", "06 - รอสัมภาษณ์"];
 const docStatusOptions = ["03 - เอกสารครบถ้วน"];
@@ -42,6 +38,7 @@ const Page = () => {
     // fetch applicants data to show on table
     const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
     const [applicants, setApplicants] = useState<InterviewScreeningForEduInterface[]>([]);
+    const [admOption, setAdmOption] = useState<AdmissionResponse[]>([]);
     const [rooms, setRooms] = useState<InterviewRoomDetails[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -61,10 +58,11 @@ const Page = () => {
 
     async function fetchData() {
         try {
-            const [res_app, res_room, res_slot] = await Promise.all([
-                fetch(`${API_BASE_URL}/education-department/get-summary-applicants-interview`),
+            const [res_app, res_room, res_slot, res_adm] = await Promise.all([
+                fetch(`${API_BASE_URL}/education-department/applicants-interview-grouping`),
                 fetch(`${API_BASE_URL}/education-department/get-all-interview-rooms`),
-                fetch(`${API_BASE_URL}/education-department/get-all-int-slot`)
+                fetch(`${API_BASE_URL}/education-department/get-all-int-slot`),
+                fetch(`${process.env.API_BASE_URL}/admission/`)
             ])
 
             if (!res_app.ok || !res_room.ok) {
@@ -75,10 +73,12 @@ const Page = () => {
             const data_app = await res_app.json()
             const data_room = await res_room.json()
             const data_slot = await res_slot.json()
+            const adm = await res_adm.json();
 
-            setApplicants(data_app.applicants.filter((app) => app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "06 - รอสัมภาษณ์") || []);
+            setApplicants(data_app.applicants || []);
             //.filter((app) => app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "06 - รอสัมภาษณ์")
             setRooms(data_room.room || []);
+            setAdmOption(adm || []);
             if (!res_slot.ok) {
                 setInterviewSlot([]);
             }
@@ -100,6 +100,19 @@ const Page = () => {
     console.log("slot ###", interviewSlot)
     console.log("all apps", applicants)
 
+    const courseOptions = admOption.map(adm => ({
+        label: adm.program === 'ITDS/B'
+            ? 'หลักสูตร DST (ไทย)'
+            : adm.program === 'ITCS/B'
+                ? 'หลักสูตร ICT (นานาชาติ)'
+                : '',
+        value: adm.program
+    }));
+
+    const roundOptions = admOption.map(adm => ({
+        label: adm.roundName,
+        value: adm.roundName
+    }));
 
     useEffect(() => {
         const statusMap = new Map<string, boolean>();

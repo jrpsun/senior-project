@@ -166,7 +166,7 @@ const PopupAdmissionRound: React.FC<PopupAdmissionRoundProps> = ({
                   label="ชื่อรอบรับสมัคร (Round Name)"
                   options={[
                     { value: "รอบ 1 ICT - Portfolio", label: "รอบ 1 ICT - Portfolio" },
-                    { value: "รอบ 1 MU - Portfolio (TCAS 1)", label: "รอบ 1 MU - Portfolio (TCAS 1)" }
+                    { value: "รอบ 1 DST - Portfolio", label: "รอบ 1 DST - Portfolio" }
                   ]}
                   value={formData.roundName?.value || null}
                   onChange={(option) => handleChange("roundName", option ? { value: option.value, label: option.label } : null)}

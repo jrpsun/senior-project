@@ -17,9 +17,11 @@ import { InterviewCommitteeMember, InterviewRoundDetailResponse } from "@compone
 import { RoomCommittee } from "@components/types/roomCommittee";
 import { getDecodedToken } from "@components/lib/auth";
 import Modal from "@components/components/common/popup-login";
+import { AdmissionResponse } from "@components/types/admission";
 
 const InterviewSchedulePage = () => {
   const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+  const [admOption, setAdmOption] = useState<AdmissionResponse[]>([]);
   const [committees, setCommittees] = useState<InterviewCom[]>([]);
   const [interviewRound, setInterviewRound] = useState<InterviewRound[]>([]);
   const [roomDetails, setRoomDetails] = useState<InterviewRoundDetailResponse[][]>([]);
@@ -42,11 +44,12 @@ const InterviewSchedulePage = () => {
 
   async function fetchData() {
     try {
-      const [res_com, res_round, res_room_details, res_room_com] = await Promise.all([
+      const [res_com, res_round, res_room_details, res_room_com, res_adm] = await Promise.all([
         fetch(`${API_BASE_URL}/interview-committee/get-all-interviewC`),
         fetch(`${API_BASE_URL}/education-department/get-interview-round`),
         fetch(`${API_BASE_URL}/education-department/get-interview-room-details`),
-        fetch(`${API_BASE_URL}/education-department/get-all-interview-room-committee`)
+        fetch(`${API_BASE_URL}/education-department/get-all-interview-room-committee`),
+        fetch(`${process.env.API_BASE_URL}/admission/`)
       ]);
 
       if (!res_com.ok || !res_round.ok || !res_room_details.ok || !res_room_com.ok) {
@@ -57,11 +60,13 @@ const InterviewSchedulePage = () => {
       const data_round = await res_round.json();
       const data_room_details = await res_room_details.json()
       const data_room_com = await res_room_com.json()
+      const adm = await res_adm.json();
 
       setCommittees(data_com || []);
       setInterviewRound(data_round.interviewRound || []);
       setRoomDetails(data_room_details.details || []);
       setRoomCom(data_room_com || []);
+      setAdmOption(adm || []);
 
 
     } catch (err) {
@@ -79,6 +84,19 @@ const InterviewSchedulePage = () => {
   console.log('rooms details #####', roomDetails)
   console.log('room com', roomCom)
 
+  const courseOptions = admOption.map(adm => ({
+    label: adm.program === 'ITDS/B'
+        ? 'หลักสูตร DST (ไทย)'
+        : adm.program === 'ITCS/B'
+            ? 'หลักสูตร ICT (นานาชาติ)'
+            : '',
+    value: adm.program
+}));
+
+const roundOptions = admOption.map(adm => ({
+    label: adm.roundName,
+    value: adm.roundName
+}));
 
   const availableCommittees = committees.filter(com =>
     !roomCom.some(room => room.interviewComId === com.interviewComId)
@@ -387,17 +405,6 @@ const InterviewSchedulePage = () => {
     }
   };
 
-
-
-  const courseOptions = [
-    { label: "ITDS/B", value: "ITDS/B" },
-    { label: "ITCS/B", value: "ITCS/B" },
-  ];
-
-  const roundOptions = [
-    { label: "1/68 - MU - Portfolio (TCAS 1)", value: "1/68 - MU - Portfolio (TCAS 1)" },
-    { label: "1/68 - ICT Portfolio", value: "1/68 - ICT Portfolio" },
-  ];
 
   const interviewerOptions = committees.map((com) => ({
     label: `อ. ${com.firstName}`,
@@ -837,10 +844,10 @@ const InterviewSchedulePage = () => {
                 setShowForm(false);
               }}
               courseOptions={courseOptions}
-              roundOptions={
-                interviewDetail.admissionRoundName
-                  ? [{ label: getRoundFromCourse(interviewDetail.admissionProgram), value: getRoundFromCourse(interviewDetail.admissionProgram) }]
-                  : []
+              roundOptions={roundOptions
+                // interviewDetail.admissionRoundName
+                //   ? [{ label: getRoundFromCourse(interviewDetail.admissionProgram), value: getRoundFromCourse(interviewDetail.admissionProgram) }]
+                //   : []
               }
               isRoundDisabled={!interviewDetail.admissionProgram}
 

@@ -12,15 +12,9 @@ import Link from "next/link";
 import { getDecodedToken } from "@components/lib/auth";
 import Modal from "@components/components/common/popup-login";
 import { useRouter } from "next/navigation";
+import { AdmissionResponse } from "@components/types/admission";
 
-const courseOptions = [
-    { label: "ITDS/B", value: "หลักสูตร DST (ไทย)" },
-    { label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)" }
-];
-const roundOptions = [
-    { label: "1/68 - MU – Portfolio (TCAS 1)", value: "DST01" },
-    { label: "1/68 - ICT Portfolio", value: "ICT01" },
-];
+
 
 const Page = () => {
 
@@ -30,6 +24,7 @@ const Page = () => {
     const [showModal, setShowModal] = useState(false);
     const [roles, setRoles] = useState<string[]>([]);
     const [committee_id, setCommittee_id] = useState('');
+    const [admOption, setAdmOption] = useState<AdmissionResponse[]>([]);
 
     useEffect(() => {
         const decoded = getDecodedToken();
@@ -43,10 +38,18 @@ const Page = () => {
 
     async function fetchAllApplicants() {
         const res = await fetch(`${API_BASE_URL}/interview-committee/all-applicant-interviewC/${committee_id}`);
+        const res_adm = await fetch(`${process.env.API_BASE_URL}/admission/`);
         if (!res.ok) {
             throw new Error("Failed to fetch applicants");
         }
         return res.json();
+    }
+    async function fetchAllAdmission() {
+        const res_adm = await fetch(`${process.env.API_BASE_URL}/admission/`);
+        if (!res_adm.ok) {
+            throw new Error("Failed to fetch admission");
+        }
+        return res_adm.json();
     }
 
     useEffect(() => {
@@ -60,8 +63,31 @@ const Page = () => {
                     console.error(err);
                 })
                 .finally(() => setLoading(false));
+            fetchAllAdmission()
+                .then((data) => {
+                    console.log("Fetched data:", data);
+                    setAdmOption(data || []);
+                })
+                .catch((err) => {
+                    console.error(err);
+                })
+                .finally(() => setLoading(false));
         }
-    }, [committee_id]);
+    }, [committee_id, admOption]);
+
+    const courseOptions = admOption.map(adm => ({
+        label: adm.program === 'ITDS/B'
+            ? 'หลักสูตร DST (ไทย)'
+            : adm.program === 'ITCS/B'
+                ? 'หลักสูตร ICT (นานาชาติ)'
+                : '',
+        value: adm.program
+    }));
+
+    const roundOptions = admOption.map(adm => ({
+        label: adm.roundName,
+        value: adm.roundName
+    }));
 
     const [isCollapsed, setIsCollapsed] = useState(false);
     interface FilterState {
@@ -109,7 +135,7 @@ const Page = () => {
     const docStatusOptions = [
         { label: "03 - เอกสารครบถ้วน", value: "03 - เอกสารครบถ้วน" },
     ];
- // หรือดึงมาจาก auth ในอนาคต
+    // หรือดึงมาจาก auth ในอนาคต
 
     /*const getSingleCommitteeInterviewStatus = (
         results: { committee: string; result: string }[]
@@ -182,7 +208,7 @@ const Page = () => {
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            {showModal && <Modal role="admin"/>}
+            {showModal && <Modal role="admin" />}
             <div>
                 <AdminNavbar
                     isCollapsed={isCollapsed}
@@ -425,7 +451,7 @@ const Page = () => {
                                                 </td>
 
                                                 <td className="py-2 text-center whitespace-nowrap w-[80px]">
-                                                {/* <Link
+                                                    {/* <Link
                                                     key='view'
                                                     href={{
                                                         pathname: '/admin/applicant/view',
@@ -451,8 +477,8 @@ const Page = () => {
                                                         <div>view</div>
                                                     </div>
                                                 </Link> */}
-                                                <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] "
-                                                    onClick={() => handleClickView(app.applicantId || "", app.admissionId || "")}>
+                                                    <button className="bg-white px-4 py-1 my-2 rounded-lg border border-[#008A90] text-[#008A90] "
+                                                        onClick={() => handleClickView(app.applicantId || "", app.admissionId || "")}>
                                                         <div className="flex flex-row gap-1">
                                                             <div className="pt-1">
                                                                 <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -11,6 +11,7 @@ import Link from "next/link";
 import { getDecodedToken } from "@components/lib/auth";
 import Modal from "@components/components/common/popup-login";
 import { useRouter } from "next/navigation";
+import { AdmissionResponse } from "@components/types/admission";
 
 const applicant = [
     { round: 'DST01', applicantId: '0000001', name: 'อาทิตย์ แสงจันทร์', course: 'ITDS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 09.04 น.' },
@@ -47,14 +48,7 @@ const applicant = [
     { round: 'ICT01', applicantId: '0000025', name: 'ธนบดี มิ่งมงคลทรัพย์', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. อารดา วรรณวิจิตรสุทธิกุล', evaluationDate: '29 มี.ค. 2568 16.24 น.' }
 ]
 
-const courseOptions = [
-    { label: "ITDS/B", value: "หลักสูตร DST (ไทย)" },
-    { label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)" }
-];
-const roundOptions = [
-    { label: "1/68 - MU – Portfolio (TCAS 1)", value: "DST01" },
-    { label: "1/68 - ICT Portfolio", value: "ICT01" },
-];
+
 
 const ScreeningStatusOptions = [
     { label: "แสดงทั้งหมด", value: '' },
@@ -66,6 +60,7 @@ const ScreeningStatusOptions = [
 
 const Page = () => {
     const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+    const [admOption, setAdmOption] = useState<AdmissionResponse[]>([]);
     const [applicants, setApplicants] = useState<InterviewScreeningForEduInterface[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -86,14 +81,17 @@ const Page = () => {
     async function fetchData() {
         try {
             const res = await fetch(`${API_BASE_URL}/education-department/get-summary-applicants-interview`)
+            const res_adm = await fetch(`${process.env.API_BASE_URL}/admission/`);
 
             if (!res.ok) {
                 throw new Error("Failed to fetch one or more resources");
             }
 
             const data = await res.json();
+            const adm = await res_adm.json();
 
             setApplicants(data.applicants || []);
+            setAdmOption(adm || []);
 
         } catch (err) {
             console.error("Error fetching data:", err);
@@ -105,6 +103,20 @@ const Page = () => {
     useEffect(() => {
         fetchData();
     }, []);
+
+    const courseOptions = admOption.map(adm => ({
+        label: adm.program === 'ITDS/B'
+            ? 'หลักสูตร DST (ไทย)'
+            : adm.program === 'ITCS/B'
+                ? 'หลักสูตร ICT (นานาชาติ)'
+                : '',
+        value: adm.program
+    }));
+
+    const roundOptions = admOption.map(adm => ({
+        label: adm.roundName,
+        value: adm.roundName
+    }));
 
     const committeeOptions = applicants.map((com) => ({
         full: `${com.InterviewCommittee?.map((com) => `${com.name}`)}`,

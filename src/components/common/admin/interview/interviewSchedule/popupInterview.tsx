@@ -43,17 +43,17 @@ const PopupInterview = ({
 
 }) => {
     const [roundOption, setRoundOption] = useState([
-        { label: "1/68 - ICT Portfolio", value: "1/68 - ICT Portfolio" },
+        { label: "รอบ 1 ICT - Portfolio", value: "รอบ 1 ICT - Portfolio" },
     ]);
 
     useEffect(() => {
         if (interviewDetail.admissionProgram === "ITDS/B") {
             setRoundOption([
-                { label: "1/68 - MU – Portfolio (TCAS 1)", value: "1/68 - MU – Portfolio (TCAS 1)" }
+                { label: "รอบ 1 DST - Portfolio", value: "รอบ 1 DST - Portfolio" }
             ]);
         } else {
             setRoundOption([
-                { label: "1/68 - ICT Portfolio", value: "1/68 - ICT Portfolio" }
+                { label: "รอบ 1 ICT - Portfolio", value: "รอบ 1 ICT - Portfolio" }
             ]);
         }
     }, [interviewDetail.admissionProgram]);
