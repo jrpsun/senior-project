@@ -11,12 +11,16 @@ import { TokenApplicantPayload } from "@components/types/token";
 import Modal from "@components/components/common/popup-login";
 import { authFetch } from "@components/lib/auth";
 import LoadingSpinner from "@components/components/LoadingSpinner";
+import useStatusData from "../../components/common/statusList";
+import { getStatusById, getStatusByLabel } from "@components/utils/status";
 
 
 interface ApplicantStatus {
   admissionId?: string;
   course?: string;
-  period?: string;
+  startDate?: string;
+  endDate?:string;
+  program?:string;
   applicant_number?: string;
   admissionStatus?: string;
   docStatus?: string;
@@ -105,6 +109,19 @@ export default function ApplicationStatus() {
   //   }
   // ];
 
+  function toThaiDate(dateStr: string): string {
+    const monthsThaiShort = [
+      "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+      "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+    ]
+
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const thaiYear = year + 543;
+    const thaiMonth = monthsThaiShort[month - 1];
+
+    return `${day} ${thaiMonth} ${thaiYear}`;
+  }
+
   return (
     <div className="bg-white min-h-screen">
       {showModal && <Modal role="applicant"/>}
@@ -143,7 +160,7 @@ export default function ApplicationStatus() {
             <thead>
               <tr className="bg-[#F9FAFB] text-[#565656]">
                 <th className="border px-4 py-2 w-[300px]">{language === "TH" ? "หลักสูตร" : "Course"}</th>
-                <th className="border px-4 py-2 w-[270px]">{language === "TH" ? "ช่วงเวลาสมัคร" : "Application Date"}</th>
+                <th className="border px-4 py-2 w-[350px]">{language === "TH" ? "ช่วงเวลาสมัคร" : "Application Date"}</th>
                 <th className="border px-4 py-2 w-[125px]">{language === "TH" ? "เลขที่สมัคร" : "ID"}</th>
                 <th className="border px-4 py-2 w-[255px]">{language === "TH" ? "สถานะการสมัคร" : "Application Status"}</th>
                 <th className="border px-4 py-2 w-[265px]">{language === "TH" ? "สถานะเอกสาร" : "Document Status"}</th>
@@ -153,24 +170,27 @@ export default function ApplicationStatus() {
             </thead>
             <tbody>
               {applications.map((app, index) => {
+                  const appStatus = getStatusByLabel("application", app.admissionStatus || "") ?? {};
+                  const docStatus = getStatusByLabel("documents", app.docStatus || "") ?? {};
+                  const payStatus = getStatusByLabel("payment", app.paymentStatus || "") ?? {};
                 return (
                   <tr key={index} className="text-[#565656] text-sm align-middle">
                     <td className="border px-4 py-2">{app.course}</td>
-                    <td className="border px-4 py-2">{app.period}</td>
+                    <td className="border px-4 py-2">{toThaiDate(app.startDate || "")} - {toThaiDate(app.endDate || "")}</td>
                     <td className="border px-4 py-2 text-center">{app.applicant_number}</td>
                     <td className="border px-4 py-2 text-center">
-                      <span>{app.admissionStatus}</span>
+                      <span className={`${appStatus?.style || ""}`}>{app.admissionStatus}</span>
                     </td>
                     <td className="border px-4 py-2 text-center">
-                      <span>{app.docStatus}</span>
+                      <span className={`${docStatus?.style || ""}`}>{app.docStatus}</span>
                     </td>
                     <td className="border px-4 py-2 text-center">
-                      <span>{app.paymentStatus}</span>
+                      <span className={`${payStatus?.style || ""}`}>{app.paymentStatus}</span>
                     </td>
 
                     <td className="border px-4 py-2 h-full text-center align-middle">
                       <div className="flex justify-center items-center gap-2">
-                        <ViewDetailButton onClick={() => router.push(`/apply/ApplicationInfo?id=${app.admissionId}`)}>
+                        <ViewDetailButton onClick={() => router.push(`/apply/ApplicationInfo?id=${app.admissionId}&program=${app.program}`)}>
                           {language === "TH" ? "ดูใบสมัคร" : "View Detail"}
                         </ViewDetailButton>
                         {app.paymentStatus === "01 - ยังไม่ได้ชำระเงิน" && (
@@ -194,6 +214,9 @@ export default function ApplicationStatus() {
           {/* Mobile Responsive List (แสดงเฉพาะบนมือถือ) */}
           <div className="block md:hidden space-y-4">
             {applications.map((app, index) => {
+              const appStatus = getStatusByLabel("application", app.admissionStatus || "") ?? {};
+              const docStatus = getStatusByLabel("documents", app.docStatus || "") ?? {};
+              const payStatus = getStatusByLabel("payment", app.paymentStatus || "") ?? {};
 
               return (
                 <div key={index} className="border border-gray-300 p-4 rounded-lg shadow-md bg-white">
@@ -201,7 +224,7 @@ export default function ApplicationStatus() {
                     {language === "TH" ? "หลักสูตร" : "Course"}: {app.course}
                   </p>
                   <p className="text-base text-[#565656]">
-                    {language === "TH" ? "ช่วงเวลาสมัคร" : "Application Period"}: {app.period}
+                    {language === "TH" ? "ช่วงเวลาสมัคร" : "Application Period"}: {toThaiDate(app.startDate || "")} - {toThaiDate(app.endDate || "")}
                   </p>
                   <p className="text-base text-[#565656]">
                     {language === "TH" ? "เลขที่สมัคร" : "Application ID"}: {app.applicant_number}
@@ -209,13 +232,13 @@ export default function ApplicationStatus() {
 
                   {/* เพิ่มช่องว่างให้ปุ่มสถานะ */}
                   <div className=" mt-2 flex flex-wrap inline-flex gap-1">
-                    <span className={`text-lg font-medium px-1 py-2 rounded-full inline-block`}>
+                    <span className={`text-lg font-medium px-1 py-2 rounded-full inline-block${appStatus?.style || ""}`}>
                       {app.admissionStatus}
                     </span>
-                    <span className={`text-lg font-medium px-1 py-2 rounded-full inline-block`}>
+                    <span className={`text-lg font-medium px-1 py-2 rounded-full inline-block ${docStatus?.style || ""}`}>
                       {app.docStatus}
                     </span>
-                    <span className={`text-lg font-medium px-1 py-2 rounded-full inline-block`}>
+                    <span className={`text-lg font-medium px-1 py-2 rounded-full inline-block ${payStatus?.style || ""}`}>
                       {app.paymentStatus}
                     </span>
                   </div>

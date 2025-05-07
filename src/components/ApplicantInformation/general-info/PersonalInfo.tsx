@@ -575,14 +575,29 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
             <p className="text-[#565656]   indent-5">{formData?.title}</p>
           </div>
 
+
           {/* ชื่อภาษาไทย*/}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div>
-              <label className="block text-[#565656] mb-1">
-                {currentTexts.firstName} {formData.nationality === "Thai" && <span className="text-red-500">*</span>}
+              <label className="block text-[#565656] mb-1 flex items-center gap-1 relative">
+                {currentTexts.firstName}{" "}
+                {formData.nationality === "Thai" && <span className="text-red-500">*</span>}
+
+                <div className="relative group">
+                  <span className="text-white bg-[#008A90] rounded-full w-4 h-4 text-xs flex items-center justify-center cursor-default">
+                    i
+                  </span>
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 hidden group-hover:block 
+                                  bg-white text-[#333] text-sm px-4 py-2 rounded-md shadow-md w-max max-w-xs border border-gray-300 z-20">
+                    <p className="font-semibold">คำแนะนำในการแก้ไขข้อมูล</p>
+                    <p>หากต้องการแก้ไขชื่อจริง นามสกุล หรืออีเมล กรุณาไปที่เมนู <span className="font-semibold">"แก้ไขข้อมูล"</span></p>
+                  </div>
+                </div>
               </label>
+
               <p className="text-[#565656] indent-5">{formData.firstnameTH || "-"}</p>
             </div>
+
 
             <FormField
               label={currentTexts.middleName}
@@ -593,8 +608,20 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
             />
 
             <div>
-              <label className="block text-[#565656] mb-1">
+              <label className="block text-[#565656] mb-1 flex items-center gap-1 relative">
                 {currentTexts.lastName} {formData.nationality === "Thai" && <span className="text-red-500">*</span>}
+
+                <div className="relative group">
+                  <span className="text-white bg-[#008A90] rounded-full w-4 h-4 text-xs flex items-center justify-center cursor-default">
+                    i
+                  </span>
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 hidden group-hover:block 
+                                  bg-white text-[#333] text-sm px-4 py-2 rounded-md shadow-md w-max max-w-xs border border-gray-300 z-20">
+                    <p className="font-semibold">คำแนะนำในการแก้ไขข้อมูล</p>
+                    <p>หากต้องการแก้ไขชื่อจริง นามสกุล หรืออีเมล กรุณาไปที่เมนู "แก้ไขข้อมูล"</p>
+                  </div>
+                </div>
+                
               </label>
               <p className="text-[#565656] indent-5">{formData.lastnameTH || "-"}</p>
             </div>
@@ -609,7 +636,19 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div>
-              <label className="block text-[#565656] mb-1">{currentTexts.firstNameEng} <span className="text-red-500">*</span></label>
+              <label className="block text-[#565656] mb-1 flex items-center gap-1 relative">
+                {currentTexts.firstNameEng} <span className="text-red-500">*</span>
+                <div className="relative group">
+                  <span className="text-white bg-[#008A90] rounded-full w-4 h-4 text-xs flex items-center justify-center cursor-default">
+                    i
+                  </span>
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 hidden group-hover:block 
+                                  bg-white text-[#333] text-sm px-4 py-2 rounded-md shadow-md w-max max-w-xs border border-gray-300 z-20">
+                    <p className="font-semibold">คำแนะนำในการแก้ไขข้อมูล</p>
+                    <p>หากต้องการแก้ไขชื่อจริง นามสกุล หรืออีเมล กรุณาไปที่เมนู "แก้ไขข้อมูล"</p>
+                  </div>
+                </div>
+              </label>
               <p className="text-[#565656]  indent-5">{formData.firstnameEN}</p>
             </div>
             <FormField
@@ -620,7 +659,19 @@ const handleDistrictChange = (selectedOption: { value: string, label: string } |
               onKeyDown={(e) => preventEnglishInput(e)} // ป้องกันภาษาไทย
             />
             <div>
-              <label className="block text-[#565656] mb-1">{currentTexts.lastNameEng} <span className="text-red-500">*</span></label>
+              <label className="block text-[#565656] mb-1 flex items-center gap-1 relative">
+                {currentTexts.lastNameEng} <span className="text-red-500">*</span>
+                <div className="relative group">
+                  <span className="text-white bg-[#008A90] rounded-full w-4 h-4 text-xs flex items-center justify-center cursor-default">
+                    i
+                  </span>
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 hidden group-hover:block 
+                                  bg-white text-[#333] text-sm px-4 py-2 rounded-md shadow-md w-max max-w-xs border border-gray-300 z-20">
+                    <p className="font-semibold">คำแนะนำในการแก้ไขข้อมูล</p>
+                    <p>หากต้องการแก้ไขชื่อจริง นามสกุล หรืออีเมล กรุณาไปที่เมนู "แก้ไขข้อมูล"</p>
+                  </div>
+                </div>
+              </label>
               <p className="text-[#565656]  indent-5">{formData.lastnameEN}</p>
             </div>
             <FormField

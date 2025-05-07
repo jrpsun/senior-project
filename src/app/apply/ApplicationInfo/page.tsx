@@ -157,6 +157,39 @@ const ApplicationInfo = () => {
     }
   };
 
+  const handleSave = async () => {
+    setIsSaving(true);
+    setIsSuccess(false);
+  
+    try {
+      if (selected === 0) {
+        await updatedGeneralInfo();
+        await checkCompleted();
+      } else if (selected === 1) {
+        await updatedEducationInfo();
+        await checkCompleted();
+      } else if (selected === 2) {
+        if (editedAwardData.length > 0 && Object.keys(editedAwardData[0]).length > 0) {
+          await updatedAward();
+        }
+        if (editedTalentData.length > 0 && Object.keys(editedTalentData[0]).length > 0) {
+          await upDatedTalent();
+        }
+      } else if (selected === 3) {
+        if (editedTrainData.length > 0 && Object.keys(editedTrainData[0]).length > 0) {
+          await updatedTraining();
+        }
+      } else if (selected === 4) {
+        await updatedDocument();
+      } 
+    } catch (error) {
+      console.error("Save error", error);
+    } finally {
+      setIsSuccess(true);
+      setIsSaving(false);
+    }
+  };
+
   const handleSubmit = async () => {
     setPopupOpen(false)
     await submitForm();
@@ -402,6 +435,14 @@ const ApplicationInfo = () => {
         </div>
         <div className="flex justify-center mt-6 mb-6 gap-x-4">
           <BackButton onClick={prevStep}>{currentTexts.backButton}</BackButton>
+          {selected !== 5 && (
+            <button
+              onClick={handleSave}
+              className="bg-[#008A91] hover:bg-[#006d74] text-white font-medium py-3 px-6 rounded-lg shadow-sm transition-colors duration-200 w-[140px] h-12"
+            >
+                บันทึก
+            </button>
+          )}
           {selected === 5 ? (
             <button
               onClick={()=>{setPopupOpen(true)}}

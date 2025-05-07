@@ -70,8 +70,18 @@ const ContactInfo: React.FC<ContractInfoProps> = ({ data, email, onChange }) => 
 
             {/*  อีเมล (อ่านอย่างเดียว) */}
             <div className="flex flex-col">
-              <label className="block text-[#565656] mb-1">
+              <label className="block text-[#565656] mb-1 flex items-center gap-1 relative">
                 {currentTexts.email} <span className="text-red-500">*</span>
+                <div className="relative group">
+                  <span className="text-white bg-[#008A90] rounded-full w-4 h-4 text-xs flex items-center justify-center cursor-default">
+                    i
+                  </span>
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 hidden group-hover:block 
+                                  bg-white text-[#333] text-sm px-4 py-2 rounded-md shadow-md w-max max-w-xs border border-gray-300 z-20">
+                    <p className="font-semibold">คำแนะนำในการแก้ไขข้อมูล</p>
+                    <p>หากต้องการแก้ไขชื่อจริง นามสกุล หรืออีเมล กรุณาไปที่เมนู "แก้ไขข้อมูล"</p>
+                  </div>
+                </div>
               </label>
               <p className="text-[#565656] font-medium bg-[#F5F5F5] border border-gray-300 rounded-[10px] px-3 py-2">
                 {formData.applicantEmail}
