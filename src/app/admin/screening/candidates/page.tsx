@@ -31,14 +31,7 @@ import { useRouter } from "next/navigation";
 //     { round: 'ICT01', applicantId: '0000025', name: 'ธเนศ วงศ์มณฑลพัฒนา', course: 'ITCS/B', admitStatus: '04 - ผ่านการพิจารณา', docStatus: '03 - เอกสารครบถ้วน', committee: 'อาจารย์ ดร. พิสุทธิ์ธร คณาวัฒนาวงศ์', evaluationDate: '29 มี.ค. 2568 16.20 น.' },
 // ]
 
-const courseOptions = [
-    { label: "ITDS/B", value: "หลักสูตร DST (ไทย)" },
-    { label: "ITCS/B", value: "หลักสูตร ICT (นานาชาติ)" }
-];
-const roundOptions = [
-    { label: "1/68 - MU - Portfolio", value: "1/68 - MU - Portfolio" },
-    { label: "1/68 - ICT Portfolio", value: "1/68 - ICT Portfolio" },
-];
+
 
 
 const admitStatusOptions = [
@@ -56,6 +49,7 @@ const Page = () => {
     const [showModal, setShowModal] = useState(false);
     const [roles, setRoles] = useState<string[]>([]);
     const [id, setId] = useState('');
+    const [admOption, setAdmOption] = useState<AdmissionResponse[]>([]);
 
     useEffect(() => {
         const decoded = getDecodedToken();
@@ -71,14 +65,16 @@ const Page = () => {
     async function fetchData() {
         try {
             const res_app = await fetch(`${API_BASE_URL}/course-committee/all-applicant-with-courseC/${id}`);
-
+            const res_adm = await fetch(`${process.env.API_BASE_URL}/admission/`);
             if (!res_app.ok) {
                 throw new Error("Failed to fetch one or more resources");
             }
 
             const data_app = await res_app.json();
+            const adm = await res_adm.json();
 
             setApplicants(data_app.applicants || []);
+            setAdmOption(adm || []);
             //.filter((app) => app.admissionStatus == "03 - รอพิจารณา" || app.admissionStatus == "04 - ผ่านการพิจารณา" || app.admissionStatus == "05 - ไม่ผ่านการพิจารณา")
         } catch (err) {
             console.error("Error fetching data:", err);
@@ -95,6 +91,20 @@ const Page = () => {
 
     // debugging
     console.log("all app", applicants)
+
+    const courseOptions = admOption.map(adm => ({
+        label: adm.program === 'ITDS/B'
+            ? 'หลักสูตร DST (ไทย)'
+            : adm.program === 'ITCS/B'
+                ? 'หลักสูตร ICT (นานาชาติ)'
+                : '',
+        value: adm.program
+    }));
+
+    const roundOptions = admOption.map(adm => ({
+        label: adm.roundName,
+        value: adm.roundName
+    }));
 
     const [isCollapsed, setIsCollapsed] = useState(false);
     interface FilterState {

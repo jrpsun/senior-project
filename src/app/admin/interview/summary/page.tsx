@@ -11,9 +11,11 @@ import { getDecodedToken } from "@components/lib/auth";
 import Modal from "@components/components/common/popup-login";
 import { IntEvaSummaryResponse } from "@components/types/screening";
 import { useRouter } from "next/navigation";
+import { AdmissionResponse } from "@components/types/admission";
 
 const SummaryResultPage = () => {
     const [filteredData, setFilteredData] = useState(mockGroupedData);
+    const [admOption, setAdmOption] = useState<AdmissionResponse[]>([]);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const [isEvaluationConfirmed, setIsEvaluationConfirmed] = useState(false);
@@ -38,14 +40,16 @@ const SummaryResultPage = () => {
     async function fetchData() {
         try {
             const res = await fetch(`${API_BASE_URL}/education-department/get-int-eva-sum`)
-
+            const res_adm = await fetch(`${process.env.API_BASE_URL}/admission/`);
             if (!res.ok) {
                 throw new Error("Failed to fetch one or more resources");
             }
 
             const data_app = await res.json();
+            const adm = await res_adm.json();
 
             setIntEvaSum(data_app.intEva || []);
+            setAdmOption(adm || []);
 
         } catch (err) {
             console.error("Error fetching data:", err);
@@ -59,7 +63,24 @@ const SummaryResultPage = () => {
     }, []);
     console.log('int eva summary #####', intEvaSum);
 
+    const courseOptions = admOption.map(adm => ({
+        label: adm.program === 'ITDS/B'
+            ? 'หลักสูตร DST (ไทย)'
+            : adm.program === 'ITCS/B'
+                ? 'หลักสูตร ICT (นานาชาติ)'
+                : '',
+        value: adm.program
+    }));
 
+    const roundOptions = admOption.map(adm => ({
+        label: adm.roundName,
+        value: adm.roundName
+    }));
+
+    const academicYearOptions = admOption.map(adm => ({
+        label: adm.academicYear,
+        value: adm.academicYear
+    }))
 
     const [searchData, setSearchData] = useState({
         course: "",
@@ -393,10 +414,7 @@ const SummaryResultPage = () => {
                                             setFilterValues({ ...filterValues, program: "" });
                                         }
                                     }}
-                                    options={[
-                                        { value: "ITCS/B", label: "หลักสูตร ICT (นานาชาติ)" },
-                                        { value: "ITDS/B", label: "หลักสูตร DST (ไทย)" },
-                                    ]}
+                                    options={courseOptions}
                                     placeholder="เลือกหลักสูตร"
                                 />
                             </div>
@@ -413,10 +431,7 @@ const SummaryResultPage = () => {
                                             setFilterValues({ ...filterValues, year: "" });
                                         }
                                     }}
-                                    options={[
-                                        { value: "2568", label: "2568" },
-                                        { value: "2569", label: "2569" },
-                                    ]}
+                                    options={academicYearOptions}
                                     placeholder="เลือกปีการศึกษา"
                                 />
                             </div>
@@ -433,9 +448,7 @@ const SummaryResultPage = () => {
                                             setFilterValues({ ...filterValues, roundName: "" });
                                         }
                                     }}
-                                    options={[{ value: "1/68 - ICT Portfolio", label: "1/68 - ICT Portfolio" },
-                                    { value: "1/68 - MU – Portfolio (TCAS 1)", label: "1/68 - MU – Portfolio (TCAS 1)" }
-                                    ]}
+                                    options={roundOptions}
                                     placeholder="เลือกรอบรับสมัคร"
                                 />
                             </div>
@@ -660,7 +673,7 @@ const SummaryResultPage = () => {
                                 <div className="flex items-center gap-2">
                                     <Image src="/images/admin/interview/summary/beforeConfirm/wait_eval_icon.svg" alt="รอผลประเมิน" width={25} height={30} />
                                     <span className="text-[#1D2939] font-bold">รอผลการพิจารณา</span>
-                                    <span className="font-semibold text-blue-700">{interviewStatusCount["06 - รอผลการพิจารณา"] || 0} คน</span>
+                                    <span className="font-semibold text-blue-700">{interviewStatusCount["06 - รอผลการพิจารณา"] || 0 + interviewStatusCount["01 - รอสัมภาษณ์"] || 0} คน</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Image src="/images/admin/interview/summary/beforeConfirm/absent_icon.svg" alt="ไม่มาสัมภาษณ์" width={30} height={30} />
