@@ -365,10 +365,7 @@ const SummaryResultPage = () => {
     }, 0);
     console.log('apps amount', totalApps)
 
-    const coneToInt = interviewStatusCount["04 - ผ่านการสัมภาษณ์"] || 0 +
-        interviewStatusCount["05 - ไม่ผ่านการสัมภาษณ์"] || 0 +
-        interviewStatusCount["03 - รอพิจารณาเพิ่มเติม"] || 0 +
-        interviewStatusCount["06 - รอผลการพิจารณา"] || 0
+    const coneToInt = (interviewStatusCount["05 - ไม่ผ่านการสัมภาษณ์"] || 0) + (interviewStatusCount["04 - ผ่านการสัมภาษณ์"] || 0)
 
 
     const avgEnglish = sumEnglish / totalApplicants;
@@ -649,7 +646,7 @@ const SummaryResultPage = () => {
                                 <div className="flex items-center gap-2">
                                     <Image src="/images/admin/interview/summary/afterConfirm/eval_passed_percent_icon.svg" alt="เปอร์เซ็นต์ผ่าน" width={24} height={24} />
                                     เปอร์เซ็นต์ผ่านสัมภาษณ์ <span className="text-[#15803D]">
-                                        {((interviewStatusCount["04 - ผ่านการสัมภาษณ์"] || 0) / (interviewStatusCount["04 - ผ่านการสัมภาษณ์"] || 0 + interviewStatusCount["05 - ไม่ผ่านการสัมภาษณ์"] || 0) * 100 || 0).toFixed(2)}%
+                                        {((interviewStatusCount["04 - ผ่านการสัมภาษณ์"] || 0) / (coneToInt) * 100 || 0).toFixed(2)}%
                                     </span>
                                 </div>
                             </div>

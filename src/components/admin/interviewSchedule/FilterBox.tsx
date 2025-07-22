@@ -27,7 +27,7 @@ interface FilterBoxProps {
   onReset: () => void;
   isExpanded: boolean;
   setIsExpanded: (value: boolean) => void;
-  courseOptions: string[];
+  courseOptions: Option[];
   roundOptions: Option[];
   admitStatusOptions: string[];
   docStatusOptions: string[];
@@ -81,7 +81,7 @@ const FilterBox: React.FC<FilterBoxProps> = ({
             type="dropdown"
             value={filterValues.course || ""}
             onChange={handleDropdownChange("course")}
-            options={courseOptions.map(value => ({ label: value, value }))}
+            options={courseOptions}
             placeholder="เลือกหลักสูตร"
           />
         </div>
