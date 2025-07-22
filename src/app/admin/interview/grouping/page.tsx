@@ -21,6 +21,7 @@ import { InterviewScreeningForEduInterface } from "@components/types/screening";
 import { InterviewRoomDetails, InterviewSlot } from "@components/types/interviewRooms";
 import { getDecodedToken } from "@components/lib/auth";
 import Modal from "@components/components/common/popup-login";
+import { AdmissionResponse } from "@components/types/admission";
 //import InterviewTable from "@components/components/admin/interviewSchedule/InterviewTable";
 //import { useInterviewGrouping } from "@components/hooks/admin/groupingInterview/useInterviewGrouping";
 
@@ -75,7 +76,7 @@ const Page = () => {
             const data_slot = await res_slot.json()
             const adm = await res_adm.json();
 
-            setApplicants(data_app.applicants || []);
+            setApplicants(data_app.applicants.filter((app) => app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "06 - รอสัมภาษณ์") || []);
             //.filter((app) => app.admissionStatus === "04 - ผ่านการพิจารณา" || app.admissionStatus === "06 - รอสัมภาษณ์")
             setRooms(data_room.room || []);
             setAdmOption(adm || []);
@@ -647,7 +648,7 @@ const Page = () => {
                                                     <td className="text-center whitespace-nowrap">{startIndex + index + 1}</td>
                                                     <td className="text-center whitespace-nowrap">{app.roundName}</td>
                                                     <td className="text-center whitespace-nowrap">{app.applicantId}</td>
-                                                    <td className="whitespace-nowrap">{app.fullnameEN}</td>
+                                                    <td className="whitespace-nowrap">{app.firstnameEN} {app.lastnameEN}</td>
                                                     <td className="text-center whitespace-nowrap">{app.program}</td>
                                                     <td>
                                                         <div className={`mr-4 whitespace-nowrap
